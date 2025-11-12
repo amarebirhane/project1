@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -252,7 +253,11 @@ export default function LoginPage() {
     <LoginContainer>
       <Toaster position="top-right" />
       <LoginCard>
-        <Title>Login to Your Account</Title>
+      <Link href="/" className="no-underline">
+       <Title className="cursor-pointer hover:text-blue-600 transition-colors duration-300">
+       Login to Your Account
+       </Title>
+      </Link>
         <Subtitle>Welcome back! Please sign in below</Subtitle>
 
         <form onSubmit={handleSubmit(onSubmit)}>
