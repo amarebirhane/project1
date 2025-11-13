@@ -10,9 +10,6 @@ import { toast, Toaster } from 'sonner';
 import { LoginSchema, type LoginInput } from '@/lib/validation';
 import { useUserStore } from '@/store/userStore';
 
-// ========================
-// THEME (replace with your theme import if exists)
-// ========================
 const theme = {
   colors: { primary: '#ff7e5f' },
   spacing: {
@@ -46,9 +43,6 @@ const theme = {
   },
 };
 
-// ========================
-// STYLED COMPONENTS
-// ========================
 const LoginContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -217,11 +211,7 @@ const ErrorMessage = styled.div`
   margin-top: ${theme.spacing.xs};
   text-align: center;
 `;
-
-// ========================
-// MAIN COMPONENT
-// ========================
-export default function LoginPage() {
+export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

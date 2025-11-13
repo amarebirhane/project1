@@ -152,3 +152,7 @@
 2025-11-12 08:37:47,787 - app.main - INFO - Directory reports created/verified
 2025-11-12 08:37:47,790 - app.main - INFO - Directory backups created/verified
 2025-11-12 08:37:47,793 - app.main - INFO - Directory logs created/verified
+2025-11-12 08:41:33,354 - app.main - INFO - Request: GET http://localhost:8000/docs
+2025-11-12 08:41:33,512 - app.main - INFO - Response: 200 in 0.1577s
+2025-11-12 08:41:43,681 - app.main - INFO - Request: GET http://localhost:8000/openapi.json
+2025-11-12 08:41:45,570 - app.main - INFO - Response: 200 in 1.8892s
