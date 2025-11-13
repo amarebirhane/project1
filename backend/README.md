@@ -30,7 +30,67 @@ backend/
 ├── tests/              # Test suite
 └── docs/               # Documentation
 ```
-
+```
+backend/
+├── app/
+│   ├── __init__.py
+│   ├── main.py                  # App entrypoint
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py            # Env vars (e.g., DB_URL, JWT_SECRET)
+│   │   ├── security.py          # JWT, bcrypt, OTP gen
+│   │   └── database.py          # SQLAlchemy engine/session
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py              # User, Role models
+│   │   ├── revenue.py           # RevenueEntry
+│   │   ├── expense.py           # ExpenseEntry
+│   │   ├── approval.py          # ApprovalWorkflow
+│   │   ├── report.py            # Report
+│   │   ├── audit.py             # AuditLog
+│   │   └── notification.py      # Notification
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── user.py              # Pydantic UserCreate, UserOut
+│   │   ├── revenue.py           # RevenueCreate, RevenueOut
+│   │   ├── expense.py           # Similar
+│   │   └── ...                  # For all entities
+│   ├── crud/
+│   │   ├── __init__.py
+│   │   ├── user.py              # CRUD for users/hierarchy
+│   │   ├── revenue.py           # CRUD with permission checks
+│   │   └── ...                  # For all
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── deps.py              # Auth deps (current_user, permissions)
+│   │   ├── v1/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py          # /auth/login, /auth/register
+│   │   │   ├── users.py         # /users/ (hierarchy mgmt)
+│   │   │   ├── revenue.py       # /revenue/
+│   │   │   ├── expenses.py      # /expenses/
+│   │   │   ├── dashboard.py     # /dashboard/ (KPIs)
+│   │   │   ├── reports.py       # /reports/ (generate/export)
+│   │   │   ├── approvals.py     # /approvals/
+│   │   │   ├── notifications.py # /notifications/
+│   │   │   └── admin.py         # /admin/ (backups, policies)
+│   │   └── endpoints/           # Router mounts
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── email.py             # OTP, alerts
+│   │   ├── backup.py            # S3 backups
+│   │   ├── approval.py          # Workflow logic
+│   │   └── hierarchy.py         # Permission tree checks
+│   └── utils/
+│       ├── __init__.py
+│       ├── permissions.py       # RBAC decorator
+│       └── audit.py             # Log actions
+├── alembic/
+│   └── ...                      # Migrations
+├── requirements.txt
+├── Dockerfile
+└── docker-compose.yml           # Postgres, Redis, Celery
+```
 ## Quick Start
 
 ### Prerequisites

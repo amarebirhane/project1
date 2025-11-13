@@ -36,3 +36,58 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
+the architecture 
+
+```
+frontend/
+├── app/
+│   ├── globals.css              # Tailwind
+│   ├── layout.tsx               # Root layout with providers
+│   ├── page.tsx                 # Home/redirect to dashboard
+│   ├── auth/
+│   │   ├── login/page.tsx
+│   │   └── register/page.tsx
+│   ├── dashboard/
+│   │   ├── page.tsx             # Unified dashboard
+│   │   └── components/          # KPIs, charts
+│   ├── users/
+│   │   ├── page.tsx             # Hierarchy tree (Admin/FM view)
+│   │   └── [id]/page.tsx        # User details
+│   ├── revenue/
+│   │   ├── page.tsx             # List/form
+│   │   └── components/          # EntryForm, RecurringModal
+│   ├── expenses/
+│   │   ├── page.tsx
+│   │   └── components/
+│   ├── reports/
+│   │   ├── page.tsx             # Generator/export
+│   │   └── components/          # FilterForm, Chart
+│   ├── approvals/
+│   │   ├── page.tsx             # Pending list
+│   │   └── components/
+│   ├── notifications/
+│   │   └── page.tsx
+│   └── admin/
+│       ├── page.tsx             # Controls, backups
+│       └── components/          # TreeView
+├── components/
+│   ├── ui/                      # Buttons, Modals (shadcn/ui)
+│   ├── AuthProvider.tsx         # JWT context
+│   ├── HierarchyTree.tsx        # Recursive tree
+│   ├── DashboardChart.tsx       # Chart.js
+│   └── NotificationToast.tsx    # react-hot-toast
+├── lib/
+│   ├── api.ts                   # Axios instance with auth
+│   ├── utils.ts                 # Helpers (OTP timer)
+│   └── validation.ts            # Zod schemas
+├── hooks/
+│   └── useHierarchy.ts          # Fetch subordinates
+├── store/                       # Zustand
+│   └── userStore.ts
+├── public/                      # Static assets
+├── next.config.js
+├── tailwind.config.js
+├── tsconfig.json
+└── package.json
+
+```
