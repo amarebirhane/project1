@@ -12,24 +12,25 @@ const LayoutContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  margin-left: 16%;
+  margin-left: 16%; // Width of the sidebar
   min-height: 100vh;
   background-color: #f9fafb;
-
 `;
 
 const ContentWrapper = styled.div`
-  padding: 18px;
+  padding: 24px;
 `;
 
-interface DashboardLayoutProps {
+interface ProfileLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function ProfileLayout({ children }: ProfileLayoutProps) {
   return (
     <LayoutContainer>
+      <Sidebar />
       <MainContent>
+        <Navbar />
         <ContentWrapper>
           {children}
         </ContentWrapper>

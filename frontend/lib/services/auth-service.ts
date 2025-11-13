@@ -1,6 +1,8 @@
-import { Admin } from '../types/user';
-import { AdminType, UserType } from '../types/enums';
-import { cn } from "../../lib/utils"
+// lib/services/auth-service.ts
+
+import { Admin } from '../rabc/user';
+import { AdminType, UserType } from '../rabc/models';
+import { cn } from "/@/lib/utils"
 
 interface LoginResponse {
   user: {
@@ -104,8 +106,6 @@ export const authService = {
         adminType, // Use the determined adminType
         isActive,
         lastLoginAt: lastLoginAt ? new Date(lastLoginAt) : null,
-        insuranceCompanyId,
-        corporateClientId,
         createdAt: createdAt ? new Date(createdAt) : new Date(),
         updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
         roles,

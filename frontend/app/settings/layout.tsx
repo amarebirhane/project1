@@ -12,24 +12,26 @@ const LayoutContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  margin-left: 16%;
+  margin-left: 250px; // Width of the sidebar
   min-height: 100vh;
   background-color: #f9fafb;
-
 `;
 
 const ContentWrapper = styled.div`
-  padding: 18px;
+  margin-top: 48px; // Height of the header + some extra space
+  padding: 24px;
 `;
 
-interface DashboardLayoutProps {
+interface SettingsLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <LayoutContainer>
+      <Sidebar />
       <MainContent>
+        <Navbar />
         <ContentWrapper>
           {children}
         </ContentWrapper>

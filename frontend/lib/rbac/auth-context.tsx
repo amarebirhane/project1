@@ -5,7 +5,7 @@ import { User, Resource, Action } from './models';
 import { useRouter } from 'next/navigation';
 import { roleService } from '../services/role-service';
 import { authService } from '../services/auth-service';
-import { Admin } from '../types/user';
+import { Admin } from './user';
 
 interface AuthContextType {
   user: Admin | null;

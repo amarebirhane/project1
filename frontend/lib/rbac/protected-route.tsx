@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from './auth-context';
 import { useAuthorization } from './use-authorization';
 import { Resource, Action, UserType } from './models';
-import { TextLoading } from '@/app/common/LoadingComponents';
+import { TextLoading } from '@/components/common/LoadingComponents';
 
 interface ProtectedRouteProps {
   children: ReactNode;

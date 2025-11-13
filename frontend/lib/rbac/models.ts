@@ -1,19 +1,20 @@
-export type Permission = {
+// lib/rabc/models.ts
+export interface Permission {
   id: string;
   name: string;
   description: string;
   resource: Resource;
   action: Action;
-};
+}
 
-export type Role = {
+export interface Role {
   id: string;
   name: string;
   description: string;
   permissions: Permission[];
-};
+}
 
-export type User = {
+export interface User {
   id: string;
   username: string;
   email: string;
@@ -21,30 +22,27 @@ export type User = {
   roles: Role[];
   password: string;
   userType: UserType;
-};
+}
 
 export enum UserType {
   ADMIN = 'ADMIN',
-  INSURANCE_ADMIN = 'INSURANCE_ADMIN',
-  INSURANCE_STAFF = 'INSURANCE_STAFF',
-  CORPORATE_ADMIN = 'CORPORATE_ADMIN',
-  PROVIDER_ADMIN = 'PROVIDER_ADMIN',
-  STAFF = 'STAFF',
-  MEMBER = 'MEMBER',
-  PROVIDER = 'PROVIDER'
+  FINANCE_MANAGER = 'FINANCE_ADMIN',
+  ACCOUNTANT = 'ACCOUNTANT',
+  EMPLOYEE = 'EMPLOYEE'
 }
 
 export enum Resource {
   USERS = 'users',
   ROLES = 'roles',
-  INSURANCE_COMPANIES = 'insurance_companies',
-  POLICIES = 'policies',
-  CLAIMS = 'claims',
-  SETTINGS = 'settings',
+  REVENUES = 'revenues',
+  EXPENSES = 'expenses',
+  TRANSACTIONS = 'transactions',
+  REPORTS = 'reports',
   DASHBOARD = 'dashboard',
   PROFILE = 'profile',
-  CORPORATE_CLIENTS = 'corporate_clients',
-  COVERAGE_PLANS = 'coverage_plans'
+  DEPARTMENTS = 'departments',
+  PROJECTS = 'projects',
+  FINANCIAL_PLANS = 'financial_plans'
 }
 
 export enum Action {
@@ -54,8 +52,12 @@ export enum Action {
   DELETE = 'delete',
   MANAGE = 'manage', // Includes all actions
 }
+export enum AdminType {
+  ADMIN = 'SYSTEM_ADMIN',
+  FINANCE_MANAGER = 'FINANCE_ADMIN',
+}
 
-// Default roles with their permissions
+// Default permissions with finance-specific resources
 export const DEFAULT_PERMISSIONS: Permission[] = [
   // User permissions
   { id: '1', name: 'Read Users', description: 'Can view users', resource: Resource.USERS, action: Action.READ },
@@ -69,145 +71,139 @@ export const DEFAULT_PERMISSIONS: Permission[] = [
   { id: '7', name: 'Update Roles', description: 'Can update roles', resource: Resource.ROLES, action: Action.UPDATE },
   { id: '8', name: 'Delete Roles', description: 'Can delete roles', resource: Resource.ROLES, action: Action.DELETE },
   
-  // Insurance company permissions
-  { id: '9', name: 'Read Companies', description: 'Can view insurance companies', resource: Resource.INSURANCE_COMPANIES, action: Action.READ },
-  { id: '10', name: 'Create Companies', description: 'Can create insurance companies', resource: Resource.INSURANCE_COMPANIES, action: Action.CREATE },
-  { id: '11', name: 'Update Companies', description: 'Can update insurance companies', resource: Resource.INSURANCE_COMPANIES, action: Action.UPDATE },
-  { id: '12', name: 'Delete Companies', description: 'Can delete insurance companies', resource: Resource.INSURANCE_COMPANIES, action: Action.DELETE },
+  // Revenue permissions
+  { id: '9', name: 'Create Revenues', description: 'Can create revenue entries', resource: Resource.REVENUES, action: Action.CREATE },
+  { id: '10', name: 'Read Revenues', description: 'Can view revenue entries', resource: Resource.REVENUES, action: Action.READ },
+  { id: '11', name: 'Update Revenues', description: 'Can update revenue entries', resource: Resource.REVENUES, action: Action.UPDATE },
+  { id: '12', name: 'Delete Revenues', description: 'Can delete revenue entries', resource: Resource.REVENUES, action: Action.DELETE },
+  
+  // Expense permissions
+  { id: '13', name: 'Create Expenses', description: 'Can create expense entries', resource: Resource.EXPENSES, action: Action.CREATE },
+  { id: '14', name: 'Read Expenses', description: 'Can view expense entries', resource: Resource.EXPENSES, action: Action.READ },
+  { id: '15', name: 'Update Expenses', description: 'Can update expense entries', resource: Resource.EXPENSES, action: Action.UPDATE },
+  { id: '16', name: 'Delete Expenses', description: 'Can delete expense entries', resource: Resource.EXPENSES, action: Action.DELETE },
+  
+  // Transaction permissions
+  { id: '17', name: 'Read Transactions', description: 'Can view transactions', resource: Resource.TRANSACTIONS, action: Action.READ },
+  { id: '18', name: 'Update Transactions', description: 'Can update transactions', resource: Resource.TRANSACTIONS, action: Action.UPDATE },
+  { id: '19', name: 'Approve Transactions', description: 'Can approve transactions', resource: Resource.TRANSACTIONS, action: Action.MANAGE },
+  
+  // Report permissions
+  { id: '20', name: 'Create Reports', description: 'Can create reports', resource: Resource.REPORTS, action: Action.CREATE },
+  { id: '21', name: 'Read Reports', description: 'Can view reports', resource: Resource.REPORTS, action: Action.READ },
+  { id: '22', name: 'Update Reports', description: 'Can update reports', resource: Resource.REPORTS, action: Action.UPDATE },
+  { id: '23', name: 'Delete Reports', description: 'Can delete reports', resource: Resource.REPORTS, action: Action.DELETE },
   
   // Dashboard permissions
-  { id: '13', name: 'Access Dashboard', description: 'Can access dashboard', resource: Resource.DASHBOARD, action: Action.READ },
+  { id: '24', name: 'Access Dashboard', description: 'Can access dashboard', resource: Resource.DASHBOARD, action: Action.READ },
   
   // Settings permissions
-  { id: '14', name: 'Read Settings', description: 'Can view settings', resource: Resource.SETTINGS, action: Action.READ },
-  { id: '15', name: 'Update Settings', description: 'Can update settings', resource: Resource.SETTINGS, action: Action.UPDATE },
+  { id: '25', name: 'Read Settings', description: 'Can view settings', resource: Resource.SETTINGS, action: Action.READ },
+  { id: '26', name: 'Update Settings', description: 'Can update settings', resource: Resource.SETTINGS, action: Action.UPDATE },
   
   // Profile permissions
-  { id: '16', name: 'Read Profile', description: 'Can view own profile', resource: Resource.PROFILE, action: Action.READ },
-  { id: '17', name: 'Update Profile', description: 'Can update own profile', resource: Resource.PROFILE, action: Action.UPDATE },
+  { id: '27', name: 'Read Profile', description: 'Can view own profile', resource: Resource.PROFILE, action: Action.READ },
+  { id: '28', name: 'Update Profile', description: 'Can update own profile', resource: Resource.PROFILE, action: Action.UPDATE },
+  
+  // Department permissions
+  { id: '29', name: 'Create Departments', description: 'Can create departments', resource: Resource.DEPARTMENTS, action: Action.CREATE },
+  { id: '30', name: 'Read Departments', description: 'Can view departments', resource: Resource.DEPARTMENTS, action: Action.READ },
+  { id: '31', name: 'Update Departments', description: 'Can update departments', resource: Resource.DEPARTMENTS, action: Action.UPDATE },
+  { id: '32', name: 'Delete Departments', description: 'Can delete departments', resource: Resource.DEPARTMENTS, action: Action.DELETE },
+  
+  // Project permissions
+  { id: '33', name: 'Create Projects', description: 'Can create projects', resource: Resource.PROJECTS, action: Action.CREATE },
+  { id: '34', name: 'Read Projects', description: 'Can view projects', resource: Resource.PROJECTS, action: Action.READ },
+  { id: '35', name: 'Update Projects', description: 'Can update projects', resource: Resource.PROJECTS, action: Action.UPDATE },
+  { id: '36', name: 'Delete Projects', description: 'Can delete projects', resource: Resource.PROJECTS, action: Action.DELETE },
   
   // Corporate Client permissions
-  { id: '18', name: 'Create Corporate Clients', description: 'Can create corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.CREATE },
-  { id: '19', name: 'Read Corporate Clients', description: 'Can view corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.READ },
-  { id: '20', name: 'Update Corporate Clients', description: 'Can update corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.UPDATE },
-  { id: '21', name: 'Delete Corporate Clients', description: 'Can delete corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.DELETE },
+  { id: '37', name: 'Create Corporate Clients', description: 'Can create corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.CREATE },
+  { id: '38', name: 'Read Corporate Clients', description: 'Can view corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.READ },
+  { id: '39', name: 'Update Corporate Clients', description: 'Can update corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.UPDATE },
+  { id: '40', name: 'Delete Corporate Clients', description: 'Can delete corporate clients', resource: Resource.CORPORATE_CLIENTS, action: Action.DELETE },
   
-  // Coverage Plan permissions
-  { id: '22', name: 'Create Coverage Plans', description: 'Can create coverage plans', resource: Resource.COVERAGE_PLANS, action: Action.CREATE },
-  { id: '23', name: 'Read Coverage Plans', description: 'Can view coverage plans', resource: Resource.COVERAGE_PLANS, action: Action.READ },
-  { id: '24', name: 'Update Coverage Plans', description: 'Can update coverage plans', resource: Resource.COVERAGE_PLANS, action: Action.UPDATE },
-  { id: '25', name: 'Delete Coverage Plans', description: 'Can delete coverage plans', resource: Resource.COVERAGE_PLANS, action: Action.DELETE },
+  // Financial Plan permissions
+  { id: '41', name: 'Create Financial Plans', description: 'Can create financial plans', resource: Resource.FINANCIAL_PLANS, action: Action.CREATE },
+  { id: '42', name: 'Read Financial Plans', description: 'Can view financial plans', resource: Resource.FINANCIAL_PLANS, action: Action.READ },
+  { id: '43', name: 'Update Financial Plans', description: 'Can update financial plans', resource: Resource.FINANCIAL_PLANS, action: Action.UPDATE },
+  { id: '44', name: 'Delete Financial Plans', description: 'Can delete financial plans', resource: Resource.FINANCIAL_PLANS, action: Action.DELETE },
 ];
 
+// Default roles with hierarchical permissions
 export const DEFAULT_ROLES: Role[] = [
   {
     id: '1',
-    name: 'ADMIN',
+    name: 'admin',
     description: 'System administrator with full access',
-    permissions: DEFAULT_PERMISSIONS,
+    permissions: DEFAULT_PERMISSIONS, // All permissions
   },
   {
     id: '2',
-    name: 'STAFF',
-    description: 'General staff member with limited permissions',
+    name: 'finance_manager',
+    description: 'Finance manager with broad permissions over subordinates',
     permissions: DEFAULT_PERMISSIONS.filter(p => 
-      [Resource.DASHBOARD, Resource.PROFILE].includes(p.resource) || 
-      (p.resource === Resource.INSURANCE_COMPANIES && p.action === Action.READ)
+      [Resource.DASHBOARD, Resource.PROFILE, Resource.SETTINGS].includes(p.resource) || 
+      [Resource.USERS, Resource.ROLES, Resource.REVENUES, Resource.EXPENSES, Resource.TRANSACTIONS, Resource.REPORTS, Resource.DEPARTMENTS, Resource.PROJECTS, Resource.CORPORATE_CLIENTS, Resource.FINANCIAL_PLANS].includes(p.resource)
     ),
   },
   {
     id: '3',
-    name: 'CORPORATE',
-    description: 'Corporate client manager',
+    name: 'accountant',
+    description: 'Accountant with permissions for financial records and reports',
     permissions: DEFAULT_PERMISSIONS.filter(p => 
       [Resource.DASHBOARD, Resource.PROFILE].includes(p.resource) || 
-      p.resource === Resource.CORPORATE_CLIENTS ||
-      p.resource === Resource.COVERAGE_PLANS
+      [Resource.REVENUES, Resource.EXPENSES, Resource.TRANSACTIONS, Resource.REPORTS].includes(p.resource)
     ),
   },
   {
     id: '4',
-    name: 'MEMBER',
-    description: 'Insurance member with access to own information',
+    name: 'employee',
+    description: 'Employee with basic permissions for personal entries',
     permissions: DEFAULT_PERMISSIONS.filter(p => 
-      [Resource.PROFILE].includes(p.resource) || 
-      (p.resource === Resource.COVERAGE_PLANS && p.action === Action.READ)
-    ),
-  },
-  {
-    id: '5',
-    name: 'PROVIDER',
-    description: 'Healthcare provider',
-    permissions: DEFAULT_PERMISSIONS.filter(p => 
-      [Resource.PROFILE, Resource.DASHBOARD].includes(p.resource) || 
-      (p.resource === Resource.COVERAGE_PLANS && p.action === Action.READ)
+      [Resource.DASHBOARD, Resource.PROFILE].includes(p.resource) || 
+      [Resource.REVENUES, Resource.EXPENSES].includes(p.resource)
     ),
   },
 ];
 
-// Mock user data
+// Mock user data with finance roles
 export const MOCK_USERS: User[] = [
   {
     id: '1',
     username: 'admin',
     email: 'admin@example.com',
     name: 'System Admin',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'ADMIN')!],
+    roles: [DEFAULT_ROLES.find(r => r.name === 'admin')!],
     password: 'password1',
     userType: UserType.ADMIN
   },
   {
     id: '2',
-    username: 'staff',
-    email: 'staff@example.com',
-    name: 'John Smith',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'STAFF')!],
+    username: 'finance_manager',
+    email: 'manager@example.com',
+    name: 'Finance Manager',
+    roles: [DEFAULT_ROLES.find(r => r.name === 'finance_manager')!],
     password: 'password2',
-    userType: UserType.STAFF
+    userType: UserType.FINANCE_MANAGER
   },
   {
     id: '3',
-    username: 'corporate',
-    email: 'corporate@example.com',
-    name: 'Corporate Manager',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'CORPORATE')!],
+    username: 'accountant',
+    email: 'accountant@example.com',
+    name: 'John Accountant',
+    roles: [DEFAULT_ROLES.find(r => r.name === 'accountant')!],
     password: 'password3',
-    userType: UserType.CORPORATE_ADMIN
+    userType: UserType.ACCOUNTANT
   },
   {
     id: '4',
-    username: 'member',
-    email: 'member@example.com',
-    name: 'John Member',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'MEMBER')!],
+    username: 'employee',
+    email: 'employee@example.com',
+    name: 'Jane Employee',
+    roles: [DEFAULT_ROLES.find(r => r.name === 'employee')!],
     password: 'password4',
-    userType: UserType.MEMBER
+    userType: UserType.EMPLOYEE
   },
-  {
-    id: '5',
-    username: 'provider',
-    email: 'provider@example.com',
-    name: 'Dr. Jane Provider',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'PROVIDER')!],
-    password: 'password5',
-    userType: UserType.PROVIDER
-  },
-  {
-    id: '6',
-    username: 'insuranceadmin',
-    email: 'insurance@example.com',
-    name: 'Insurance Admin',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'ADMIN')!],
-    password: 'password6',
-    userType: UserType.INSURANCE_ADMIN
-  },
-  {
-    id: '7',
-    username: 'provideradmin',
-    email: 'provider@example.com',
-    name: 'Provider Admin',
-    roles: [DEFAULT_ROLES.find(r => r.name === 'ADMIN')!],
-    password: 'password7',
-    userType: UserType.PROVIDER_ADMIN
-  }
-]; 
+];
+

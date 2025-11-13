@@ -1,94 +1,249 @@
-export interface CorporateClient {
-  id: string;
-  name: string;
-  insuranceCompanyId: string;
-  contactPersonName: string;
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  status: CorporateClientStatus;
-  createdAt: string;
-  updatedAt: string;
-  totalEmployees: number;
-  coveragePlans: CoveragePlan[];
-}
+// lib/models/corporae-clients.ts
+import { z } from 'zod';
 
-export enum CorporateClientStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
-  SUSPENDED = 'suspended'
-}
+export const UserRole = z.enum(['admin', 'finance_manager', 'accountant', 'employee']);
+export type UserRole = z.infer<typeof UserRole>;
 
-export interface CoveragePlan {
-  id: string;
-  name: string;
-  description: string;
-  corporateClientId: string;
-  coverageDetails: string;
-  monthlyPremium: number;
-  deductible: number;
-  coInsurance: number;
-  outOfPocketMax: number;
-  status: CoveragePlanStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+export const TransactionStatus = z.enum(['pending', 'approved', 'rejected']);
+export type TransactionStatus = z.infer<typeof TransactionStatus>;
 
-export enum CoveragePlanStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  ARCHIVED = 'archived'
-}
+export const NotificationType = z.enum(['info', 'success', 'warning', 'error']);
+export type NotificationType = z.infer<typeof NotificationType>;
+
+export const ReportFormat = z.enum(['pdf', 'csv', 'excel']);
+export type ReportFormat = z.infer<typeof ReportFormat>;
+
+export const LoginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export const RegisterSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  role: UserRole,
+  managerId: z.string().optional(),
+});
+
+export const RevenueSchema = z.object({
+  amount: z.number().positive('Amount must be positive'),
+  description: z.string().min(1, 'Description is required'),
+  category: z.string().min(1, 'Category is required'),
+  date: z.string(),
+  isRecurring: z.boolean().default(false),
+  recurringInterval: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
+});
+
+export const ExpenseSchema = z.object({
+  amount: z.number().positive('Amount must be positive'),
+  description: z.string().min(1, 'Description is required'),
+  category: z.string().min(1, 'Category is required'),
+  date: z.string(),
+  receipt: z.string().optional(),
+});
+
+export const UserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  role: UserRole,
+  managerId: z.string().optional(),
+  isActive: z.boolean().default(true),
+  createdAt: z.string(),
+});
+
+export type User = z.infer<typeof UserSchema>;
+export type LoginInput = z.infer<typeof LoginSchema>;
+export type RegisterInput = z.infer<typeof RegisterSchema>;
+export type RevenueInput = z.infer<typeof RevenueSchema>;
+export type ExpenseInput = z.infer<typeof ExpenseSchema>;
+
+export const OTPSchema = z.object({
+  code: z.string().length(6, 'OTP must be 6 digits'),
+});
+
+export type OTPInput = z.infer<typeof OTPSchema>;
+
+// Financial transaction schemas
+export const TransactionSchema = z.object({
+  id: z.string(),
+  type: z.enum(['revenue', 'expense']),
+  amount: z.number(),
+  description: z.string(),
+  category: z.string(),
+  date: z.string(),
+  status: TransactionStatus,
+  submittedBy: z.string(),
+  approvedBy: z.string().optional(),
+  approvedAt: z.string().optional(),
+  rejectionReason: z.string().optional(),
+  receipt: z.string().optional(),
+  isRecurring: z.boolean().default(false),
+  recurringInterval: z.enum(['daily', 'weekly', 'monthly', 'yearly']).optional(),
+  createdAt: z.string(),
+});
+
+export type Transaction = z.infer<typeof TransactionSchema>;
+
+// Notification schema
+export const NotificationSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  message: z.string(),
+  type: NotificationType,
+  isRead: z.boolean().default(false),
+  userId: z.string(),
+  createdAt: z.string(),
+  actionUrl: z.string().optional(),
+});
+
+export type Notification = z.infer<typeof NotificationSchema>;
+
+// Report schema
+export const ReportSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  type: z.string(),
+  format: ReportFormat,
+  filters: z.object({
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    department: z.string().optional(),
+    category: z.string().optional(),
+    userId: z.string().optional(),
+  }),
+  generatedBy: z.string(),
+  generatedAt: z.string(),
+  fileUrl: z.string().optional(),
+});
+
+export type Report = z.infer<typeof ReportSchema>;
+
+// Dashboard data schema
+export const DashboardDataSchema = z.object({
+  totalRevenue: z.number(),
+  totalExpenses: z.number(),
+  netProfit: z.number(),
+  pendingApprovals: z.number(),
+  recentTransactions: z.array(TransactionSchema),
+  monthlyData: z.array(z.object({
+    month: z.string(),
+    revenue: z.number(),
+    expenses: z.number(),
+  })),
+  categoryBreakdown: z.array(z.object({
+    category: z.string(),
+    amount: z.number(),
+    percentage: z.number(),
+  })),
+});
+
+export type DashboardData = z.infer<typeof DashboardDataSchema>;
+
+// Department schema
+export const DepartmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  managerId: z.string(),
+  isActive: z.boolean().default(true),
+  createdAt: z.string(),
+});
+
+export type Department = z.infer<typeof DepartmentSchema>;
+
+// Project schema
+export const ProjectSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  departmentId: z.string(),
+  assignedUsers: z.array(z.string()),
+  budget: z.number().optional(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+  isActive: z.boolean().default(true),
+  createdAt: z.string(),
+});
+
+export type Project = z.infer<typeof ProjectSchema>;
+
+// Corporate Client schema
+export const CorporateClientStatus = z.enum(['active', 'inactive', 'pending', 'suspended']);
+export type CorporateClientStatus = z.infer<typeof CorporateClientStatus>;
+
+export const FinancialPlanStatus = z.enum(['active', 'inactive', 'archived']);
+export type FinancialPlanStatus = z.infer<typeof FinancialPlanStatus>;
+
+export const CorporateClientSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  contactPersonName: z.string(),
+  contactEmail: z.string().email(),
+  status: CorporateClientStatus,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  totalAccounts: z.number(),
+  financialPlans: z.array(FinancialPlanSchema),
+});
+
+export const FinancialPlanSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  corporateClientId: z.string(),
+  planDetails: z.string(),
+  monthlyFee: z.number(),
+  minimumBalance: z.number(),
+  interestRate: z.number(),
+  maxWithdrawal: z.number(),
+  status: FinancialPlanStatus,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type CorporateClient = z.infer<typeof CorporateClientSchema>;
+export type FinancialPlan = z.infer<typeof FinancialPlanSchema>;
 
 // Mock data for corporate clients
 export const MOCK_CORPORATE_CLIENTS: CorporateClient[] = [
   {
     id: '1',
     name: 'Acme Corporation',
-    insuranceCompanyId: '1',
     contactPersonName: 'John Smith',
     contactEmail: 'jsmith@acme.com',
-    contactPhone: '555-123-4567',
-    address: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'USA',
     status: CorporateClientStatus.ACTIVE,
     createdAt: '2023-01-15T00:00:00Z',
     updatedAt: '2023-04-20T00:00:00Z',
-    totalEmployees: 250,
-    coveragePlans: [
+    totalAccounts: 250,
+    financialPlans: [
       {
         id: '1',
-        name: 'Acme Premium Plan',
-        description: 'Comprehensive coverage for Acme employees',
+        name: 'Acme Premium Savings Plan',
+        description: 'High-yield savings for Acme corporate funds',
         corporateClientId: '1',
-        coverageDetails: 'Full medical, dental, and vision coverage',
-        monthlyPremium: 450,
-        deductible: 500,
-        coInsurance: 20,
-        outOfPocketMax: 3000,
-        status: CoveragePlanStatus.ACTIVE,
+        planDetails: 'Full liquidity with competitive interest',
+        monthlyFee: 25,
+        minimumBalance: 5000,
+        interestRate: 4.5,
+        maxWithdrawal: 100000,
+        status: FinancialPlanStatus.ACTIVE,
         createdAt: '2023-01-20T00:00:00Z',
         updatedAt: '2023-01-20T00:00:00Z',
       },
       {
         id: '2',
-        name: 'Acme Basic Plan',
-        description: 'Basic coverage for Acme employees',
+        name: 'Acme Basic Investment Plan',
+        description: 'Balanced investment for Acme reserves',
         corporateClientId: '1',
-        coverageDetails: 'Basic medical coverage',
-        monthlyPremium: 250,
-        deductible: 1000,
-        coInsurance: 30,
-        outOfPocketMax: 5000,
-        status: CoveragePlanStatus.ACTIVE,
+        planDetails: 'Low-risk portfolio management',
+        monthlyFee: 15,
+        minimumBalance: 10000,
+        interestRate: 3.2,
+        maxWithdrawal: 50000,
+        status: FinancialPlanStatus.ACTIVE,
         createdAt: '2023-01-20T00:00:00Z',
         updatedAt: '2023-01-20T00:00:00Z',
       }
@@ -97,31 +252,24 @@ export const MOCK_CORPORATE_CLIENTS: CorporateClient[] = [
   {
     id: '2',
     name: 'Globex Corporation',
-    insuranceCompanyId: '1',
     contactPersonName: 'Jane Doe',
     contactEmail: 'jdoe@globex.com',
-    contactPhone: '555-987-6543',
-    address: '456 Park Ave',
-    city: 'Boston',
-    state: 'MA',
-    zipCode: '02108',
-    country: 'USA',
     status: CorporateClientStatus.ACTIVE,
     createdAt: '2023-02-10T00:00:00Z',
     updatedAt: '2023-05-15T00:00:00Z',
-    totalEmployees: 500,
-    coveragePlans: [
+    totalAccounts: 500,
+    financialPlans: [
       {
         id: '3',
-        name: 'Globex Elite Plan',
-        description: 'Premium coverage for Globex employees',
+        name: 'Globex Elite Investment Plan',
+        description: 'Premium investment strategy for Globex corporate funds',
         corporateClientId: '2',
-        coverageDetails: 'Comprehensive medical, dental, vision, and mental health coverage',
-        monthlyPremium: 550,
-        deductible: 300,
-        coInsurance: 10,
-        outOfPocketMax: 2000,
-        status: CoveragePlanStatus.ACTIVE,
+        planDetails: 'Diversified portfolio with high returns',
+        monthlyFee: 35,
+        minimumBalance: 25000,
+        interestRate: 5.8,
+        maxWithdrawal: 200000,
+        status: FinancialPlanStatus.ACTIVE,
         createdAt: '2023-02-15T00:00:00Z',
         updatedAt: '2023-02-15T00:00:00Z',
       }
@@ -130,19 +278,57 @@ export const MOCK_CORPORATE_CLIENTS: CorporateClient[] = [
   {
     id: '3',
     name: 'Initech',
-    insuranceCompanyId: '2',
     contactPersonName: 'Bill Lumbergh',
     contactEmail: 'blumbergh@initech.com',
-    contactPhone: '555-789-0123',
-    address: '789 Office Space Blvd',
-    city: 'Dallas',
-    state: 'TX',
-    zipCode: '75001',
-    country: 'USA',
     status: CorporateClientStatus.PENDING,
     createdAt: '2023-03-05T00:00:00Z',
     updatedAt: '2023-03-05T00:00:00Z',
-    totalEmployees: 120,
-    coveragePlans: []
+    totalAccounts: 120,
+    financialPlans: []
   }
-]; 
+];
+
+// Create/update schemas
+export const CreateUserSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  role: UserRole,
+  managerId: z.string().optional(),
+  departmentId: z.string().optional(),
+});
+
+export const CreateDepartmentSchema = z.object({
+  name: z.string().min(2, 'Department name must be at least 2 characters'),
+  description: z.string().optional(),
+  managerId: z.string(),
+});
+
+export const CreateProjectSchema = z.object({
+  name: z.string().min(2, 'Project name must be at least 2 characters'),
+  description: z.string().optional(),
+  departmentId: z.string(),
+  assignedUsers: z.array(z.string()),
+  budget: z.number().positive('Budget must be positive').optional(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+});
+
+export const CreateReportSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  type: z.string(),
+  format: ReportFormat,
+  filters: z.object({
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    department: z.string().optional(),
+    category: z.string().optional(),
+    userId: z.string().optional(),
+  }),
+});
+
+export type CreateUserInput = z.infer<typeof CreateUserSchema>;
+export type CreateDepartmentInput = z.infer<typeof CreateDepartmentSchema>;
+export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
+export type CreateReportInput = z.infer<typeof CreateReportSchema>;

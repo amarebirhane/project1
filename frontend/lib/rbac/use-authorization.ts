@@ -5,13 +5,11 @@ interface AuthorizationHook {
   hasPermission: (resource: Resource, action: Action) => boolean;
   hasUserPermission: (userId: string, resource: Resource, action: Action) => Promise<boolean>;
   isAdmin: () => boolean;
-  isCorporateAdmin: () => boolean;
-  isProvider: () => boolean;
-  isMember: () => boolean;
-  isStaff: () => boolean;
+  isAccountant: () => boolean;
+  isEmpoyee: () => boolean;
   hasRole: (roleName: string) => boolean;
   hasUserType: (userType: UserType) => boolean;
-  isInsuranceAdmin: () => boolean;
+  isFinanceAdmin: () => boolean;
   refreshUser: () => Promise<void>;
 }
 
@@ -28,7 +26,7 @@ export const useAuthorization = (): AuthorizationHook => {
     if (!user) return false;
     return user.roles.some(role => role.name === 'ADMIN') || 
            user.userType === UserType.ADMIN || 
-           user.userType === UserType.INSURANCE_ADMIN;
+           user.userType === UserType.FINANCE_ADMIN;
   };
 
   /**
@@ -36,46 +34,9 @@ export const useAuthorization = (): AuthorizationHook => {
    */
   const isInsuranceAdmin = (): boolean => {
     if (!user) return false;
-    return user.userType === UserType.INSURANCE_ADMIN;
+    return user.userType === UserType.FINANCE_ADMIN;
   };
 
-  /**
-   * Check if the user is a corporate administrator
-   */
-  const isCorporateAdmin = (): boolean => {
-    if (!user) return false;
-    return user.roles.some(role => role.name === 'CORPORATE') || 
-           user.userType === UserType.CORPORATE_ADMIN;
-  };
-
-  /**
-   * Check if the user is a provider
-   */
-  const isProvider = (): boolean => {
-    if (!user) return false;
-    return user.roles.some(role => role.name === 'PROVIDER') || 
-           user.userType === UserType.PROVIDER || 
-           user.userType === UserType.PROVIDER_ADMIN;
-  };
-
-  /**
-   * Check if the user is a member
-   */
-  const isMember = (): boolean => {
-    if (!user) return false;
-    return user.roles.some(role => role.name === 'MEMBER') || 
-           user.userType === UserType.MEMBER;
-  };
-
-  /**
-   * Check if the user is a staff
-   */
-  const isStaff = (): boolean => {
-    if (!user) return false;
-    return user.roles.some(role => role.name === 'STAFF') || 
-           user.userType === UserType.STAFF || 
-           user.userType === UserType.INSURANCE_STAFF;
-  };
 
   /**
    * Check if the user has a specific role
@@ -97,13 +58,8 @@ export const useAuthorization = (): AuthorizationHook => {
     hasPermission,
     hasUserPermission,
     isAdmin,
-    isCorporateAdmin,
-    isProvider,
-    isMember,
-    isStaff,
     hasRole,
     hasUserType,
-    isInsuranceAdmin,
     refreshUser
   };
 }; 
