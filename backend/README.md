@@ -371,3 +371,80 @@ def create_default_admin():
     finally:
         db.close()
  -->
+
+ <!-- 
+Hierarchy
+ superadmin
+    └── admin
+            └── manager
+                    ├── accountant
+                    └── employee
+
+  -->
+
+  <!-- 
+  
+  how to create admin as default 
+
+  # app/main.py
+from fastapi import FastAPI
+from .api.v1 import auth, users
+from .core.database import SessionLocal
+from .crud.user import user as user_crud
+from .schemas.user import UserCreate
+from .models.user import UserRole
+from .core.security import get_password_hash
+
+app = FastAPI()
+
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+
+
+@app.on_event("startup")
+def create_default_admin():
+    db = SessionLocal()
+    try:
+        admin_email = "admin@expense.com"
+        admin_username = "admin"
+        admin_password = "admin1234"  # 8+ chars
+
+        # Check by email OR username
+        existing = (
+            db.query(User)
+            .filter(
+                (User.email == admin_email) | (User.username == admin_username)
+            )
+            .first()
+        )
+        if existing:
+            print(f"Default admin already exists: {admin_email}")
+            return
+
+        # Create admin
+        user_in = UserCreate(
+            email=admin_email,
+            username=admin_username,
+            password=admin_password,
+            full_name="Default Administrator",
+            role=UserRole.ADMIN
+        )
+        hashed = get_password_hash(user_in.password)
+        db_user = User(
+            email=user_in.email,
+            username=user_in.username,
+            hashed_password=hashed,
+            full_name=user_in.full_name,
+            role=user_in.role,
+            is_active=True,
+            is_verified=True
+        )
+        db.add(db_user)
+        db.commit()
+        print(f"Default admin created: {admin_email} / {admin_password}")
+    except Exception as e:
+        db.rollback()
+        print(f"Failed to create default admin: {e}")
+    finally:
+        db.close()
+   -->
