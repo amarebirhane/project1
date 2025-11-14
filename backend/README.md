@@ -351,3 +351,23 @@ For support and questions:
 - [ ] Integration with accounting software
 - [ ] Budget planning features
 - [ ] Invoice management
+
+<!-- 
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+# Create default admin on startup
+@app.on_event("startup")
+def create_default_admin():
+    db = SessionLocal()
+    try:
+        admin_email = "admin@expense.com"
+        admin_pass = "admin123"  # Change in prod
+        admin = get_user_by_email(db, admin_email)
+        if not admin:
+            user_create = UserCreate(email=admin_email, password=admin_pass, role=Role.ADMIN)
+            create_user(db, user_create)
+            print(f"Default admin created: {admin_email}/{admin_pass}")
+    finally:
+        db.close()
+ -->
