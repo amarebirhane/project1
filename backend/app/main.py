@@ -197,59 +197,18 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Include API routers
 api_v1_prefix = "/api/v1"
 
-app.include_router(
-    auth.router,
-    prefix=f"{api_v1_prefix}/auth",
-    tags=["Authentication"]
-)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 
-app.include_router(
-    users.router,
-    prefix=f"{api_v1_prefix}/users",
-    tags=["Users"]
-)
-
-app.include_router(
-    revenue.router,
-    prefix=f"{api_v1_prefix}/revenue",
-    tags=["Revenue"]
-)
-
-app.include_router(
-    expenses.router,
-    prefix=f"{api_v1_prefix}/expenses",
-    tags=["Expenses"]
-)
-
-app.include_router(
-    approvals.router,
-    prefix=f"{api_v1_prefix}/approvals",
-    tags=["Approvals"]
-)
-
-app.include_router(
-    reports.router,
-    prefix=f"{api_v1_prefix}/reports",
-    tags=["Reports"]
-)
-
-app.include_router(
-    notifications.router,
-    prefix=f"{api_v1_prefix}/notifications",
-    tags=["Notifications"]
-)
-
-app.include_router(
-    dashboard.router,
-    prefix=f"{api_v1_prefix}/dashboard",
-    tags=["Dashboard"]
-)
-
-app.include_router(
-    admin.router,
-    prefix=f"{api_v1_prefix}/admin",
-    tags=["Admin"]
-)
+# Keep other modules too:
+api_prefix = "/api/v1"
+app.include_router(revenue.router, prefix=f"{api_prefix}/revenue", tags=["Revenue"])
+app.include_router(expenses.router, prefix=f"{api_prefix}/expenses", tags=["Expenses"])
+app.include_router(approvals.router, prefix=f"{api_prefix}/approvals", tags=["Approvals"])
+app.include_router(reports.router, prefix=f"{api_prefix}/reports", tags=["Reports"])
+app.include_router(notifications.router, prefix=f"{api_prefix}/notifications", tags=["Notifications"])
+app.include_router(dashboard.router, prefix=f"{api_prefix}/dashboard", tags=["Dashboard"])
+app.include_router(admin.router, prefix=f"{api_prefix}/admin", tags=["Admin"])
 
 
 # Health check endpoint

@@ -1,9 +1,14 @@
-from pydantic import BaseModel, EmailStr, validator
+# app/schemas/user.py
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
+
 from ..models.user import UserRole
 
 
+# ------------------------------------------------------------------
+# Base Schemas
+# ------------------------------------------------------------------
 class UserBase(BaseModel):
     email: EmailStr
     username: str
@@ -14,11 +19,22 @@ class UserBase(BaseModel):
     is_active: bool = True
 
 
+class RoleBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    permissions: Optional[list[str]] = None  # Changed to list[str]
+
+
+# ------------------------------------------------------------------
+# Create / Update
+# ------------------------------------------------------------------
 class UserCreate(UserBase):
     password: str
+    manager_id: Optional[int] = None
 
-    @validator('password')
-    def validate_password(cls, v):
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v: str) -> str:
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         return v
@@ -35,40 +51,6 @@ class UserUpdate(BaseModel):
     manager_id: Optional[int] = None
 
 
-class UserOut(UserBase):
-    id: int
-    is_verified: bool
-    manager_id: Optional[int] = None
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    last_login: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
-class UserChangePassword(BaseModel):
-    current_password: str
-    new_password: str
-
-    @validator('new_password')
-    def validate_new_password(cls, v):
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
-        return v
-
-
-class RoleBase(BaseModel):
-    name: str
-    description: Optional[str] = None
-    permissions: Optional[str] = None
-
-
 class RoleCreate(RoleBase):
     pass
 
@@ -76,7 +58,22 @@ class RoleCreate(RoleBase):
 class RoleUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    permissions: Optional[str] = None
+    permissions: Optional[list[str]] = None
+
+
+# ------------------------------------------------------------------
+# Output (Response)
+# ------------------------------------------------------------------
+class UserOut(UserBase):
+    id: int
+    is_verified: bool = False
+    manager_id: Optional[int] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    last_login: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True  # Pydantic v2
 
 
 class RoleOut(RoleBase):
@@ -86,3 +83,23 @@ class RoleOut(RoleBase):
 
     class Config:
         from_attributes = True
+
+
+# ------------------------------------------------------------------
+# Auth
+# ------------------------------------------------------------------
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class UserChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator('new_password')
+    @classmethod
+    def validate_new_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters long')
+        return v

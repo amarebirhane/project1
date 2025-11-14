@@ -1,11 +1,16 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+# app/crud/user.py
 from typing import Optional, List
-from ..models.user import User, Role, UserRole
+from sqlalchemy.orm import Session
+
+from ..models.user import User, UserRole
+from ..models.role import Role
 from ..schemas.user import UserCreate, UserUpdate, RoleCreate, RoleUpdate
-from ..core.security import get_password_hash
+from ..core.security import get_password_hash, verify_password
 
 
+# ------------------------------------------------------------------
+# CRUD User
+# ------------------------------------------------------------------
 class CRUDUser:
     def get(self, db: Session, id: int) -> Optional[User]:
         return db.query(User).filter(User.id == id).first()
@@ -20,23 +25,29 @@ class CRUDUser:
         return db.query(User).offset(skip).limit(limit).all()
 
     def get_subordinates(self, db: Session, manager_id: int) -> List[User]:
+        """Get direct subordinates of a manager"""
         return db.query(User).filter(User.manager_id == manager_id).all()
 
     def get_hierarchy(self, db: Session, user_id: int) -> List[User]:
-        """Get all users in the hierarchy (subordinates recursively)"""
-        def get_recursive_subordinates(manager_id: int):
-            subordinates = self.get_subordinates(db, manager_id)
+        """Get all subordinates recursively (full hierarchy)"""
+        def recursive_subordinates(manager_id: int) -> List[User]:
+            direct = self.get_subordinates(db, manager_id)
             result = []
-            for sub in subordinates:
+            for sub in direct:
                 result.append(sub)
-                result.extend(get_recursive_subordinates(sub.id))
+                result.extend(recursive_subordinates(sub.id))
             return result
-        
-        return get_recursive_subordinates(user_id)
+        return recursive_subordinates(user_id)
 
     def create(self, db: Session, obj_in: UserCreate) -> User:
+        # Prevent duplicates
+        if self.get_by_email(db, obj_in.email):
+            raise ValueError("Email already registered")
+        if self.get_by_username(db, obj_in.username):
+            raise ValueError("Username already taken")
+
         hashed_password = get_password_hash(obj_in.password)
-        db_obj = User(
+        db_user = User(
             email=obj_in.email,
             username=obj_in.username,
             hashed_password=hashed_password,
@@ -44,13 +55,13 @@ class CRUDUser:
             phone=obj_in.phone,
             role=obj_in.role,
             department=obj_in.department,
-            is_active=obj_in.is_active,
-            manager_id=obj_in.manager_id if hasattr(obj_in, 'manager_id') else None,
+            is_active=getattr(obj_in, "is_active", True),
+            manager_id=getattr(obj_in, "manager_id", None),
         )
-        db.add(db_obj)
+        db.add(db_user)
         db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        db.refresh(db_user)
+        return db_user
 
     def update(self, db: Session, db_obj: User, obj_in: UserUpdate) -> User:
         update_data = obj_in.dict(exclude_unset=True)
@@ -61,16 +72,15 @@ class CRUDUser:
         return db_obj
 
     def delete(self, db: Session, id: int) -> User:
-        obj = db.query(User).get(id)
-        db.delete(obj)
-        db.commit()
+        obj = self.get(db, id)
+        if obj:
+            db.delete(obj)
+            db.commit()
         return obj
 
     def authenticate(self, db: Session, username: str, password: str) -> Optional[User]:
         user = self.get_by_username(db, username)
-        if not user:
-            return None
-        if not verify_password(password, user.hashed_password):
+        if not user or not verify_password(password, user.hashed_password):
             return None
         return user
 
@@ -81,6 +91,9 @@ class CRUDUser:
         return user.role == UserRole.SUPER_ADMIN
 
 
+# ------------------------------------------------------------------
+# CRUD Role
+# ------------------------------------------------------------------
 class CRUDRole:
     def get(self, db: Session, id: int) -> Optional[Role]:
         return db.query(Role).filter(Role.id == id).first()
@@ -92,15 +105,15 @@ class CRUDRole:
         return db.query(Role).offset(skip).limit(limit).all()
 
     def create(self, db: Session, obj_in: RoleCreate) -> Role:
-        db_obj = Role(
+        db_role = Role(
             name=obj_in.name,
             description=obj_in.description,
             permissions=obj_in.permissions,
         )
-        db.add(db_obj)
+        db.add(db_role)
         db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        db.refresh(db_role)
+        return db_role
 
     def update(self, db: Session, db_obj: Role, obj_in: RoleUpdate) -> Role:
         update_data = obj_in.dict(exclude_unset=True)
@@ -111,11 +124,15 @@ class CRUDRole:
         return db_obj
 
     def delete(self, db: Session, id: int) -> Role:
-        obj = db.query(Role).get(id)
-        db.delete(obj)
-        db.commit()
+        obj = self.get(db, id)
+        if obj:
+            db.delete(obj)
+            db.commit()
         return obj
 
 
+# ------------------------------------------------------------------
+# Export instances
+# ------------------------------------------------------------------
 user = CRUDUser()
 role = CRUDRole()

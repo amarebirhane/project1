@@ -1,4 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean, Enum
+# app/models/report.py
+from sqlalchemy import (
+    Column, Integer, String, DateTime, ForeignKey,
+    Text, Boolean, Enum as SAEnum
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
@@ -29,9 +33,9 @@ class Report(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text)
-    type = Column(Enum(ReportType), nullable=False)
-    status = Column(Enum(ReportStatus), default=ReportStatus.GENERATING)
-    parameters = Column(Text)  # JSON string of report parameters
+    type = Column(SAEnum(ReportType), nullable=False)
+    status = Column(SAEnum(ReportStatus), default=ReportStatus.GENERATING)
+    parameters = Column(Text)  # JSON string
     file_url = Column(String, nullable=True)
     file_size = Column(Integer, nullable=True)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -42,6 +46,17 @@ class Report(Base):
     is_public = Column(Boolean, default=False)
     download_count = Column(Integer, default=0)
 
-    # Relationships
-    created_by_user = relationship("User", back_populates="created_reports")
-    schedules = relationship("ReportSchedule", back_populates="report")
+    # -----------------------------------------------------------------
+    # RELATIONSHIPS – EXPLICIT foreign_keys + back_populates
+    # -----------------------------------------------------------------
+    created_by_user = relationship(
+        "User",
+        foreign_keys=[created_by_id],
+        back_populates="created_reports"
+    )
+
+    schedules = relationship(
+        "ReportSchedule",
+        back_populates="report",
+        cascade="all, delete-orphan"
+    )

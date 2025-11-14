@@ -182,3 +182,94 @@
 2025-11-13 17:38:55,329 - app.main - INFO - Response: 200 in 0.0368s
 2025-11-13 17:38:59,875 - app.main - INFO - Request: GET http://127.0.0.1:8000/openapi.json
 2025-11-13 17:39:01,028 - app.main - INFO - Response: 200 in 1.1531s
+2025-11-13 19:17:44,294 - app.main - INFO - Celery configured successfully
+2025-11-13 19:17:46,174 - app.main - INFO - Starting Finance Management System Backend
+2025-11-13 19:17:52,846 - app.main - INFO - Database tables created successfully
+2025-11-13 19:17:53,292 - app.main - INFO - Directory uploads created/verified
+2025-11-13 19:17:53,646 - app.main - INFO - Directory reports created/verified
+2025-11-13 19:17:54,280 - app.main - INFO - Directory backups created/verified
+2025-11-13 19:17:55,012 - app.main - INFO - Directory logs created/verified
+2025-11-13 19:21:58,907 - app.main - INFO - Request: GET http://127.0.0.1:8000/docs
+2025-11-13 19:21:59,195 - app.main - INFO - Response: 200 in 0.2893s
+2025-11-13 19:22:30,726 - app.main - INFO - Request: GET http://127.0.0.1:8000/openapi.json
+2025-11-13 19:22:33,207 - app.main - INFO - Response: 200 in 2.4811s
+2025-11-14 08:15:08,804 - app.main - INFO - Celery configured successfully
+2025-11-14 08:15:09,495 - app.main - INFO - Starting Finance Management System Backend
+2025-11-14 08:15:14,236 - app.main - INFO - Database tables created successfully
+2025-11-14 08:15:14,256 - app.main - INFO - Directory uploads created/verified
+2025-11-14 08:15:14,262 - app.main - INFO - Directory reports created/verified
+2025-11-14 08:15:14,265 - app.main - INFO - Directory backups created/verified
+2025-11-14 08:15:14,315 - app.main - INFO - Directory logs created/verified
+2025-11-14 08:17:05,276 - app.main - INFO - Request: GET http://127.0.0.1:8000/docs
+2025-11-14 08:17:05,368 - app.main - INFO - Response: 200 in 0.0915s
+2025-11-14 08:17:16,887 - app.main - INFO - Request: GET http://127.0.0.1:8000/openapi.json
+2025-11-14 08:17:17,802 - app.main - INFO - Response: 200 in 0.9143s
+2025-11-14 08:27:04,376 - app.main - INFO - Shutting down Finance Management System Backend
+2025-11-14 08:31:40,137 - app.main - INFO - Celery configured successfully
+2025-11-14 08:40:13,701 - app.main - INFO - Celery configured successfully
+2025-11-14 08:52:05,364 - app.main - INFO - Celery configured successfully
+2025-11-14 08:59:18,369 - app.main - INFO - Celery configured successfully
+2025-11-14 09:02:44,130 - app.main - INFO - Celery configured successfully
+2025-11-14 09:03:04,848 - app.main - INFO - Celery configured successfully
+2025-11-14 09:06:21,795 - app.main - INFO - Celery configured successfully
+2025-11-14 09:12:42,192 - app.main - INFO - Celery configured successfully
+2025-11-14 09:33:35,561 - app.main - INFO - Celery configured successfully
+2025-11-14 09:43:08,262 - app.main - INFO - Celery configured successfully
+2025-11-14 09:46:15,002 - app.main - INFO - Celery configured successfully
+2025-11-14 09:51:26,709 - app.main - INFO - Celery configured successfully
+2025-11-14 09:58:28,420 - app.main - INFO - Celery configured successfully
+2025-11-14 09:58:29,786 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\Amare\AppData\Local\Programs\Python\Python312\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-11-14 10:06:20,113 - app.main - INFO - Celery configured successfully
+2025-11-14 10:06:21,200 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "C:\Users\Amare\AppData\Local\Programs\Python\Python312\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-11-14 10:13:33,066 - app.main - INFO - Celery configured successfully
+2025-11-14 10:17:43,903 - app.main - INFO - Celery configured successfully
+2025-11-14 10:17:50,187 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 10:17:50,193 - app.main - INFO - Response: 404 in 0.0050s
+2025-11-14 10:17:50,221 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 10:43:31,520 - app.main - INFO - Celery configured successfully
+2025-11-14 10:43:36,239 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 10:43:36,245 - app.main - INFO - Response: 404 in 0.0060s
+2025-11-14 10:43:36,255 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 10:48:33,414 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 10:48:33,432 - app.main - INFO - Response: 404 in 0.0170s
+2025-11-14 10:48:33,455 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 11:05:11,384 - app.main - INFO - Celery configured successfully
+2025-11-14 11:05:16,722 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 11:05:16,866 - app.main - INFO - Response: 404 in 0.1300s
+2025-11-14 11:05:16,914 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 11:08:13,623 - app.main - INFO - Celery configured successfully
+2025-11-14 11:08:19,448 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 11:08:19,482 - app.main - INFO - Response: 404 in 0.0332s
+2025-11-14 11:08:19,515 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 11:15:27,690 - app.main - INFO - Celery configured successfully
+2025-11-14 11:15:33,555 - app.main - INFO - Request: POST http://testserver/api/v1/auth
+2025-11-14 11:15:33,562 - app.main - INFO - Response: 404 in 0.0080s
+2025-11-14 11:15:33,610 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth "HTTP/1.1 404 Not Found"
+2025-11-14 11:19:00,053 - app.main - INFO - Celery configured successfully
+2025-11-14 11:19:06,408 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 11:19:06,418 - app.main - INFO - Response: 404 in 0.0110s
+2025-11-14 11:19:06,452 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 404 Not Found"
+2025-11-14 11:25:53,026 - app.main - INFO - Celery configured successfully
+2025-11-14 11:25:59,920 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 11:26:01,071 - app.main - INFO - Response: 200 in 1.1502s
+2025-11-14 11:26:01,086 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-14 11:26:01,111 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-14 11:26:01,297 - app.main - INFO - Response: 422 in 0.1858s
+2025-11-14 11:26:01,297 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 422 Unprocessable Entity"
+2025-11-14 11:35:29,339 - app.main - INFO - Celery configured successfully
+2025-11-14 11:35:34,358 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-14 11:35:34,975 - app.main - INFO - Response: 200 in 0.6176s
+2025-11-14 11:35:34,983 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-14 11:35:35,008 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-14 11:35:35,115 - app.main - INFO - Response: 422 in 0.1071s
+2025-11-14 11:35:35,122 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 422 Unprocessable Entity"
