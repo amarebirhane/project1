@@ -70,41 +70,88 @@ logger = logging.getLogger(__name__)
 security = HTTPBearer()
 
 
+# Helper: create default admin (now runs inside lifespan)
+# ------------------------------------------------------------------
+def create_default_admin():
+    """Create a default admin user if none exists."""
+    db = SessionLocal()
+    try:
+        admin_email = "admin@expense.com"
+        admin_username = "admin"
+        admin_password = "admin1234"          # 8+ chars
+
+        existing = (
+            db.query(User)
+            .filter((User.email == admin_email) | (User.username == admin_username))
+            .first()
+        )
+        if existing:
+            logger.info(f"Default admin already exists: {admin_email}")
+            return
+
+        user_in = UserCreate(
+            email=admin_email,
+            username=admin_username,
+            password=admin_password,
+            full_name="Default Administrator",
+            role=UserRole.ADMIN,
+        )
+        hashed = get_password_hash(user_in.password)
+
+        db_user = User(
+            email=user_in.email,
+            username=user_in.username,
+            hashed_password=hashed,
+            full_name=user_in.full_name,
+            role=user_in.role,
+            is_active=True,
+            is_verified=True,
+        )
+        db.add(db_user)
+        db.commit()
+        logger.info(f"Default admin created: {admin_email} / {admin_password}")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to create default admin: {e}")
+    finally:
+        db.close()
+
+
+# ------------------------------------------------------------------
+# Lifespan (startup + shutdown)
+# ------------------------------------------------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan events"""
-    # Startup
+    # -------------------- STARTUP --------------------
     logger.info("Starting Finance Management System Backend")
-    
-    # Create database tables
+
+    # 1. Create DB tables
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
     except Exception as e:
-        logger.error(f"Failed to create database tables: {str(e)}")
-    
-    # Create necessary directories
-    directories = [
-        "uploads",
-        "reports", 
-        "backups",
-        "logs"
-    ]
-    
-    for directory in directories:
+        logger.error(f"Failed to create database tables: {e}")
+
+    # 2. Ensure required directories
+    for directory in ("uploads", "reports", "backups", "logs"):
         try:
             os.makedirs(directory, exist_ok=True)
             logger.info(f"Directory {directory} created/verified")
         except Exception as e:
-            logger.error(f"Failed to create directory {directory}: {str(e)}")
-    
+            logger.error(f"Failed to create directory {directory}: {e}")
+
+    # 3. **Create default admin** (replaces @app.on_event)
+    create_default_admin()
+
     yield
-    
-    # Shutdown
+
+    # -------------------- SHUTDOWN --------------------
     logger.info("Shutting down Finance Management System Backend")
 
 
-# Create FastAPI application
+# ------------------------------------------------------------------
+# FastAPI app
+# ------------------------------------------------------------------
 app = FastAPI(
     title=settings.APP_NAME,
     description="A comprehensive finance management system with role-based access control",
@@ -112,7 +159,7 @@ app = FastAPI(
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
     openapi_url="/openapi.json" if settings.DEBUG else None,
-    lifespan=lifespan
+    lifespan=lifespan,                     # <-- new way
 )
 
 # Add CORS middleware
@@ -293,53 +340,6 @@ async def api_info():
         }
     }
 
-
-@app.on_event("startup")
-def create_default_admin():
-    db = SessionLocal()
-    try:
-        admin_email = "admin@expense.com"
-        admin_username = "admin"
-        admin_password = "admin1234"  # 8+ chars
-
-        # Check by email OR username
-        existing = (
-            db.query(User)
-            .filter(
-                (User.email == admin_email) | (User.username == admin_username)
-            )
-            .first()
-        )
-        if existing:
-            print(f"Default admin already exists: {admin_email}")
-            return
-
-        # Create admin
-        user_in = UserCreate(
-            email=admin_email,
-            username=admin_username,
-            password=admin_password,
-            full_name="Default Administrator",
-            role=UserRole.ADMIN
-        )
-        hashed = get_password_hash(user_in.password)
-        db_user = User(
-            email=user_in.email,
-            username=user_in.username,
-            hashed_password=hashed,
-            full_name=user_in.full_name,
-            role=user_in.role,
-            is_active=True,
-            is_verified=True
-        )
-        db.add(db_user)
-        db.commit()
-        print(f"Default admin created: {admin_email} / {admin_password}")
-    except Exception as e:
-        db.rollback()
-        print(f"Failed to create default admin: {e}")
-    finally:
-        db.close()
 
 # Celery configuration (for background tasks)
 celery_app = None

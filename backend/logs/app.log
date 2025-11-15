@@ -415,3 +415,141 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2025-11-14 20:01:24,411 - app.main - INFO - Directory reports created/verified
 2025-11-14 20:01:24,415 - app.main - INFO - Directory backups created/verified
 2025-11-14 20:01:24,418 - app.main - INFO - Directory logs created/verified
+2025-11-15 09:20:38,378 - app.main - INFO - Celery configured successfully
+2025-11-15 09:20:53,813 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:20:58,196 - app.main - INFO - Response: 200 in 4.3828s
+2025-11-15 09:20:58,491 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:20:58,773 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 09:20:59,758 - app.main - INFO - Response: 201 in 0.9855s
+2025-11-15 09:20:59,758 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 201 Created"
+2025-11-15 09:20:59,774 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:21:00,430 - app.main - INFO - Response: 200 in 0.6561s
+2025-11-15 09:21:00,445 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:21:00,485 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 09:21:01,211 - app.main - INFO - Response: 201 in 0.7259s
+2025-11-15 09:21:01,211 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 09:21:01,242 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 09:21:02,165 - app.main - INFO - Response: 201 in 0.9225s
+2025-11-15 09:21:02,191 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 09:21:02,216 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:21:03,043 - app.main - INFO - Response: 200 in 0.8269s
+2025-11-15 09:21:03,052 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:21:03,066 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 09:21:03,100 - app.main - WARNING - HTTP Exception: 403 - Not enough permissions
+2025-11-15 09:21:03,103 - app.main - INFO - Response: 403 in 0.0380s
+2025-11-15 09:21:03,111 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 403 Forbidden"
+2025-11-15 09:24:08,414 - app.main - INFO - Celery configured successfully
+2025-11-15 09:24:08,622 - app.main - INFO - Starting Finance Management System Backend
+2025-11-15 09:24:08,862 - app.main - INFO - Database tables created successfully
+2025-11-15 09:24:08,868 - app.main - INFO - Directory uploads created/verified
+2025-11-15 09:24:08,902 - app.main - INFO - Directory reports created/verified
+2025-11-15 09:24:08,912 - app.main - INFO - Directory backups created/verified
+2025-11-15 09:24:08,963 - app.main - INFO - Directory logs created/verified
+2025-11-15 09:28:29,131 - app.main - INFO - Request: POST http://127.0.0.1:8000/api/v1/auth/login-json
+2025-11-15 09:28:30,149 - app.main - WARNING - HTTP Exception: 401 - Incorrect username or password
+2025-11-15 09:28:30,149 - app.main - INFO - Response: 401 in 1.0186s
+2025-11-15 09:29:28,830 - app.main - INFO - Request: POST http://127.0.0.1:8000/api/v1/auth/login-json
+2025-11-15 09:29:28,863 - app.main - WARNING - HTTP Exception: 401 - Incorrect username or password
+2025-11-15 09:29:28,868 - app.main - INFO - Response: 401 in 0.0380s
+2025-11-15 09:29:47,213 - app.main - INFO - Request: POST http://127.0.0.1:8000/api/v1/auth/login-json
+2025-11-15 09:29:47,236 - app.main - WARNING - HTTP Exception: 401 - Incorrect username or password
+2025-11-15 09:29:47,243 - app.main - INFO - Response: 401 in 0.0298s
+2025-11-15 09:36:14,830 - app.main - INFO - Request: POST http://127.0.0.1:8000/api/v1/auth/login-json
+2025-11-15 09:36:14,844 - app.main - WARNING - HTTP Exception: 401 - Incorrect username or password
+2025-11-15 09:36:14,847 - app.main - INFO - Response: 401 in 0.0180s
+2025-11-15 09:36:33,968 - app.main - INFO - Request: GET http://127.0.0.1:8000/docs
+2025-11-15 09:36:35,014 - app.main - INFO - Request: GET http://127.0.0.1:8000/.well-known/appspecific/com.chrome.devtools.json
+2025-11-15 09:36:35,082 - app.main - INFO - Response: 200 in 1.1136s
+2025-11-15 09:36:35,730 - app.main - INFO - Response: 404 in 0.7145s
+2025-11-15 09:48:43,863 - app.main - INFO - Shutting down Finance Management System Backend
+2025-11-15 09:49:15,102 - app.main - INFO - Celery configured successfully
+2025-11-15 09:49:15,124 - app.main - INFO - Starting Finance Management System Backend
+2025-11-15 09:49:15,183 - app.main - INFO - Database tables created successfully
+2025-11-15 09:49:15,186 - app.main - INFO - Directory uploads created/verified
+2025-11-15 09:49:15,187 - app.main - INFO - Directory reports created/verified
+2025-11-15 09:49:15,190 - app.main - INFO - Directory backups created/verified
+2025-11-15 09:49:15,195 - app.main - INFO - Directory logs created/verified
+2025-11-15 09:52:38,971 - app.main - INFO - Celery configured successfully
+2025-11-15 09:52:47,750 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:52:48,623 - app.main - INFO - Response: 200 in 0.8737s
+2025-11-15 09:52:48,639 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:52:48,700 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 09:52:49,445 - app.main - INFO - Response: 201 in 0.7453s
+2025-11-15 09:52:49,461 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 201 Created"
+2025-11-15 09:52:49,485 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:52:50,139 - app.main - INFO - Response: 200 in 0.6545s
+2025-11-15 09:52:50,147 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:52:50,157 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 09:52:50,852 - app.main - INFO - Response: 201 in 0.6951s
+2025-11-15 09:52:50,862 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 09:52:50,902 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 09:52:51,617 - app.main - INFO - Response: 201 in 0.7164s
+2025-11-15 09:52:51,633 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 09:52:51,684 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 09:52:52,479 - app.main - INFO - Response: 200 in 0.7951s
+2025-11-15 09:52:52,487 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 09:52:52,498 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 09:52:52,518 - app.main - WARNING - HTTP Exception: 403 - Not enough permissions
+2025-11-15 09:52:52,526 - app.main - INFO - Response: 403 in 0.0278s
+2025-11-15 09:52:52,548 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 403 Forbidden"
+2025-11-15 09:53:24,974 - app.main - INFO - Celery configured successfully
+2025-11-15 09:53:24,993 - app.main - INFO - Starting Finance Management System Backend
+2025-11-15 09:53:25,053 - app.main - INFO - Database tables created successfully
+2025-11-15 09:53:25,068 - app.main - INFO - Directory uploads created/verified
+2025-11-15 09:53:25,072 - app.main - INFO - Directory reports created/verified
+2025-11-15 09:53:25,105 - app.main - INFO - Directory backups created/verified
+2025-11-15 09:53:25,120 - app.main - INFO - Directory logs created/verified
+2025-11-15 10:15:11,982 - app.main - INFO - Shutting down Finance Management System Backend
+2025-11-15 10:15:25,975 - app.main - INFO - Celery configured successfully
+2025-11-15 10:15:25,992 - app.main - INFO - Starting Finance Management System Backend
+2025-11-15 10:15:26,033 - app.main - INFO - Database tables created successfully
+2025-11-15 10:15:26,052 - app.main - INFO - Directory uploads created/verified
+2025-11-15 10:15:26,052 - app.main - INFO - Directory reports created/verified
+2025-11-15 10:15:26,072 - app.main - INFO - Directory backups created/verified
+2025-11-15 10:15:26,096 - app.main - INFO - Directory logs created/verified
+2025-11-15 14:50:15,177 - app.main - INFO - Celery configured successfully
+2025-11-15 14:50:43,939 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 14:50:48,026 - app.main - INFO - Response: 200 in 4.0874s
+2025-11-15 14:50:48,102 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 14:50:48,248 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 14:50:50,925 - app.main - INFO - Response: 201 in 2.6774s
+2025-11-15 14:50:50,966 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 201 Created"
+2025-11-15 14:50:52,632 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 14:50:54,065 - app.main - INFO - Response: 200 in 1.4331s
+2025-11-15 14:50:54,076 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 14:50:54,427 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 14:50:55,823 - app.main - INFO - Response: 201 in 1.3962s
+2025-11-15 14:50:55,840 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 14:50:56,551 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 14:50:58,256 - app.main - INFO - Response: 201 in 1.7049s
+2025-11-15 14:50:58,267 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 14:50:58,842 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 14:51:00,613 - app.main - INFO - Response: 200 in 1.7709s
+2025-11-15 14:51:00,625 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 14:51:00,648 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 14:51:00,767 - app.main - WARNING - HTTP Exception: 403 - Not enough permissions
+2025-11-15 14:51:00,771 - app.main - INFO - Response: 403 in 0.1229s
+2025-11-15 14:51:00,781 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 403 Forbidden"
+2025-11-15 15:05:22,627 - app.main - INFO - Celery configured successfully
+2025-11-15 15:05:41,056 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 15:05:43,696 - app.main - INFO - Response: 200 in 2.6400s
+2025-11-15 15:05:43,705 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 15:05:43,767 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 15:05:45,651 - app.main - INFO - Response: 201 in 1.8840s
+2025-11-15 15:05:45,659 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 201 Created"
+2025-11-15 15:05:45,669 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 15:05:46,374 - app.main - INFO - Response: 200 in 0.7055s
+2025-11-15 15:05:46,384 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 15:05:46,518 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 15:05:47,360 - app.main - INFO - Response: 201 in 0.8423s
+2025-11-15 15:05:47,371 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 15:05:47,404 - app.main - INFO - Request: POST http://testserver/api/v1/users/subordinates
+2025-11-15 15:05:50,275 - app.main - INFO - Response: 201 in 2.8712s
+2025-11-15 15:05:50,292 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/subordinates "HTTP/1.1 201 Created"
+2025-11-15 15:05:50,303 - app.main - INFO - Request: POST http://testserver/api/v1/auth/login
+2025-11-15 15:05:50,830 - app.main - INFO - Response: 200 in 0.5257s
+2025-11-15 15:05:50,839 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/auth/login "HTTP/1.1 200 OK"
+2025-11-15 15:05:50,875 - app.main - INFO - Request: POST http://testserver/api/v1/users/
+2025-11-15 15:05:50,985 - app.main - WARNING - HTTP Exception: 403 - Not enough permissions
+2025-11-15 15:05:50,998 - app.main - INFO - Response: 403 in 0.1229s
+2025-11-15 15:05:51,011 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 403 Forbidden"
