@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useAuth } from '@/lib/rbac';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast, Toaster } from 'sonner';
 import { LoginSchema, type LoginInput } from '@/lib/validation';
@@ -212,6 +214,7 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 export default function Login() {
+  const { login, error: authError, isLoading: authLoading, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

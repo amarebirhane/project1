@@ -408,3 +408,10 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2025-11-14 19:58:26,703 - app.main - WARNING - HTTP Exception: 403 - Not enough permissions
 2025-11-14 19:58:26,707 - app.main - INFO - Response: 403 in 0.0860s
 2025-11-14 19:58:26,714 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/users/ "HTTP/1.1 403 Forbidden"
+2025-11-14 20:01:24,291 - app.main - INFO - Celery configured successfully
+2025-11-14 20:01:24,340 - app.main - INFO - Starting Finance Management System Backend
+2025-11-14 20:01:24,405 - app.main - INFO - Database tables created successfully
+2025-11-14 20:01:24,408 - app.main - INFO - Directory uploads created/verified
+2025-11-14 20:01:24,411 - app.main - INFO - Directory reports created/verified
+2025-11-14 20:01:24,415 - app.main - INFO - Directory backups created/verified
+2025-11-14 20:01:24,418 - app.main - INFO - Directory logs created/verified

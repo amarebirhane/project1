@@ -1,8 +1,8 @@
 'use client';
 import React from 'react';
 import styled from 'styled-components';
-import { useAuth } from '/@/lib/rbac/auth-context';
-import { ComponentGate, ComponentId } from '/@/lib/rbac';
+import { useAuth } from '@/lib/rbac/auth-context';
+import { ComponentGate, ComponentId } from '@/lib/rbac';
 import { Users, DollarSign, TrendingUp, FileText, Shield, Calendar, CreditCard, Activity, Briefcase, UserCheck, ClipboardList, BarChart3, Wallet } from 'lucide-react';
 import Layout from '@/components/para';
 
