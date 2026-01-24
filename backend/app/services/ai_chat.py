@@ -5,8 +5,8 @@ class AIChatService:
     def __init__(self):
         if settings.GEMINI_API_KEY:
             genai.configure(api_key=settings.GEMINI_API_KEY)
-            # Using gemini-2.0-flash which is available in this environment
-            self.model = genai.GenerativeModel('gemini-2.0-flash')
+            # Using gemini-flash-latest which is confirmed in available_models.txt
+            self.model = genai.GenerativeModel('models/gemini-flash-latest')
         else:
             self.model = None
 

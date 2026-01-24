@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Bot, Sparkles, User, Loader2 } from "lucide-react";
 import { apiClient, ChatMessage } from "@/lib/api";
+import { useAuth } from "@/lib/rbac/auth-context";
 
 // --- Styled Components ---
 const WidgetContainer = styled.div`
@@ -98,19 +99,34 @@ const ChatArea = styled.div`
   background: ${props => props.theme.colors.background};
 `;
 
+const MessageContainer = styled.div<{ $role: 'user' | 'model' }>`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: ${props => props.$role === 'user' ? 'flex-end' : 'flex-start'};
+  max-width: 85%;
+`;
+
+const MessageAuthor = styled.span<{ $role: 'user' | 'model' }>`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.textSecondary};
+  margin-left: ${props => props.$role === 'model' ? '4px' : '0'};
+  margin-right: ${props => props.$role === 'user' ? '4px' : '0'};
+  text-align: ${props => props.$role === 'user' ? 'right' : 'left'};
+`;
+
 const MessageBubble = styled.div<{ $role: 'user' | 'model' }>`
-  max-width: 80%;
   padding: 12px 16px;
   border-radius: 12px;
   font-size: 0.95rem;
   line-height: 1.5;
-  align-self: ${props => props.$role === 'user' ? 'flex-end' : 'flex-start'};
   background: ${props => props.$role === 'user'
-        ? '#2563eb'
-        : props.theme.colors.backgroundSecondary};
+    ? '#2563eb'
+    : props.theme.colors.backgroundSecondary};
   color: ${props => props.$role === 'user'
-        ? 'white'
-        : props.theme.colors.textDark};
+    ? 'white'
+    : props.theme.colors.textDark};
   border-bottom-right-radius: ${props => props.$role === 'user' ? '4px' : '12px'};
   border-bottom-left-radius: ${props => props.$role === 'model' ? '4px' : '12px'};
 `;
@@ -189,114 +205,120 @@ const TypingIndicator = styled.div`
 `;
 
 export default function AIChatWidget() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [message, setMessage] = useState("");
-    const [history, setHistory] = useState<ChatMessage[]>([]);
-    const [loading, setLoading] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [history, setHistory] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [history, isOpen]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [history, isOpen]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!message.trim() || loading) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || loading) return;
 
-        const userMsg: ChatMessage = { role: 'user', content: message };
-        setHistory(prev => [...prev, userMsg]);
-        setMessage("");
-        setLoading(true);
+    const userMsg: ChatMessage = { role: 'user', content: message };
+    setHistory(prev => [...prev, userMsg]);
+    setMessage("");
+    setLoading(true);
 
-        try {
-            // Pass full history including the new message
-            const response = await apiClient.chatWithAI({
-                message: userMsg.content,
-                history: history // Pass previous history
-            });
+    try {
+      // Pass full history including the new message
+      const response = await apiClient.chatWithAI({
+        message: userMsg.content,
+        history: history // Pass previous history
+      });
 
-            const aiMsg: ChatMessage = { role: 'model', content: response.data.response };
-            setHistory(prev => [...prev, aiMsg]);
-        } catch (error) {
-            console.error("Chat error:", error);
-            const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
-            setHistory(prev => [...prev, errorMsg]);
-        } finally {
-            setLoading(false);
-        }
-    };
+      const aiMsg: ChatMessage = { role: 'model', content: response.data.response };
+      setHistory(prev => [...prev, aiMsg]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
+      setHistory(prev => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <WidgetContainer>
-            <AnimatePresence>
-                {isOpen && (
-                    <PopupCard
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <Header>
-                            <h3>
-                                <Sparkles size={18} fill="#fbbf24" stroke="#d97706" />
-                                AI Assistant
-                            </h3>
-                            <CloseButton onClick={() => setIsOpen(false)}>
-                                <X size={20} />
-                            </CloseButton>
-                        </Header>
+  return (
+    <WidgetContainer>
+      <AnimatePresence>
+        {isOpen && (
+          <PopupCard
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Header>
+              <h3>
+                <Sparkles size={18} fill="#fbbf24" stroke="#d97706" />
+                AI Assistant
+              </h3>
+              <CloseButton onClick={() => setIsOpen(false)}>
+                <X size={20} />
+              </CloseButton>
+            </Header>
 
-                        <ChatArea>
-                            {history.length === 0 && (
-                                <div style={{ textAlign: 'center', color: '#6b7280', marginTop: '40px' }}>
-                                    <Bot size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                                    <p>How can I help you with your finances today?</p>
-                                </div>
-                            )}
+            <ChatArea>
+              {history.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#6b7280', marginTop: '40px' }}>
+                  <Bot size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                  <p>How can I help you with your finances today, {user?.username || 'User'}?</p>
+                </div>
+              )}
 
-                            {history.map((msg, i) => (
-                                <MessageBubble key={i} $role={msg.role}>
-                                    {msg.content}
-                                </MessageBubble>
-                            ))}
+              {history.map((msg, i) => (
+                <MessageContainer key={i} $role={msg.role}>
+                  <MessageAuthor $role={msg.role}>
+                    {msg.role === 'user' ? (user?.full_name || user?.username || 'You') : 'AI Assistant'}
+                  </MessageAuthor>
+                  <MessageBubble $role={msg.role}>
+                    {msg.content}
+                  </MessageBubble>
+                </MessageContainer>
+              ))}
 
-                            {loading && (
-                                <TypingIndicator>
-                                    <span />
-                                    <span />
-                                    <span />
-                                </TypingIndicator>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </ChatArea>
+              {loading && (
+                <TypingIndicator>
+                  <span />
+                  <span />
+                  <span />
+                </TypingIndicator>
+              )}
+              <div ref={messagesEndRef} />
+            </ChatArea>
 
-                        <InputArea onSubmit={handleSubmit}>
-                            <Input
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                placeholder="Ask anything..."
-                                disabled={loading}
-                            />
-                            <SendButton type="submit" disabled={!message.trim() || loading}>
-                                {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-                            </SendButton>
-                        </InputArea>
-                    </PopupCard>
-                )}
-            </AnimatePresence>
+            <InputArea onSubmit={handleSubmit}>
+              <Input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Ask anything..."
+                disabled={loading}
+              />
+              <SendButton type="submit" disabled={!message.trim() || loading}>
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              </SendButton>
+            </InputArea>
+          </PopupCard>
+        )}
+      </AnimatePresence>
 
-            <FloatingButton
-                onClick={() => setIsOpen(!isOpen)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                animate={{ rotate: isOpen ? 45 : 0 }}
-            >
-                {isOpen ? <X size={24} /> : <Bot size={28} />}
-            </FloatingButton>
-        </WidgetContainer>
-    );
+      <FloatingButton
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        animate={{ rotate: isOpen ? 45 : 0 }}
+      >
+        {isOpen ? <X size={24} /> : <Bot size={28} />}
+      </FloatingButton>
+    </WidgetContainer>
+  );
 }
