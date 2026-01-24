@@ -83,3 +83,18 @@ def depreciate_fixed_asset(
             detail="Asset cannot be depreciated (already fully depreciated or inactive)"
         )
     return log
+
+@router.delete("/{asset_id}", response_model=schemas.FixedAsset)
+def delete_fixed_asset(
+    *,
+    db: Session = Depends(get_db),
+    asset_id: int,
+    current_user: User = Depends(deps.require_min_role(UserRole.ADMIN))
+):
+    """
+    Delete a fixed asset. Only Admin.
+    """
+    asset = crud.get(db, id=asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Fixed asset not found")
+    return crud.remove(db, id=asset_id)

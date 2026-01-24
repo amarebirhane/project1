@@ -1051,7 +1051,7 @@ const Sidebar: React.FC = () => {
                         )}
 
                         {/* 2. Accountants (Create, List) */}
-                        {!isAdmin && (
+                        {isAdmin && (
                             <ComponentGate componentId={ComponentId.SIDEBAR_ACCOUNTANTS}>
                                 <>
                                     <DropdownHeader
@@ -1097,7 +1097,7 @@ const Sidebar: React.FC = () => {
                         )}
 
                         {/* 3. Employees (Create, List) */}
-                        {!isAdmin && (
+                        {isAdmin && (
                             <ComponentGate componentId={ComponentId.SIDEBAR_EMPLOYEES}>
                                 <>
                                     <DropdownHeader

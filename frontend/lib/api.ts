@@ -2012,6 +2012,14 @@ class ApiClient {
     return this.post<any>('/fixed-assets/', data);
   }
 
+  async updateFixedAsset(id: number, data: any) {
+    return this.put<any>(`/fixed-assets/${id}`, data);
+  }
+
+  async deleteFixedAsset(id: number) {
+    return this.delete<any>(`/fixed-assets/${id}`);
+  }
+
   async depreciateFixedAsset(id: number) {
     return this.post<any>(`/fixed-assets/${id}/depreciate`);
   }
