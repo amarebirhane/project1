@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import styled, { css, keyframes } from "styled-components";
 import {
     Plus,
@@ -334,7 +334,8 @@ interface Account {
     is_system_account: boolean;
 }
 
-export default function ChartOfAccountsPage() {
+// Sub-component to handle page content
+function ChartOfAccountsPageContent() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
@@ -587,5 +588,13 @@ export default function ChartOfAccountsPage() {
                 )}
             </AnimatePresence>
         </Layout>
+    );
+}
+
+export default function ChartOfAccountsPage() {
+    return (
+        <Suspense fallback={<div>Loading Chart of Accounts...</div>}>
+            <ChartOfAccountsPageContent />
+        </Suspense>
     );
 }

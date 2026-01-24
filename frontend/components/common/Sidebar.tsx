@@ -8,7 +8,8 @@ import {
     Home, ArrowDownCircle, ArrowUpCircle, Receipt, PieChart, Building, Briefcase, Users,
     UserCog, Settings, ChevronDown, Wallet, Shield, UserPlus, List, Calculator,
     DollarSign, Plus, FileText, TrendingUp, GitCompare, BarChart3, Package, ShoppingCart, BookOpen,
-    Key, ChevronLeft, ChevronRight, Brain, Activity, Bell, Database, History, LockKeyhole, Network, Landmark
+    Key, ChevronLeft, ChevronRight, Brain, Activity, Bell, Database, History, LockKeyhole, Network, Landmark,
+    Coins, BookText, Banknote, CirclePercent
 } from 'lucide-react';
 import { ComponentGate, ComponentId } from '@/lib/rbac';
 import { useAuthorization } from '@/lib/rbac/use-authorization';
@@ -194,6 +195,10 @@ const getIconColor = (iconType: string, active: boolean): string => {
             'lockKeyhole': '#8b5cf6',     // Purple
             'network': '#3b82f6',         // Blue
             'banking': '#10b981',         // Green
+            'coins': '#f59e0b',           // Amber
+            'book-text': '#3b82f6',       // Blue
+            'banknote': '#8b5cf6',        // Purple
+            'file-percent': '#ef4444',    // Red
         };
         return activeColors[iconType] || theme.colors.primary;
     } else {
@@ -229,6 +234,10 @@ const getIconColor = (iconType: string, active: boolean): string => {
             'lockKeyhole': '#a78bfa',     // Light Purple
             'network': '#60a5fa',         // Light Blue
             'banking': '#34d399',         // Light Green
+            'coins': '#fbbf24',           // Light Amber
+            'book-text': '#60a5fa',       // Light Blue
+            'banknote': '#a78bfa',        // Light Purple
+            'file-percent': '#f87171',    // Light Red
         };
         return inactiveColors[iconType] || theme.colors.textSecondary;
     }
@@ -698,6 +707,62 @@ const Sidebar: React.FC = () => {
                                         <Building />
                                     </NavIcon>
                                     {!collapsed && 'AI Accounts'}
+                                </NavItem>
+                            </SubMenu>
+                        )}
+                    </>
+                )}
+
+                {/* Collections Dropdown */}
+                {(isAdmin || isFinanceAdmin || isAccountant) && (
+                    <>
+                        <DropdownHeader
+                            onClick={() => toggleSection('collections')}
+                            $open={isOpen('collections')}
+                            $active={pathname.includes('/accounting/currencies') || pathname.includes('/accounting/fixed-assets') || pathname.includes('/accounting/journal-entries') || pathname.includes('/accounting/payroll') || pathname.includes('/accounting/taxes')}
+                            $collapsed={collapsed}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <DropdownIcon $active={isOpen('collections')} $collapsed={collapsed} $iconType="list">
+                                    <List />
+                                </DropdownIcon>
+                                {!collapsed && <span style={{ marginLeft: '12px' }}>Collections</span>}
+                            </div>
+                            <ChevronIcon $open={isOpen('collections')}>
+                                <ChevronDown />
+                            </ChevronIcon>
+                        </DropdownHeader>
+                        {isOpen('collections') && (
+                            <SubMenu $collapsed={collapsed}>
+                                <NavItem href="/accounting/currencies" $active={pathname === '/accounting/currencies'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/currencies'} $collapsed={collapsed} $size={16} $iconType="coins">
+                                        <Coins />
+                                    </NavIcon>
+                                    {!collapsed && 'Currencies'}
+                                </NavItem>
+                                <NavItem href="/accounting/fixed-assets" $active={pathname === '/accounting/fixed-assets'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/fixed-assets'} $collapsed={collapsed} $size={16} $iconType="banking">
+                                        <Landmark />
+                                    </NavIcon>
+                                    {!collapsed && 'Fixed Assets'}
+                                </NavItem>
+                                <NavItem href="/accounting/journal-entries" $active={pathname === '/accounting/journal-entries'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/journal-entries'} $collapsed={collapsed} $size={16} $iconType="book-text">
+                                        <BookText />
+                                    </NavIcon>
+                                    {!collapsed && 'Journal Entries'}
+                                </NavItem>
+                                <NavItem href="/accounting/payroll" $active={pathname === '/accounting/payroll'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/payroll'} $collapsed={collapsed} $size={16} $iconType="banknote">
+                                        <Banknote />
+                                    </NavIcon>
+                                    {!collapsed && 'Payroll'}
+                                </NavItem>
+                                <NavItem href="/accounting/taxes" $active={pathname === '/accounting/taxes'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/taxes'} $collapsed={collapsed} $size={16} $iconType="file-percent">
+                                        <CirclePercent />
+                                    </NavIcon>
+                                    {!collapsed && 'Taxes'}
                                 </NavItem>
                             </SubMenu>
                         )}
@@ -1185,12 +1250,12 @@ const Sidebar: React.FC = () => {
                                                     {!collapsed && 'Notifications'}
                                                 </NavItem>
 
-                                                {/* <NavItem href="/settings/logs" $active={pathname === '/settings/logs'} $collapsed={collapsed}>
+                                                <NavItem href="/settings/logs" $active={pathname === '/settings/logs'} $collapsed={collapsed}>
                                                     <NavIcon $active={pathname === '/settings/logs'} $collapsed={collapsed} $size={16} $iconType="list">
                                                         <List />
                                                     </NavIcon>
                                                     {!collapsed && 'Audit Logs'}
-                                                </NavItem> */}
+                                                </NavItem>
                                                 <NavItem href="/settings/ipmanagement" $active={pathname === '/settings/ipmanagement'} $collapsed={collapsed}>
                                                     <NavIcon $active={pathname === '/settings/ipmanagement'} $collapsed={collapsed} $size={16} $iconType="network">
                                                         <Network />
