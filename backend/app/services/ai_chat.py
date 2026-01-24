@@ -90,7 +90,18 @@ class AIChatService:
             response = chat.send_message(prompt_parts)
             return response.text
         except Exception as e:
-            print(f"Error generating AI response: {e}")
-            return f"I apologize, but I encountered an error: {str(e)}"
+            error_msg = str(e)
+            print(f"Error generating AI response: {error_msg}")
+            
+            if "429" in error_msg or "quota" in error_msg.lower():
+                import re
+                # Try to extract "retry in X.Xs"
+                match = re.search(r"retry in (\d+\.?\d*)s", error_msg)
+                if match:
+                    seconds = float(match.group(1))
+                    return f"The AI Assistant is resting. Please try again in {int(seconds)} seconds."
+                return "The AI Assistant is currently receiving many requests. Please wait a moment before trying again."
+                
+            return f"I apologize, but I encountered an error: {error_msg}"
 
 ai_chat_service = AIChatService()

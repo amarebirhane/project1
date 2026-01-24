@@ -176,6 +176,14 @@ const MessageBubble = styled(motion.div) <{ $role: 'user' | 'model' }>`
   }
 `;
 
+const BubbleImage = styled.img`
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: block;
+`;
+
 const InputArea = styled.form`
   padding: 16px;
   border-top: 1px solid ${props => props.theme.colors.border};
@@ -311,6 +319,7 @@ export default function AIChatWidget() {
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -375,23 +384,46 @@ export default function AIChatWidget() {
     setSelectedImage(null);
     setLoading(true);
 
-    try {
-      const response = await apiClient.chatWithAI({
-        message: userMsg.content,
-        history: history, // Send current state history 
-        current_page: pathname,
-        image_data: userMsg.image_data
-      });
+    const attemptChat = async (retryCount = 0): Promise<void> => {
+      try {
+        const response = await apiClient.chatWithAI({
+          message: userMsg.content,
+          history: history,
+          current_page: pathname,
+          image_data: userMsg.image_data
+        });
 
-      const aiMsg: ChatMessage = { role: 'model', content: response.data.response };
-      setHistory(prev => [...prev, aiMsg]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
-      setHistory(prev => [...prev, errorMsg]);
-    } finally {
-      setLoading(false);
-    }
+        const content = response.data.response;
+
+        // Handle the "friendly" rate limit message from backend by retrying once
+        if (retryCount === 0 && (content.includes("wait a moment") || content.includes("many requests") || content.includes("try again in"))) {
+          let delay = 2000; // default 2s
+          const match = content.match(/try again in (\d+) seconds/);
+          if (match) {
+            const seconds = parseInt(match[1]);
+            delay = (seconds + 1) * 1000; // add 1s buffer and conv to ms
+            setRetryStatus(`Rate limit hit. Re-trying in ${seconds}s...`);
+          } else {
+            setRetryStatus("Wait a moment, retrying...");
+          }
+          await new Promise(resolve => setTimeout(resolve, delay));
+          setRetryStatus(null);
+          return attemptChat(retryCount + 1);
+        }
+
+        const aiMsg: ChatMessage = { role: 'model', content };
+        setHistory(prev => [...prev, aiMsg]);
+      } catch (error) {
+        console.error("Chat error:", error);
+        const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
+        setHistory(prev => [...prev, errorMsg]);
+      } finally {
+        setLoading(false);
+        setRetryStatus(null);
+      }
+    };
+
+    await attemptChat();
   };
 
   const clearHistory = () => {
@@ -478,20 +510,32 @@ export default function AIChatWidget() {
                     {msg.role === 'user' ? (user?.full_name || 'You') : 'AI Assistant'}
                   </MessageAuthor>
                   <MessageBubble $role={msg.role}>
+                    {msg.image_data && <BubbleImage src={msg.image_data} alt="Sent attachment" />}
                     {formatText(msg.content)}
                   </MessageBubble>
                 </MessageContainer>
               ))}
 
               {loading && (
-                <TypingIndicator
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} />
-                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} />
-                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} />
-                </TypingIndicator>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <TypingIndicator
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} />
+                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} />
+                    <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} />
+                  </TypingIndicator>
+                  {retryStatus && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      style={{ fontSize: '0.75rem', color: '#3b82f6', marginLeft: '4px', fontWeight: 500 }}
+                    >
+                      {retryStatus}
+                    </motion.div>
+                  )}
+                </div>
               )}
               <div ref={messagesEndRef} />
             </ChatArea>
