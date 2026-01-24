@@ -532,6 +532,11 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Serve static files (uploads)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+# Serve profile images at root /profile_images if needed (for backward compatibility)
+profile_images_dir = os.path.join("uploads", "profile_images")
+os.makedirs(profile_images_dir, exist_ok=True)
+app.mount("/profile_images", StaticFiles(directory=profile_images_dir), name="profile_images")
+
 # Include API routers
 api_v1_prefix = "/api/v1"
 
