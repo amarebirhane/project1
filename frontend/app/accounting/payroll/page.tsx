@@ -123,7 +123,7 @@ const ActionButtonGroup = styled.div`
 `;
 
 const HeaderButton = styled.button<{ $variant?: 'primary' | 'secondary' }>`
-  background: ${props => props.$variant === 'secondary' ? 'white' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'};
+  background: ${props => props.$variant === 'secondary' ? props.theme.colors.card : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'};
   color: ${props => props.$variant === 'secondary' ? props.theme.colors.textDark : 'white'};
   padding: 14px 28px;
   border-radius: 16px;
@@ -241,7 +241,7 @@ const SearchInputContainer = styled.div`
     color: ${props => props.theme.colors.textDark};
     transition: all 0.2s;
 
-    &:focus { outline: none; border-color: ${props => props.theme.colors.primary}; background: white; }
+    &:focus { outline: none; border-color: ${props => props.theme.colors.primary}; background: ${props => props.theme.colors.card}; }
   }
 
   svg { position: absolute; left: 16px; top: 12px; color: ${props => props.theme.colors.textSecondary}; }
@@ -254,13 +254,15 @@ const StatusBadge = styled.span<{ $status: string }>`
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
 
   ${props => (props.$status === 'active' || props.$status === 'approved' || props.$status === 'paid') ? css`
-    background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
+    background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);
   ` : (props.$status === 'draft' || props.$status === 'generated') ? css`
-    background: #fefce8; color: #854d0e; border: 1px solid #fef08a;
+    background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2);
   ` : css`
-    background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+    background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);
   `}
 `;
 
@@ -276,16 +278,29 @@ const ModernTable = styled.table`
     color: ${props => props.theme.colors.textSecondary};
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: #f8fafc;
+    background: ${props => props.theme.colors.backgroundSecondary};
   }
 
   td {
     padding: 20px 32px;
     border-bottom: 1px solid ${props => props.theme.colors.border};
     font-weight: 600;
+    color: ${props => props.theme.colors.textDark};
   }
 
   tr:last-child td { border-bottom: none; }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: ${props => props.theme.colors.textDark};
+`;
+
+const HelperText = styled.span`
+  color: ${props => props.theme.colors.textSecondary};
+  font-weight: 700;
+  font-size: 0.875rem;
 `;
 
 const ModalOverlay = styled(motion.div)`
@@ -301,25 +316,32 @@ const ModalOverlay = styled(motion.div)`
 `;
 
 const ModalContent = styled(motion.div)`
-  background: white;
+  background: ${props => props.theme.colors.card};
   width: 100%;
   max-width: 600px;
   border-radius: 32px;
   padding: 40px;
   position: relative;
+  border: 1px solid ${props => props.theme.colors.border};
 `;
 
 const FormGroup = styled.div`
   margin-bottom: 24px;
-  label { display: block; font-size: 0.875rem; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
+  label { display: block; font-size: 0.875rem; font-weight: 700; color: ${props => props.theme.colors.textDark}; margin-bottom: 8px; }
   input, select {
     width: 100%;
     padding: 14px 18px;
-    background: #f8fafc;
+    background: ${props => props.theme.colors.muted};
     border: 2px solid transparent;
     border-radius: 16px;
     font-weight: 600;
-    &:focus { outline: none; border-color: #2563eb; background: white; }
+    color: ${props => props.theme.colors.textDark};
+    &:focus { outline: none; border-color: ${props => props.theme.colors.primary}; background: ${props => props.theme.colors.card}; }
+  }
+
+  select option {
+    background: ${props => props.theme.colors.card};
+    color: ${props => props.theme.colors.textDark};
   }
 `;
 
@@ -514,7 +536,7 @@ export default function PayrollDashboard() {
                                 <PanelHeader>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <Clock style={{ color: '#2563eb' }} size={24} />
-                                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Draft/Processing Periods</h2>
+                                        <SectionTitle>Draft/Processing Periods</SectionTitle>
                                     </div>
                                 </PanelHeader>
                                 <ModernTable>
@@ -529,7 +551,7 @@ export default function PayrollDashboard() {
                                     </thead>
                                     <tbody>
                                         {periods.filter(p => p.status !== 'paid').length === 0 ? (
-                                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: '#64748b' }}>No active payroll cycles</td></tr>
+                                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: props => props.theme.colors.textSecondary }}>No active payroll cycles</td></tr>
                                         ) : (
                                             periods.filter(p => p.status !== 'paid').map(period => (
                                                 <tr key={period.id}>
@@ -580,7 +602,7 @@ export default function PayrollDashboard() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </SearchInputContainer>
-                                <div style={{ color: '#64748b', fontWeight: 700, fontSize: '0.875rem' }}>{filteredEmployees.length} Results Found</div>
+                                <HelperText>{filteredEmployees.length} Results Found</HelperText>
                             </PanelHeader>
                             <ModernTable>
                                 <thead>
@@ -599,12 +621,12 @@ export default function PayrollDashboard() {
                                             <td style={{ fontWeight: 800, color: '#1e293b' }}>{emp.employee_id}</td>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Briefcase size={16} style={{ color: '#64748b' }} />
+                                                    <Briefcase size={16} style={{ color: props => props.theme.colors.textSecondary }} />
                                                     {emp.job_title}
                                                 </div>
                                             </td>
                                             <td style={{ fontWeight: 800 }}>${emp.base_salary.toLocaleString()}</td>
-                                            <td style={{ color: '#64748b' }}>{new Date(emp.hire_date).toLocaleDateString()}</td>
+                                            <td style={{ color: props => props.theme.colors.textSecondary }}>{new Date(emp.hire_date).toLocaleDateString()}</td>
                                             <td><StatusBadge $status={emp.status}>{emp.status}</StatusBadge></td>
                                             <td>
                                                 <button style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>
@@ -621,7 +643,7 @@ export default function PayrollDashboard() {
                     {activeTab === "periods" && (
                         <GlassPanel initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                             <PanelHeader>
-                                <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Full Cycle History</h2>
+                                <SectionTitle>Full Cycle History</SectionTitle>
                             </PanelHeader>
                             <ModernTable>
                                 <thead>
@@ -637,7 +659,7 @@ export default function PayrollDashboard() {
                                     {periods.map((p) => (
                                         <tr key={p.id}>
                                             <td style={{ fontWeight: 800 }}>{p.name}</td>
-                                            <td style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                                            <td style={{ fontSize: '0.875rem', color: props => props.theme.colors.textSecondary }}>
                                                 {new Date(p.start_date).toLocaleDateString()} → {new Date(p.end_date).toLocaleDateString()}
                                             </td>
                                             <td style={{ fontWeight: 900 }}>${p.total_net.toLocaleString()}</td>
@@ -662,8 +684,8 @@ export default function PayrollDashboard() {
                     <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         <ModalContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Register New Employee</h2>
-                                <button onClick={() => setIsEmployeeModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                                <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>Register New Employee</SectionTitle>
+                                <button onClick={() => setIsEmployeeModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
                             </div>
                             <form onSubmit={handleRegisterEmployee}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -718,8 +740,8 @@ export default function PayrollDashboard() {
                     <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         <ModalContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>New Payroll Period</h2>
-                                <button onClick={() => setIsPeriodModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                                <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>New Payroll Period</SectionTitle>
+                                <button onClick={() => setIsPeriodModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
                             </div>
                             <form onSubmit={handleCreatePeriod}>
                                 <FormGroup>
@@ -756,10 +778,10 @@ export default function PayrollDashboard() {
                         <ModalContent style={{ maxWidth: '800px' }} initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
                                 <div>
-                                    <h2 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Review Payslips</h2>
-                                    <p style={{ color: '#64748b', fontWeight: 600 }}>{selectedPeriod?.name}</p>
+                                    <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>Review Payslips</SectionTitle>
+                                    <HelperText style={{ fontWeight: 600 }}>{selectedPeriod?.name}</HelperText>
                                 </div>
-                                <button onClick={() => setIsPayslipModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                                <button onClick={() => setIsPayslipModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
                             </div>
                             <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
                                 <ModernTable>
