@@ -170,6 +170,7 @@ export interface Feedback {
 export interface ChatMessage {
   role: 'user' | 'model';
   content: string;
+  image_data?: string; // Base64 encoded image
 }
 
 export interface ChatRequest {

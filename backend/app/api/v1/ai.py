@@ -91,6 +91,7 @@ async def chat_with_ai(
     response_text = await ai_chat_service.generate_response(
         request.message, 
         request.history,
-        current_page=request.current_page
+        current_page=request.current_page,
+        user_id=current_user.id
     )
     return {"response": response_text}

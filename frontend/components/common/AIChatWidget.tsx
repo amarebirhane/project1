@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Bot, Sparkles, User, Loader2 } from "lucide-react";
+import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon } from "lucide-react";
 import { apiClient, ChatMessage } from "@/lib/api";
 import { useAuth } from "@/lib/rbac/auth-context";
 
@@ -118,42 +118,134 @@ const MessageAuthor = styled.span<{ $role: 'user' | 'model' }>`
   text-align: ${props => props.$role === 'user' ? 'right' : 'left'};
 `;
 
-const MessageBubble = styled.div<{ $role: 'user' | 'model' }>`
+const ActionChipContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+const ActionChip = styled(motion.button)`
+  padding: 8px 16px;
+  background: ${props => props.theme.colors.background};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #2563eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+  }
+`;
+
+const MessageBubble = styled(motion.div) <{ $role: 'user' | 'model' }>`
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   background: ${props => props.$role === 'user'
-    ? '#2563eb'
+    ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
     : props.theme.colors.backgroundSecondary};
   color: ${props => props.$role === 'user'
     ? 'white'
     : props.theme.colors.textDark};
-  border-bottom-right-radius: ${props => props.$role === 'user' ? '4px' : '12px'};
-  border-bottom-left-radius: ${props => props.$role === 'model' ? '4px' : '12px'};
+  border-bottom-right-radius: ${props => props.$role === 'user' ? '4px' : '16px'};
+  border-bottom-left-radius: ${props => props.$role === 'model' ? '4px' : '16px'};
+
+  strong {
+    font-weight: 700;
+  }
+
+  code {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+  }
 `;
 
 const InputArea = styled.form`
   padding: 16px;
   border-top: 1px solid ${props => props.theme.colors.border};
   display: flex;
-  gap: 8px;
+  gap: 12px;
   background: ${props => props.theme.colors.card};
+  align-items: center;
+  position: relative;
+`;
+
+const ImagePreview = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: ${props => props.theme.colors.card};
+  border-top: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideUp 0.2s ease-out;
+
+  @keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+`;
+
+const PreviewThumbnail = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid ${props => props.theme.colors.border};
+  img { width: 100%; height: 100%; object-fit: cover; }
+`;
+
+const IconButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${props => props.theme.colors.textSecondary};
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.theme.colors.backgroundSecondary};
+    color: #2563eb;
+  }
 `;
 
 const Input = styled.input`
   flex: 1;
-  padding: 10px 14px;
-  border-radius: 20px;
+  padding: 12px 18px;
+  border-radius: 24px;
   border: 1px solid ${props => props.theme.colors.border};
   background: ${props => props.theme.colors.inputBg || props.theme.colors.background};
   color: ${props => props.theme.colors.textDark};
   font-size: 0.95rem;
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 `;
 
@@ -161,50 +253,56 @@ const SendButton = styled.button`
   background: #2563eb;
   color: white;
   border: none;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #1d4ed8;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
   }
 
   &:disabled {
     background: ${props => props.theme.colors.border};
+    color: ${props => props.theme.colors.textSecondary};
     cursor: not-allowed;
   }
 `;
 
-const TypingIndicator = styled.div`
+const TypingIndicator = styled(motion.div)`
   display: flex;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   background: ${props => props.theme.colors.backgroundSecondary};
   border-radius: 12px;
   align-self: flex-start;
   width: fit-content;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
 
   span {
     width: 6px;
     height: 6px;
-    background: #9ca3af;
+    background: #2563eb;
     border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
-  }
-
-  span:nth-child(1) { animation-delay: -0.32s; }
-  span:nth-child(2) { animation-delay: -0.16s; }
-
-  @keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
+    opacity: 0.6;
   }
 `;
+
+// Helper to format basic markdown-like syntax
+const formatText = (text: string) => {
+  // Bold: **text**
+  let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Simple code: `text`
+  formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+  return <span dangerouslySetInnerHTML={{ __html: formatted }} />;
+};
 
 export default function AIChatWidget() {
   const { user } = useAuth();
@@ -213,31 +311,76 @@ export default function AIChatWidget() {
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Load history from localStorage on mount
   useEffect(() => {
-    scrollToBottom();
+    const saved = localStorage.getItem("fms_ai_chat_history");
+    if (saved) {
+      try { setHistory(JSON.parse(saved)); } catch (e) { console.error(e); }
+    }
+  }, []);
+
+  // Save history to localStorage
+  useEffect(() => {
+    if (history.length > 0) {
+      localStorage.setItem("fms_ai_chat_history", JSON.stringify(history));
+    }
+  }, [history]);
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
   }, [history, isOpen]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() || loading) return;
+  const handleActionClick = (prompt: string) => {
+    handleSubmit(null, prompt);
+  };
 
-    const userMsg: ChatMessage = { role: 'user', content: message };
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit for Flash
+        alert("Image too large (max 10MB)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent | null, directMessage?: string) => {
+    if (e) e.preventDefault();
+    const finalMessage = directMessage || message;
+    if ((!finalMessage.trim() && !selectedImage) || loading) return;
+
+    const userMsg: ChatMessage = {
+      role: 'user',
+      content: finalMessage.trim() || (selectedImage ? "[Sent an image]" : ""),
+      image_data: selectedImage || undefined
+    };
+
     setHistory(prev => [...prev, userMsg]);
-    setMessage("");
+    if (!directMessage) setMessage("");
+    setSelectedImage(null);
     setLoading(true);
 
     try {
-      // Pass full history including the new message and current page context
       const response = await apiClient.chatWithAI({
         message: userMsg.content,
-        history: history, // Pass previous history
-        current_page: pathname
+        history: history, // Send current state history 
+        current_page: pathname,
+        image_data: userMsg.image_data
       });
 
       const aiMsg: ChatMessage = { role: 'model', content: response.data.response };
@@ -251,64 +394,147 @@ export default function AIChatWidget() {
     }
   };
 
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem("fms_ai_chat_history");
+  };
+
   return (
     <WidgetContainer>
       <AnimatePresence>
         {isOpen && (
           <PopupCard
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.92, y: 30, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, scale: 0.92, y: 30 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
           >
             <Header>
               <h3>
-                <Bot size={18} fill="#fbbf24" stroke="#d97706" />
-                Financial Management System AI Assistant
+                <Bot size={20} className="text-blue-500" />
+                <span style={{ letterSpacing: '-0.01em' }}>FMS Assistant</span>
               </h3>
-              <CloseButton onClick={() => setIsOpen(false)}>
-                <X size={20} />
-              </CloseButton>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {history.length > 0 && (
+                  <CloseButton onClick={clearHistory} title="Clear Chat history">
+                    <RotateCcw size={16} />
+                  </CloseButton>
+                )}
+                <CloseButton onClick={() => setIsOpen(false)}>
+                  <X size={20} />
+                </CloseButton>
+              </div>
             </Header>
 
             <ChatArea>
               {history.length === 0 && (
-                <div style={{ textAlign: 'center', color: '#6b7280', marginTop: '40px' }}>
-                  <Bot size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <p>How can I help you with your finances today, {user?.username || 'User'}?</p>
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ textAlign: 'center', color: '#6b7280', marginTop: '60px', padding: '0 20px' }}
+                >
+                  <div style={{ background: '#eff6ff', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                    <Bot size={32} color="#3b82f6" />
+                  </div>
+                  <h4 style={{ color: '#1f2937', marginBottom: '8px', fontSize: '1.1rem' }}>Welcome, {user?.username || 'User'}!</h4>
+                  <p style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>How can I assist you with the Financial Management System today?</p>
+
+                  <ActionChipContainer>
+                    <ActionChip
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleActionClick("What can I do on this page?")}
+                    >
+                      <Sparkles size={14} /> Summarize Page
+                    </ActionChip>
+                    <ActionChip
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleActionClick("What ML algorithms are used for forecasting?")}
+                    >
+                      <Bot size={14} /> Forecasting AI
+                    </ActionChip>
+                    <ActionChip
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleActionClick("Tell me about fraud detection.")}
+                    >
+                      <User size={14} /> Fraud Security
+                    </ActionChip>
+                  </ActionChipContainer>
+                </motion.div>
               )}
 
               {history.map((msg, i) => (
-                <MessageContainer key={i} $role={msg.role}>
+                <MessageContainer
+                  key={i}
+                  $role={msg.role}
+                  as={motion.div}
+                  initial={{ opacity: 0, x: msg.role === 'user' ? 10 : -10, y: 5 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                >
                   <MessageAuthor $role={msg.role}>
-                    {msg.role === 'user' ? (user?.full_name || user?.username || 'You') : 'AI Assistant'}
+                    {msg.role === 'user' ? (user?.full_name || 'You') : 'AI Assistant'}
                   </MessageAuthor>
                   <MessageBubble $role={msg.role}>
-                    {msg.content}
+                    {formatText(msg.content)}
                   </MessageBubble>
                 </MessageContainer>
               ))}
 
               {loading && (
-                <TypingIndicator>
-                  <span />
-                  <span />
-                  <span />
+                <TypingIndicator
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} />
+                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} />
+                  <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} />
                 </TypingIndicator>
               )}
               <div ref={messagesEndRef} />
             </ChatArea>
 
-            <InputArea onSubmit={handleSubmit}>
+            <InputArea onSubmit={(e) => handleSubmit(e)}>
+              <AnimatePresence>
+                {selectedImage && (
+                  <ImagePreview>
+                    <PreviewThumbnail>
+                      <img src={selectedImage} alt="Preview" />
+                    </PreviewThumbnail>
+                    <div style={{ flex: 1, fontSize: '0.85rem', color: '#6b7280' }}>Image attached</div>
+                    <IconButton onClick={() => setSelectedImage(null)} type="button">
+                      <X size={16} />
+                    </IconButton>
+                  </ImagePreview>
+                )}
+              </AnimatePresence>
+
+              <input
+                type="file"
+                hidden
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageSelect}
+              />
+
+              <IconButton
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach Receipt or Invoice"
+              >
+                <Paperclip size={20} />
+              </IconButton>
+
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask anything..."
+                placeholder={selectedImage ? "Describe this image..." : "Ask a question..."}
                 disabled={loading}
               />
-              <SendButton type="submit" disabled={!message.trim() || loading}>
-                {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              <SendButton type="submit" disabled={(!message.trim() && !selectedImage) || loading}>
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={20} />}
               </SendButton>
             </InputArea>
           </PopupCard>
@@ -317,9 +543,12 @@ export default function AIChatWidget() {
 
       <FloatingButton
         onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        animate={{ rotate: isOpen ? 45 : 0 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        animate={{
+          rotate: isOpen ? 90 : 0,
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
         {isOpen ? <X size={24} /> : <Bot size={28} />}
       </FloatingButton>
