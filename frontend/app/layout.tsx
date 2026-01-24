@@ -11,6 +11,7 @@ import { useThemeStore } from '@/store/useThemeStore';
 import ThemeSync from '@/components/common/ThemeSync';
 import FeedbackWidget from '@/components/common/FeedbackWidget';
 import AIChatWidget from '@/components/common/AIChatWidget';
+import { useAuth } from '@/lib/rbac/auth-context';
 
 // Use system fonts instead of Google Fonts to avoid download warnings
 const GlobalStyle = createGlobalStyle`
@@ -39,6 +40,17 @@ const MainContent = styled.main`
 const ContentWrapper = styled.div`
   flex: 1;
 `;
+
+const WidgetWrapper = () => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return null;
+  return (
+    <>
+      <FeedbackWidget />
+      <AIChatWidget />
+    </>
+  );
+};
 
 export default function RootLayout({
   children,
@@ -74,8 +86,7 @@ export default function RootLayout({
                 </MainContent>
               </LayoutContainer>
               <Toaster position="top-right" />
-              <FeedbackWidget />
-              <AIChatWidget />
+              <WidgetWrapper />
             </AuthProvider>
           </ThemeProvider>
         </StyledComponentsRegistry>
