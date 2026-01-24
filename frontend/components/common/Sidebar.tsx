@@ -769,6 +769,12 @@ const Sidebar: React.FC = () => {
                                     </NavIcon>
                                     {!collapsed && 'Taxes'}
                                 </NavItem>
+                                <NavItem href="/admin/feedback" $active={pathname === '/admin/feedback'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/admin/feedback'} $collapsed={collapsed} $size={16} $iconType="message-square">
+                                        <MessageSquare />
+                                    </NavIcon>
+                                    {!collapsed && 'Feedback'}
+                                </NavItem>
                             </SubMenu>
                         )}
                     </>
