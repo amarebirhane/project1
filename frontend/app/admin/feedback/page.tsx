@@ -39,7 +39,7 @@ const shimmer = keyframes`
 // --- Styled Components ---
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+  background: ${props => props.theme.colors.background};
   padding: ${props => props.theme.spacing.xl};
 `;
 
@@ -194,7 +194,7 @@ const FilterGroup = styled.div`
     font-size: 0.9375rem;
     font-weight: 600;
     color: ${props => props.theme.colors.textDark};
-    background: white;
+    background: ${props => props.theme.colors.card};
     transition: all 0.2s;
     cursor: pointer;
 
@@ -220,7 +220,7 @@ const FeedbackListCard = styled.div`
   .list-header {
     padding: 24px 28px;
     border-bottom: 1px solid ${props => props.theme.colors.border};
-    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    background: ${props => props.theme.colors.backgroundSecondary};
 
     h2 {
       font-size: 1.5rem;
@@ -283,7 +283,7 @@ const FeedbackItem = styled(motion.div)`
   }
 
   &:hover {
-    background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+    background: ${props => props.theme.colors.backgroundSecondary};
   }
 
   .item-content {
@@ -410,7 +410,7 @@ const ModalOverlay = styled(motion.div)`
 `;
 
 const ModalContent = styled(motion.div)`
-  background: white;
+  background: ${props => props.theme.colors.card};
   border-radius: 24px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   max-width: 700px;
@@ -426,7 +426,7 @@ const ModalContent = styled(motion.div)`
     justify-content: space-between;
     position: sticky;
     top: 0;
-    background: white;
+    background: ${props => props.theme.colors.card};
     z-index: 10;
 
     h2 {
@@ -446,9 +446,10 @@ const ModalContent = styled(motion.div)`
       display: flex;
       align-items: center;
       justify-content: center;
+      color: ${props => props.theme.colors.textDark};
 
       &:hover {
-        background: #e5e7eb;
+        background: ${props => props.theme.colors.border};
         transform: scale(1.05);
       }
     }
@@ -502,6 +503,7 @@ const ModalContent = styled(motion.div)`
         font-size: 0.9375rem;
         font-weight: 600;
         color: ${props => props.theme.colors.textDark};
+        background: ${props => props.theme.colors.card};
         font-family: inherit;
         transition: all 0.2s;
 
