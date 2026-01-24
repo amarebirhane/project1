@@ -664,7 +664,7 @@ const Sidebar: React.FC = () => {
                 </ComponentGate>
 
                 {/* AI Dropdown - New Section */}
-                {(isAdmin || isFinanceAdmin || isAccountant) && (
+                {(isAdmin) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('ai-tools')}
@@ -714,7 +714,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Collections Dropdown */}
-                {(isAdmin || isFinanceAdmin || isAccountant) && (
+                {(isAdmin) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('collections')}
