@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Finance Management System - Comprehensive Design & Architecture</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/monokai.min.css">
+
+    <style>
+        :root {
+            --r-main-font: 'Inter', sans-serif;
+            --r-heading-font: 'Outfit', sans-serif;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-silver: #94a3b8;
+            --accent-orange: #f59e0b;
+        }
+
+        .reveal .slides section {
+            text-align: left;
+            padding: 20px 40px;
+        }
+
+        .reveal h1,
+        .reveal h2,
+        .reveal h3,
+        .reveal h4 {
+            color: #fff;
+            text-transform: none;
+            font-weight: 700;
+        }
+
+        .reveal h1 {
+            font-size: 2em;
+            border-bottom: 4px solid var(--accent-green);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .reveal h2 {
+            font-size: 1.4em;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            border-left: 6px solid var(--accent-green);
+            padding-left: 15px;
+        }
+
+        .reveal h3 {
+            font-size: 1.1em;
+            color: var(--accent-silver);
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .blue-highlight {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .orange-highlight {
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        .slide-footer {
+            position: absolute;
+            bottom: 10px;
+            right: 40px;
+            font-size: 0.35em;
+            color: #666;
+            opacity: 0.6;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-green);
+            margin-bottom: 10px;
+        }
+
+        .feature-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 3px;
+            color: #fff;
+        }
+
+        .feature-card p,
+        .feature-card li {
+            font-size: 0.6em;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        .diagram-placeholder {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px dashed var(--accent-green);
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 10px;
+            color: var(--accent-green);
+            font-weight: bold;
+            font-size: 0.8em;
+        }
+
+        /* Custom Title Slide */
+        .title-slide {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('C:/Users/ASHROCK/.gemini/antigravity/brain/3c6f5589-c70b-49f4-a2ad-64a9ded0108e/presentation_background_hero_1768840107634.png');
+            background-size: cover;
+            background-position: center;
+            text-align: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+
+        .title-slide h1 {
+            border: none;
+            font-size: 2.8em;
+            margin-bottom: 5px;
+        }
+
+        .title-slide p {
+            font-size: 1em;
+            color: #ccc;
+        }
+
+        table {
+            font-size: 0.5em !important;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            color: var(--accent-green) !important;
+            border-bottom: 1px solid #444;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            border-bottom: 1px solid #222;
+            padding: 8px;
+        }
+
+        .columns {
+            display: flex;
+            gap: 20px;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        ul,
+        ol {
+            font-size: 0.65em;
+        }
+
+        section p {
+            font-size: 0.7em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- 1. Title Slide -->
+            <section class="title-slide">
+                <h1>Finance Management System</h1>
+                <h3>Comprehensive Project Design & Architecture</h3>
+                <p>Advanced Intelligence, Security, and Scalability</p>
+                <div style="margin-top: 40px; font-size: 0.7em; opacity: 0.6;">
+                    Stakeholder & Technical Presentation | January 2026
+                </div>
+            </section>
+
+            <!-- 2. Introduction -->
+            <section>
+                <h2>2. Introduction</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Purpose</h3>
+                        <p>A unified FMS designed to automate financial workflows and provide real-time predictive
+                            insights for modern organizations.</p>
+                        <h3>Target Audience</h3>
+                        <ul>
+                            <li>C-Level Executives & Business Owners</li>
+                            <li>Financial Controllers & Managers</li>
+                            <li>Development Teams & System Admins</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="feature-card">
+                            <h3>Problem Statement</h3>
+                            <p>Manual tracking leads to 15-20% data inaccuracies and significant delays in financial
+                                decision-making.</p>
+                        </div>
+                        <div class="feature-card" style="border-left-color: var(--accent-blue);">
+                            <h3>Objectives</h3>
+                            <p>Achieve 99% data integrity, automate 70% of routine workflows, and enable AI-driven
+                                forecasting.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Introduction</div>
+            </section>
+
+            <!-- 3. Presentation Outline -->
+            <section>
+                <h2>3. Presentation Outline</h2>
+                <div class="grid-container" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="feature-card">
+                        <h3>Foundation</h3>
+                        <ul>
+                            <li>Overview & Constraints</li>
+                            <li>Stakeholders</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Architecture</h3>
+                        <ul>
+                            <li>System Decomposition</li>
+                            <li>Architectural Styles</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Design</h3>
+                        <ul>
+                            <li>Data & Interface Design</li>
+                            <li>Behavioral Logic</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Operations</h3>
+                        <ul>
+                            <li>Deployment & CI/CD</li>
+                            <li>Logging & Monitoring</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                        <h3>Quality</h3>
+                        <ul>
+                            <li>Security & Performance</li>
+                            <li>Scalability & Risks</li>
+                        </ul>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-blue);">
+                        <h3>Wrap-up</h3>
+                        <ul>
+                            <li>Future Work</li>
+                            <li>Q&A</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Outline</div>
+            </section>
+
+            <!-- 4. Stakeholders & Design Concerns -->
+            <section>
+                <h2>4. Stakeholders & Design Concerns</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Primary Stakeholders</h3>
+                        <ul>
+                            <li><span class="highlight">Users:</span> Employees logging expenses/viewing dashboards.
+                            </li>
+                            <li><span class="highlight">Developers:</span> Building and maintaining the API and UI.</li>
+                            <li><span class="highlight">System Admins:</span> Managing infrastructure and security.</li>
+                            <li><span class="highlight">Business Owners:</span> Strategic decision-making based on ROI.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                            <h3>Key Design Concerns</h3>
+                            <div class="grid-container" style="grid-template-columns: 1fr 1fr; margin-top:5px;">
+                                <p>✔️ Performance</p>
+                                <p>✔️ Security</p>
+                                <p>✔️ Scalability</p>
+                                <p>✔️ Usability</p>
+                                <p>✔️ Reliability</p>
+                                <p>✔️ Maintainability</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Stakeholders</div>
+            </section>
+
+            <!-- 5. System Overview -->
+            <section>
+                <h2>5. System Overview</h2>
+                <p>A cloud-native application providing end-to-end financial management through a
+                    <strong>Hub-and-Spoke</strong> model.</p>
+                <div class="feature-card">
+                    <h3>High-Level Functionality</h3>
+                    <p>Financial Entry → Validation → Approval Workflow → AI Forecasting → Dynamic Reporting</p>
+                </div>
+                <div class="diagram-placeholder">
+                    🟢 Feature: System Context Diagram
+                    <p style="font-size: 0.5em; margin: 0; opacity: 0.7;">Visualizing FMS in relation to Users, Bank
+                        APIs, and Cloud Services.</p>
+                </div>
+                <div class="slide-footer">FMS | Overview</div>
+            </section>
+
+            <!-- 6. System Constraints & Assumptions -->
+            <section>
+                <h2>6. Constraints & Assumptions</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Constraints</h3>
+                        <ul>
+                            <li><span class="orange-highlight">Hardware:</span> Scalable to 5 concurrent nodes minimum.
+                            </li>
+                            <li><span class="orange-highlight">Software:</span> Python 3.12+, Node.js 20+.</li>
+                            <li><span class="orange-highlight">Legal:</span> GDPR compliance for financial records.</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h3>Assumptions</h3>
+                        <ul>
+                            <li>Stable network availability for API calls.</li>
+                            <li>Users have basic financial literacy.</li>
+                            <li>Availability of historical data for AI training.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Constraints</div>
+            </section>
+
+            <!-- 7. Architectural Overview -->
+            <section>
+                <h2>7. Architectural Overview</h2>
+                <p>We utilize a <span class="blue-highlight">Layered Micro-Kernel Architecture</span> combined with a
+                    <span class="blue-highlight">Client-Server</span> model.</p>
+                <div class="columns">
+                    <div class="column">
+                        <p style="font-size: 0.6em;"><strong>Rationale:</strong> We chose this to separate front-end
+                            concerns (Next.js) from the high-performance computation layer (FastAPI) while allowing for
+                            horizontal scaling of AI workers.</p>
+                    </div>
+                    <div class="column">
+                        <div class="diagram-placeholder" style="margin-top: 0; padding:10px;">
+                            🟢 Feature: Architecture Diagram
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Architecture</div>
+            </section>
+
+            <!-- 8. System Decomposition -->
+            <section>
+                <h2>8. System Decomposition</h2>
+                <div class="grid-container">
+                    <div class="feature-card">
+                        <h3>Identity Service</h3>
+                        <p>Auth, RBAC, and User Profiles.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Finance Core</h3>
+                        <p>Revenue, Expenses, and Ledger reconciliation.</p>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-blue);">
+                        <h3>Intelligence Hub</h3>
+                        <p>ML Model training and Forecast generation.</p>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                        <h3>Notification Bus</h3>
+                        <p>Push alerts, Email, and internal notifications.</p>
+                    </div>
+                </div>
+                <div class="diagram-placeholder" style="padding:10px;">
+                    🟢 Feature: Component Diagram
+                </div>
+                <div class="slide-footer">FMS | Decomposition</div>
+            </section>
+
+            <!-- 9. Design Decisions & Trade-offs -->
+            <section>
+                <h2>9. Design Decisions & Trade-offs</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Decision</th>
+                            <th>Chosen Option</th>
+                            <th>Trade-off (Con)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Backend Stack</td>
+                            <td>FastAPI (Async)</td>
+                            <td>Developer learning curve vs Flask</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td>PostgreSQL (SQL)</td>
+                            <td>Strict schema vs NoSQL flexibility</td>
+                        </tr>
+                        <tr>
+                            <td>Processing</td>
+                            <td>Celery/Redis</td>
+                            <td>Increased infrastructure complexity</td>
+                        </tr>
+                        <tr>
+                            <td>AI Model</td>
+                            <td>Prophet/XGBoost</td>
+                            <td>Higher compute demand vs simple regression</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="slide-footer">FMS | Trade-offs</div>
+            </section>
+
+            <!-- 10. Component Design -->
+            <section>
+                <h2>10. Component Design</h2>
+                <div class="columns">
+                    <div class="column">
+                        <div class="feature-card">
+                            <h3>Forecast Engine</h3>
+                            <p><strong>Resp:</strong> Generates 12-month projections.</p>
+                            <p><strong>Interfaces:</strong> Internal ML-API.</p>
+                            <p><strong>Dep:</strong> Scikit-learn, statsmodels.</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="diagram-placeholder"
+                            style="height: 100%; display:flex; align-items:center; justify-content:center;">
+                            🟢 Feature: Component Interaction Diagram
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Components</div>
+            </section>
+
+            <!-- 11. Data Design -->
+            <section>
+                <h2>11. Data Design</h2>
+                <div class="columns">
+                    <div class="column" style="flex: 1.5;">
+                        <p style="font-size: 0.6em;"><strong>Primary Data Model:</strong> Relational Star-Schema
+                            optimized for analytical queries while maintaining ACID transactions for financial entry.
+                        </p>
+                        <div class="grid-container" style="grid-template-columns: 1fr 1fr;">
+                            <div class="feature-card">
+                                <h3>Users</h3>
+                                <p>RBAC roles, UUIDs, Hashed Creds.</p>
+                            </div>
+                            <div class="feature-card">
+                                <h3>Transactions</h3>
+                                <p>Amount, Category, Timestamp, Vendor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="diagram-placeholder" style="height: 150px; font-size: 0.6em;">
+                            🟢 Feature: ER Diagram
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Data</div>
+            </section>
+
+            <!-- 12. Interface Design -->
+            <section>
+                <h2>12. Interface Design</h2>
+                <div class="grid-container">
+                    <div>
+                        <h3>User Interface</h3>
+                        <p style="font-size: 0.6em;">A "Mission Control" style dashboard featuring vibrant HSL-tailored
+                            charts, glassmorphic cards, and smooth micro-animations.</p>
+                    </div>
+                    <div>
+                        <h3>External APIs</h3>
+                        <p style="font-size: 0.6em;">RESTful OpenAPI endpoints + WebSocket for real-time telemetry
+                            updates.</p>
+                    </div>
+                </div>
+                <div class="diagram-placeholder">
+                    🟢 Feature: UI Mockups / API Flow
+                </div>
+                <div class="slide-footer">FMS | Interface</div>
+            </section>
+
+            <!-- 13. Behavioral Design -->
+            <section>
+                <h2>13. Behavioral Design</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Main Use Cases</h3>
+                        <ul>
+                            <li>Submit Expense for Approval</li>
+                            <li>Generate Quarterly Forecast</li>
+                            <li>Audit Financial History</li>
+                        </ul>
+                    </div>
+                    <div class="column" style="display:flex; flex-direction:column; gap:10px;">
+                        <div class="diagram-placeholder" style="padding:5px; font-size:0.5em;">🟢 Use Case Diagram</div>
+                        <div class="diagram-placeholder" style="padding:5px; font-size:0.5em;">🟢 Sequence Diagram</div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Behavior</div>
+            </section>
+
+            <!-- 14. Deployment Architecture -->
+            <section>
+                <h2>14. Deployment Architecture</h2>
+                <div class="columns">
+                    <div class="column">
+                        <p><strong>Cloud Environment:</strong> AWS/GCP with Container Orchestration.</p>
+                        <ul>
+                            <li><span class="highlight">Frontend:</span> Vercel / CloudFront</li>
+                            <li><span class="highlight">Backend:</span> Dockerized FastAPI on ECS/GKE</li>
+                            <li><span class="highlight">DB:</span> Managed RDS Instances</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="diagram-placeholder">
+                            🟢 Feature: Deployment Diagram
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Deployment</div>
+            </section>
+
+            <!-- 15. Development & Release Process -->
+            <section>
+                <h2>15. Development & Release</h2>
+                <div class="grid-container">
+                    <div class="feature-card">
+                        <h3>Environments</h3>
+                        <p>Dev → Staging → Prod</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>CI/CD Pipeline</h3>
+                        <p>GitHub Actions: Lint → Test → Docker Build → Deploy</p>
+                    </div>
+                </div>
+                <p style="font-size: 0.6em; margin-top:10px;"><strong>Automation:</strong> 100% automated build process
+                    with semantic versioning and changelog generation.</p>
+                <div class="slide-footer">FMS | Release</div>
+            </section>
+
+            <!-- 16. Logging, Monitoring & Auditing -->
+            <section>
+                <h2>16. Logging & Monitoring</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Monitoring</h3>
+                        <ul>
+                            <li>Response Time (P99)</li>
+                            <li>Throughput (Requests/sec)</li>
+                            <li>Error Rates (4xx/5xx)</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                            <h3>Audit Strategy</h3>
+                            <p>Every transaction and approval is immutable, time-stamped, and linked to a specific user
+                                hash in our AuditLog table.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Ops</div>
+            </section>
+
+            <!-- 17. Quality Attributes -->
+            <section>
+                <h2>17. Quality Attributes</h2>
+                <div class="grid-container">
+                    <div class="feature-card">
+                        <h3>Performance</h3>
+                        <p>Sub-200ms API response time even during peak hours.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Security</h3>
+                        <p>JWT + 2FA + AES-256 Encryption for stored sensitive data.</p>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-blue);">
+                        <h3>Reliability</h3>
+                        <p>99.9% availability through automated failover mechanisms.</p>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                        <h3>Maintainability</h3>
+                        <p>Highly modular code with >80% unit test coverage.</p>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Quality</div>
+            </section>
+
+            <!-- 18. Risks & Mitigation -->
+            <section>
+                <h2>18. Risks & Mitigation</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Risk Type</th>
+                            <th>Potential Issue</th>
+                            <th>Mitigation Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Technical</td>
+                            <td>ML Model Drift</td>
+                            <td>Automated monthly re-training cycles</td>
+                        </tr>
+                        <tr>
+                            <td>Security</td>
+                            <td>SQL Injection</td>
+                            <td>Strict SQLAlchemy parameterized queries</td>
+                        </tr>
+                        <tr>
+                            <td>Deployment</td>
+                            <td>Node Failure</td>
+                            <td>Horizontal scaling with Load Balancer</td>
+                        </tr>
+                        <tr>
+                            <td>Data</td>
+                            <td>Database Loss</td>
+                            <td>Nightly encrypted automated backups</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="slide-footer">FMS | Risks</div>
+            </section>
+
+            <!-- 19. Compliance & Standards -->
+            <section>
+                <h2>19. Compliance & Standards</h2>
+                <div class="grid-container">
+                    <div class="feature-card">
+                        <h3>Design Standards</h3>
+                        <p>IEEE 830 (SRS) & IEEE 1016 (System Design) adherence.</p>
+                    </div>
+                    <div class="feature-card" style="border-left-color: var(--accent-blue);">
+                        <h3>Privacy</h3>
+                        <p>GDPR and CCPA compliant data handling procedures.</p>
+                    </div>
+                </div>
+                <p style="font-size: 0.6em; margin-top:10px;"><strong>Industry Standards:</strong> Following OAuth 2.0
+                    and OpenID Connect for all identity management processes.</p>
+                <div class="slide-footer">FMS | Compliance</div>
+            </section>
+
+            <!-- 20. Summary & Conclusion -->
+            <section>
+                <h2>20. Summary & Conclusion</h2>
+                <ul>
+                    <li class="fragment">Building a <span class="highlight">State-of-the-Art</span> FMS that blends
+                        performance with predictive intelligence.</li>
+                    <li class="fragment">Successfully demonstrated a modular, secure, and scalable design.</li>
+                    <li class="fragment">The design effectively bridges organizational gaps in financial visibility.
+                    </li>
+                </ul>
+                <div class="feature-card" style="margin-top:20px; border-left-color: var(--accent-blue);">
+                    <p style="font-size: 0.8em; opacity: 1;">Project Status: Prototype Verified → Ready for Staging</p>
+                </div>
+                <div class="slide-footer">FMS | Conclusion</div>
+            </section>
+
+            <!-- 21. Future Work -->
+            <section>
+                <h2>21. Future Work</h2>
+                <div class="columns">
+                    <div class="column">
+                        <h3>Planned Enhancements</h3>
+                        <ul>
+                            <li>Native Mobile Apps (App Store/Play Store)</li>
+                            <li>Direct Banking Integration (Plaid)</li>
+                            <li>Automated Revenue Recognition</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <div class="feature-card" style="border-left-color: var(--accent-orange);">
+                            <h3>Scalability Phase 2</h3>
+                            <p>Migration to multi-region Kubernetes clusters for global low-latency access.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="slide-footer">FMS | Roadmap</div>
+            </section>
+
+            <!-- 22. References -->
+            <section>
+                <h2>22. References</h2>
+                <div style="font-size: 0.5em;">
+                    <p>1. <strong>Architectural Styles:</strong> Garlan & Shaw, Software Architecture (1996).</p>
+                    <p>2. <strong>Async APIs:</strong> FastAPI documentation and Python PEP-492.</p>
+                    <p>3. <strong>Forecasting:</strong> Prophet: Forecasting at Scale, Taylor & Letham (2017).</p>
+                    <p>4. <strong>Security:</strong> NIST Special Publication 800-63 (Digital Identity Guidelines).</p>
+                    <p>5. <strong>Presentation:</strong> Reveal.js Slide Framework Documentation.</p>
+                </div>
+                <div class="slide-footer">FMS | Sources</div>
+            </section>
+
+            <!-- 23. Q&A Slide -->
+            <section style="text-align: center !important;">
+                <h1 style="border:none;">Thank You!</h1>
+                <h2 style="border:none; color: var(--accent-silver);">Any Questions?</h2>
+                <div style="margin-top: 40px;">
+                    <p style="font-size: 0.8em; color: var(--accent-green);">Contact: support@finance-system.com</p>
+                    <p style="font-size: 0.5em; opacity: 0.5;">Full documentation available at /docs/documentations.md
+                    </p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/highlight.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: 'c/t',
+            transition: 'slide',
+            plugins: [RevealHighlight],
+            center: false,
+            width: 1200,
+            height: 800,
+            margin: 0.1
+        });
+    </script>
+</body>
+
+</html>

@@ -255,13 +255,3 @@ site/
 # Uploaded files
 media/
 static/collected/
-
-
-data/
-model/
-report/
-uploads/
-scripts/
-tests/
-docs/
-app/AI/

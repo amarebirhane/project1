@@ -1,0 +1,60 @@
+services:
+  # Backend API Service
+  - type: web
+    name: finance-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finance-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30
+      - key: ALLOWED_ORIGINS
+        sync: false  # Set this manually to your frontend URL
+      - key: ALLOWED_HOSTS
+        sync: false  # Set this manually
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: REDIS_URL
+        fromService:
+          name: finance-redis
+          type: redis
+          property: connectionString
+    healthCheckPath: /health
+
+  # Frontend Web Service
+  - type: web
+    name: finance-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: starter
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false  # Set this to your backend service URL (e.g., https://finance-backend.onrender.com/api/v1)
+      - key: NODE_ENV
+        value: production
+
+  # PostgreSQL Database
+  - type: pspg
+    name: finance-db
+    plan: starter
+    databaseName: finance_db
+    user: finance_user
+
+  # Redis (for Celery and caching)
+  - type: redis
+    name: finance-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+
