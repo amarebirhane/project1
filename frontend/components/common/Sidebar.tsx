@@ -764,6 +764,12 @@ const Sidebar: React.FC = () => {
                                     </NavIcon>
                                     {!collapsed && 'Taxes'}
                                 </NavItem>
+                                <NavItem href="/accounting" $active={pathname === '/accounting'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting'} $collapsed={collapsed} $size={16} $iconType="file-text">
+                                        <FileText />
+                                    </NavIcon>
+                                    {!collapsed && 'Accountings'}
+                                </NavItem>
                             </SubMenu>
                         )}
                     </>
