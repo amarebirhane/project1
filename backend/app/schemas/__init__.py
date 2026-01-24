@@ -7,6 +7,7 @@ from .audit import AuditLogOut
 from .notification import NotificationCreate, NotificationUpdate, NotificationOut
 from .inventory import InventoryItemCreate, InventoryItemUpdate, InventoryItemOut, InventoryItemPublicOut, InventoryAuditLogOut
 from .sale import SaleCreate, SaleOut, SalePostRequest, JournalEntryOut, SalesSummaryOut, ReceiptOut
+from .currency import CurrencyCreate, CurrencyUpdate, Currency, ExchangeRateCreate, ExchangeRate
 
 __all__ = [
     "UserCreate",
@@ -44,4 +45,9 @@ __all__ = [
     "JournalEntryOut",
     "SalesSummaryOut",
     "ReceiptOut",
+    "CurrencyCreate",
+    "CurrencyUpdate",
+    "Currency",
+    "ExchangeRateCreate",
+    "ExchangeRate",
 ]

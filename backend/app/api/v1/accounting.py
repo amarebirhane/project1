@@ -9,8 +9,10 @@ from ...api import deps
 from ...models.user import User, UserRole
 from ...models.account import Account, AccountType
 from ...models.journal_entry import AccountingJournalEntry, JournalEntryLine, JournalEntryStatus
+from ...models.currency import Currency, ExchangeRate
 from ...schemas import account as account_schema
 from ...schemas import journal_entry as journal_entry_schema
+from ...schemas import currency as currency_schema
 
 router = APIRouter()
 
@@ -201,3 +203,153 @@ def post_journal_entry(
     db.commit()
     db.refresh(entry)
     return entry
+
+# ------------------------------------------------------------------
+# Currencies
+# ------------------------------------------------------------------
+
+@router.get("/currencies", response_model=List[currency_schema.Currency])
+def get_currencies(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    active_only: bool = False,
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Retrieve all currencies.
+    """
+    query = db.query(Currency)
+    if active_only:
+        query = query.filter(Currency.is_active == True)
+    return query.offset(skip).limit(limit).all()
+
+@router.post("/currencies", response_model=currency_schema.Currency)
+def create_currency(
+    currency_in: currency_schema.CurrencyCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ADMIN))
+):
+    """
+    Create a new currency. Only Admin.
+    """
+    existing = db.query(Currency).filter(Currency.code == currency_in.code).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Currency already exists")
+    
+    if currency_in.is_base_currency:
+        # Reset other base currencies
+        db.query(Currency).update({Currency.is_base_currency: False})
+        
+    db_currency = Currency(**currency_in.dict())
+    db.add(db_currency)
+    db.commit()
+    db.refresh(db_currency)
+    return db_currency
+
+@router.put("/currencies/{currency_id}", response_model=currency_schema.Currency)
+def update_currency(
+    currency_id: int,
+    currency_in: currency_schema.CurrencyUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ADMIN))
+):
+    """
+    Update currency details.
+    """
+    db_currency = db.query(Currency).filter(Currency.id == currency_id).first()
+    if not db_currency:
+        raise HTTPException(status_code=404, detail="Currency not found")
+        
+    update_data = currency_in.dict(exclude_unset=True)
+    
+    if update_data.get("is_base_currency"):
+        # Reset other base currencies
+        db.query(Currency).update({Currency.is_base_currency: False})
+        
+    for field, value in update_data.items():
+        setattr(db_currency, field, value)
+        
+    db.commit()
+    db.refresh(db_currency)
+    return db_currency
+
+@router.delete("/currencies/{currency_id}")
+def delete_currency(
+    currency_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ADMIN))
+):
+    """
+    Delete a currency.
+    """
+    db_currency = db.query(Currency).filter(Currency.id == currency_id).first()
+    if not db_currency:
+        raise HTTPException(status_code=404, detail="Currency not found")
+        
+    if db_currency.is_base_currency:
+        raise HTTPException(status_code=400, detail="Cannot delete base currency")
+        
+    db.delete(db_currency)
+    db.commit()
+    return {"message": "Currency deleted"}
+
+# ------------------------------------------------------------------
+# Exchange Rates
+# ------------------------------------------------------------------
+
+@router.get("/exchange-rates", response_model=List[currency_schema.ExchangeRate])
+def get_exchange_rates(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    from_currency: str = None,
+    to_currency: str = None,
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Retrieve exchange rates.
+    """
+    query = db.query(ExchangeRate)
+    
+    if from_currency:
+        query = query.join(Currency, ExchangeRate.from_currency_id == Currency.id).filter(Currency.code == from_currency)
+    if to_currency:
+        query = query.join(Currency, ExchangeRate.to_currency_id == Currency.id).filter(Currency.code == to_currency)
+        
+    return query.order_by(ExchangeRate.effective_date.desc()).offset(skip).limit(limit).all()
+
+@router.post("/exchange-rates", response_model=currency_schema.ExchangeRate)
+def create_exchange_rate(
+    rate_in: currency_schema.ExchangeRateCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Add a new exchange rate.
+    """
+    db_rate = ExchangeRate(
+        **rate_in.dict(),
+        created_by_id=current_user.id
+    )
+    db.add(db_rate)
+    db.commit()
+    db.refresh(db_rate)
+    return db_rate
+
+@router.delete("/exchange-rates/{rate_id}")
+def delete_exchange_rate(
+    rate_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Remove an exchange rate.
+    """
+    db_rate = db.query(ExchangeRate).filter(ExchangeRate.id == rate_id).first()
+    if not db_rate:
+        raise HTTPException(status_code=404, detail="Exchange rate not found")
+        
+    db.delete(db_rate)
+    db.commit()
+    return {"message": "Exchange rate deleted"}

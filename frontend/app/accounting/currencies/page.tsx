@@ -37,7 +37,7 @@ const PageWrapper = styled.div`
 const ContentContainer = styled.div`
   flex: 1;
   width: 100%;
-  max-width: 980px;
+  max-width: 940px;
   margin-left: auto;
   margin-right: 0;
   padding: ${props => props.theme.spacing.sm};
