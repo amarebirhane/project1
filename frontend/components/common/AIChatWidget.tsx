@@ -336,10 +336,19 @@ export default function AIChatWidget() {
     }
   }, []);
 
-  // Save history to localStorage
+  // Save history to localStorage (strip images to keep under 5MB quota)
   useEffect(() => {
     if (history.length > 0) {
-      localStorage.setItem("fms_ai_chat_history", JSON.stringify(history));
+      try {
+        const leanHistory = history.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          // We don't save image_data to localStorage to avoid QuotaExceededError
+        }));
+        localStorage.setItem("fms_ai_chat_history", JSON.stringify(leanHistory));
+      } catch (e) {
+        console.error("Failed to save chat history:", e);
+      }
     }
   }, [history]);
 
@@ -384,46 +393,55 @@ export default function AIChatWidget() {
     setSelectedImage(null);
     setLoading(true);
 
-    const attemptChat = async (retryCount = 0): Promise<void> => {
-      try {
-        const response = await apiClient.chatWithAI({
-          message: userMsg.content,
-          history: history,
-          current_page: pathname,
-          image_data: userMsg.image_data
-        });
+    // Capture current history + new message to avoid closure issues
+    const chatHistoryForAPI = [...history];
 
-        const content = response.data.response;
+    const handleChat = async (): Promise<void> => {
+      let retryCount = 0;
+      const maxRetries = 1;
 
-        // Handle the "friendly" rate limit message from backend by retrying once
-        if (retryCount === 0 && (content.includes("wait a moment") || content.includes("many requests") || content.includes("try again in"))) {
-          let delay = 2000; // default 2s
-          const match = content.match(/try again in (\d+) seconds/);
-          if (match) {
-            const seconds = parseInt(match[1]);
-            delay = (seconds + 1) * 1000; // add 1s buffer and conv to ms
-            setRetryStatus(`Rate limit hit. Re-trying in ${seconds}s...`);
-          } else {
-            setRetryStatus("Wait a moment, retrying...");
+      while (retryCount <= maxRetries) {
+        try {
+          const response = await apiClient.chatWithAI({
+            message: userMsg.content,
+            history: chatHistoryForAPI, // Use the captured history
+            current_page: pathname,
+            image_data: userMsg.image_data
+          });
+
+          const content = response.data.response;
+
+          // Check if it's a rate limit message from our backend
+          if (retryCount < maxRetries && (content.includes("wait a moment") || content.includes("many requests") || content.includes("try again in"))) {
+            let delay = 2000;
+            const match = content.match(/try again in (\d+) seconds/);
+            if (match) {
+              const seconds = parseInt(match[1]);
+              delay = (seconds + 1) * 1000;
+              setRetryStatus(`Rate limit hit. Re-trying in ${seconds}s...`);
+            } else {
+              setRetryStatus("Assistant is resting, retrying...");
+            }
+            await new Promise(resolve => setTimeout(resolve, delay));
+            retryCount++;
+            continue; // try again
           }
-          await new Promise(resolve => setTimeout(resolve, delay));
-          setRetryStatus(null);
-          return attemptChat(retryCount + 1);
-        }
 
-        const aiMsg: ChatMessage = { role: 'model', content };
-        setHistory(prev => [...prev, aiMsg]);
-      } catch (error) {
-        console.error("Chat error:", error);
-        const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
-        setHistory(prev => [...prev, errorMsg]);
-      } finally {
-        setLoading(false);
-        setRetryStatus(null);
+          const aiMsg: ChatMessage = { role: 'model', content };
+          setHistory(prev => [...prev, aiMsg]);
+          break; // success or final message
+        } catch (error) {
+          console.error("Chat error:", error);
+          const errorMsg: ChatMessage = { role: 'model', content: "Sorry, I encountered an error. Please try again." };
+          setHistory(prev => [...prev, errorMsg]);
+          break;
+        }
       }
+      setLoading(false);
+      setRetryStatus(null);
     };
 
-    await attemptChat();
+    handleChat();
   };
 
   const clearHistory = () => {

@@ -7,9 +7,9 @@ class AIChatService:
     def __init__(self):
         if settings.GEMINI_API_KEY:
             genai.configure(api_key=settings.GEMINI_API_KEY)
-            # Using gemini-flash-latest with registered tools for multi-modal + function calling
+            # Using gemini-2.0-flash for stability + multi-modal + AFC
             self.model = genai.GenerativeModel(
-                model_name='models/gemini-flash-latest',
+                model_name='models/gemini-2.0-flash',
                 tools=AI_TOOLS
             )
         else:
@@ -21,7 +21,7 @@ class AIChatService:
 
         try:
             # Enriched System prompt for Vision + Data + Security
-            system_context = f"""You are the Financial Management System AI Assistant (FMS Assistant). 
+            system_instruction = f"""You are the Financial Management System AI Assistant (FMS Assistant). 
             
             **User Info**: The current authenticated user ID is **{user_id or 'unknown'}**. 
             Always use this ID when calling tools to create drafts (expenses/revenue).
@@ -62,15 +62,19 @@ class AIChatService:
                 
                 chat_history.append({"role": role, "parts": parts})
             
+            # Re-initialize model WITH system instruction (since it depends on request params)
+            # Note: We create a temporary model instance for this specific request context
+            request_model = genai.GenerativeModel(
+                model_name=self.model.model_name,
+                tools=AI_TOOLS,
+                system_instruction=system_instruction
+            )
+
             # Enable automatic function calling
-            chat = self.model.start_chat(history=chat_history, enable_automatic_function_calling=True)
+            chat = request_model.start_chat(history=chat_history, enable_automatic_function_calling=True)
             
-            # Prepend system context to initial message
-            prompt_parts = []
-            if not history:
-                prompt_parts.append(f"[SYSTEM CONTEXT: {system_context}]\n\nUser: {message}")
-            else:
-                prompt_parts.append(message)
+            # Prepare prompt parts
+            prompt_parts = [message]
 
             # Add current image if provided
             if image_data:
