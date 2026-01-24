@@ -260,8 +260,8 @@ export default function AIChatWidget() {
           >
             <Header>
               <h3>
-                <Sparkles size={18} fill="#fbbf24" stroke="#d97706" />
-                AI Assistant
+                <Bot size={18} fill="#fbbf24" stroke="#d97706" />
+                Financial Management System AI Assistant
               </h3>
               <CloseButton onClick={() => setIsOpen(false)}>
                 <X size={20} />
