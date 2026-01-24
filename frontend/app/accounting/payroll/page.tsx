@@ -551,7 +551,7 @@ export default function PayrollDashboard() {
                                     </thead>
                                     <tbody>
                                         {periods.filter(p => p.status !== 'paid').length === 0 ? (
-                                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: props => props.theme.colors.textSecondary }}>No active payroll cycles</td></tr>
+                                            <tr><td colSpan={5} style={{ textAlign: 'center', padding: '100px', color: '#64748b' }}>No active payroll cycles</td></tr>
                                         ) : (
                                             periods.filter(p => p.status !== 'paid').map(period => (
                                                 <tr key={period.id}>
@@ -621,12 +621,12 @@ export default function PayrollDashboard() {
                                             <td style={{ fontWeight: 800, color: '#1e293b' }}>{emp.employee_id}</td>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Briefcase size={16} style={{ color: props => props.theme.colors.textSecondary }} />
+                                                    <Briefcase size={16} style={{ color: '#64748b' }} />
                                                     {emp.job_title}
                                                 </div>
                                             </td>
                                             <td style={{ fontWeight: 800 }}>${emp.base_salary.toLocaleString()}</td>
-                                            <td style={{ color: props => props.theme.colors.textSecondary }}>{new Date(emp.hire_date).toLocaleDateString()}</td>
+                                            <td style={{ color: '#64748b' }}>{new Date(emp.hire_date).toLocaleDateString()}</td>
                                             <td><StatusBadge $status={emp.status}>{emp.status}</StatusBadge></td>
                                             <td>
                                                 <button style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer' }}>
@@ -659,7 +659,7 @@ export default function PayrollDashboard() {
                                     {periods.map((p) => (
                                         <tr key={p.id}>
                                             <td style={{ fontWeight: 800 }}>{p.name}</td>
-                                            <td style={{ fontSize: '0.875rem', color: props => props.theme.colors.textSecondary }}>
+                                            <td style={{ fontSize: '0.875rem', color: '#64748b' }}>
                                                 {new Date(p.start_date).toLocaleDateString()} → {new Date(p.end_date).toLocaleDateString()}
                                             </td>
                                             <td style={{ fontWeight: 900 }}>${p.total_net.toLocaleString()}</td>
@@ -685,7 +685,7 @@ export default function PayrollDashboard() {
                         <ModalContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
                                 <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>Register New Employee</SectionTitle>
-                                <button onClick={() => setIsEmployeeModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
+                                <button onClick={() => setIsEmployeeModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24} /></button>
                             </div>
                             <form onSubmit={handleRegisterEmployee}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -741,7 +741,7 @@ export default function PayrollDashboard() {
                         <ModalContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
                                 <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>New Payroll Period</SectionTitle>
-                                <button onClick={() => setIsPeriodModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
+                                <button onClick={() => setIsPeriodModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24} /></button>
                             </div>
                             <form onSubmit={handleCreatePeriod}>
                                 <FormGroup>
@@ -781,7 +781,7 @@ export default function PayrollDashboard() {
                                     <SectionTitle style={{ fontSize: '1.5rem', fontWeight: 900 }}>Review Payslips</SectionTitle>
                                     <HelperText style={{ fontWeight: 600 }}>{selectedPeriod?.name}</HelperText>
                                 </div>
-                                <button onClick={() => setIsPayslipModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: props => props.theme.colors.textSecondary }}><X size={24} /></button>
+                                <button onClick={() => setIsPayslipModalOpen(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#64748b' }}><X size={24} /></button>
                             </div>
                             <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
                                 <ModernTable>
