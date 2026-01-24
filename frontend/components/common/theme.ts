@@ -16,6 +16,7 @@ export interface Theme {
     mutedForeground: string;
     warning: string;
     primaryForeground: string;
+    inputBg: string;
   };
   borderRadius: {
     sm: string;
@@ -109,6 +110,7 @@ export const lightTheme: Theme = {
     mutedForeground: "var(--muted-foreground, #6b7280)",
     warning: "var(--warning, #f59e0b)",
     primaryForeground: "var(--primary-foreground, #fff)",
+    inputBg: "var(--input-bg, #fff)",
   },
   shadows: {
     sm: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1))",
@@ -133,6 +135,7 @@ export const darkTheme: Theme = {
     mutedForeground: "var(--muted-foreground, #94a3b8)",
     warning: "var(--warning, #fbbf24)",
     primaryForeground: "var(--primary-foreground, #fff)",
+    inputBg: "var(--input-bg, #1e293b)",
   },
   shadows: {
     sm: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.3))",

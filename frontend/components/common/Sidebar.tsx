@@ -764,22 +764,20 @@ const Sidebar: React.FC = () => {
                                     </NavIcon>
                                     {!collapsed && 'Taxes'}
                                 </NavItem>
-                                <NavItem href="/accounting" $active={pathname === '/accounting'} $collapsed={collapsed}>
-                                    <NavIcon $active={pathname === '/accounting'} $collapsed={collapsed} $size={16} $iconType="file-text">
-                                        <FileText />
-                                    </NavIcon>
-                                    {!collapsed && 'Accountings'}
-                                </NavItem>
-                                <NavItem href="admin/feedback" $active={pathname === '/admin/feedback'} $collapsed={collapsed}>
-                                    <NavIcon $active={pathname === '/admin/feedback'} $collapsed={collapsed} $size={16} $iconType="m    ">
-                                        <MessageSquare />
-                                    </NavIcon>
-                                    {!collapsed && 'Feedback'}
-                                </NavItem>
                             </SubMenu>
                         )}
                     </>
                 )}
+
+                {/* Help & Support - Available to ALL users */}
+                <ComponentGate componentId={ComponentId.SIDEBAR_FEEDBACK}>
+                    <NavItem href="/feedback" $active={pathname === '/feedback'} $collapsed={collapsed}>
+                        <NavIcon $active={pathname === '/feedback'} $collapsed={collapsed} $iconType="message-square">
+                            <MessageSquare />
+                        </NavIcon>
+                        {!collapsed && 'Feedback'}
+                    </NavItem>
+                </ComponentGate>
 
                 {/* Forecasts - Only for Admin, Finance Admin, and Manager (hidden from Accountant and Employee) */}
                 {!isAccountant && !isEmployee && (

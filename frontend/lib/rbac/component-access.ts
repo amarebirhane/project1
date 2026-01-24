@@ -135,6 +135,7 @@ export enum ComponentId {
     SIDEBAR_ACCOUNTANTS = 'sidebar.accountants',
     SIDEBAR_EMPLOYEES = 'sidebar.employees',
     SIDEBAR_AUDIT_LOGS = 'sidebar.audit_logs',
+    SIDEBAR_FEEDBACK = 'sidebar.feedback',
 
     // Inventory Sales components
     INVENTORY_SALES = 'inventory.sales',
@@ -236,6 +237,7 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_ACCOUNTANTS,
         ComponentId.SIDEBAR_EMPLOYEES,
         ComponentId.SIDEBAR_AUDIT_LOGS,
+        ComponentId.SIDEBAR_FEEDBACK,
         ComponentId.INVENTORY_SALES,
     ],
 
@@ -320,6 +322,7 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_ACCOUNTANTS,
         ComponentId.SIDEBAR_EMPLOYEES,
         ComponentId.SIDEBAR_AUDIT_LOGS,
+        ComponentId.SIDEBAR_FEEDBACK,
         ComponentId.INVENTORY_SALES,
     ],
 
@@ -353,6 +356,7 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_INVENTORY,
         ComponentId.SIDEBAR_SALES,
         ComponentId.INVENTORY_SALES,
+        ComponentId.SIDEBAR_FEEDBACK,
         ComponentId.SIDEBAR_SETTINGS,
         ComponentId.SETTINGS_VIEW,
         ComponentId.SETTINGS_EDIT,
@@ -377,6 +381,7 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_EXPENSE,
         ComponentId.SIDEBAR_FORECAST,
         ComponentId.INVENTORY_SALES,
+        ComponentId.SIDEBAR_FEEDBACK,
         ComponentId.SIDEBAR_SETTINGS,
         ComponentId.SETTINGS_VIEW,
         ComponentId.SETTINGS_EDIT,

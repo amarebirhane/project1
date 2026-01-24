@@ -1873,7 +1873,7 @@ class ApiClient {
     start_date?: string;
     end_date?: string;
   }) {
-    return this.get('/sales/journal-entries/list', { params });
+    return this.get<any[]>('/sales/journal-entries/list', { params });
   }
 
   /**
