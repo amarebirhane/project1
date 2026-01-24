@@ -10,9 +10,11 @@ from ...models.user import User, UserRole
 from ...models.account import Account, AccountType
 from ...models.journal_entry import AccountingJournalEntry, JournalEntryLine, JournalEntryStatus
 from ...models.currency import Currency, ExchangeRate
+from ...models.tax import TaxType, TaxRate
 from ...schemas import account as account_schema
 from ...schemas import journal_entry as journal_entry_schema
 from ...schemas import currency as currency_schema
+from ...schemas import tax as tax_schema
 
 router = APIRouter()
 
@@ -467,3 +469,211 @@ def delete_exchange_rate(
     db.delete(db_rate)
     db.commit()
     return {"message": "Exchange rate deleted"}
+
+# ------------------------------------------------------------------
+# Tax Types
+# ------------------------------------------------------------------
+
+@router.get("/taxes/types", response_model=List[tax_schema.TaxType])
+def get_tax_types(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    active_only: bool = False,
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Retrieve all tax types.
+    """
+    query = db.query(TaxType)
+    if active_only:
+        query = query.filter(TaxType.is_active == True)
+    return query.offset(skip).limit(limit).all()
+
+@router.post("/taxes/types", response_model=tax_schema.TaxType)
+def create_tax_type(
+    tax_type_in: tax_schema.TaxTypeCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Create a new tax type.
+    """
+    # Check if code exists
+    existing = db.query(TaxType).filter(TaxType.code == tax_type_in.code).first()
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail="Tax type with this code already exists"
+        )
+    
+    db_tax_type = TaxType(**tax_type_in.dict())
+    db.add(db_tax_type)
+    db.commit()
+    db.refresh(db_tax_type)
+    return db_tax_type
+
+@router.put("/taxes/types/{tax_type_id}", response_model=tax_schema.TaxType)
+def update_tax_type(
+    tax_type_id: int,
+    tax_type_in: tax_schema.TaxTypeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Update an existing tax type.
+    """
+    db_tax_type = db.query(TaxType).filter(TaxType.id == tax_type_id).first()
+    if not db_tax_type:
+        raise HTTPException(status_code=404, detail="Tax type not found")
+    
+    # Check if code is being changed and if it conflicts
+    update_data = tax_type_in.dict(exclude_unset=True)
+    if "code" in update_data and update_data["code"] != db_tax_type.code:
+        existing = db.query(TaxType).filter(TaxType.code == update_data["code"]).first()
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail="Tax type with this code already exists"
+            )
+    
+    for field, value in update_data.items():
+        setattr(db_tax_type, field, value)
+    
+    db.commit()
+    db.refresh(db_tax_type)
+    return db_tax_type
+
+@router.delete("/taxes/types/{tax_type_id}")
+def delete_tax_type(
+    tax_type_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Delete a tax type. Cannot delete if tax rates exist.
+    """
+    db_tax_type = db.query(TaxType).filter(TaxType.id == tax_type_id).first()
+    if not db_tax_type:
+        raise HTTPException(status_code=404, detail="Tax type not found")
+    
+    # Check for linked tax rates
+    has_rates = db.query(TaxRate).filter(TaxRate.tax_type_id == tax_type_id).first()
+    if has_rates:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete tax type with linked tax rates. Deactivate it instead."
+        )
+    
+    db.delete(db_tax_type)
+    db.commit()
+    return {"message": "Tax type deleted successfully"}
+
+# ------------------------------------------------------------------
+# Tax Rates
+# ------------------------------------------------------------------
+
+@router.get("/taxes/rates", response_model=List[tax_schema.TaxRate])
+def get_tax_rates(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    tax_type_id: int = None,
+    active_only: bool = False,
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Retrieve all tax rates.
+    """
+    query = db.query(TaxRate)
+    if tax_type_id:
+        query = query.filter(TaxRate.tax_type_id == tax_type_id)
+    if active_only:
+        query = query.filter(TaxRate.is_active == True)
+    
+    return query.order_by(TaxRate.effective_from.desc()).offset(skip).limit(limit).all()
+
+@router.post("/taxes/rates", response_model=tax_schema.TaxRate)
+def create_tax_rate(
+    tax_rate_in: tax_schema.TaxRateCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Create a new tax rate.
+    """
+    # Verify tax type exists
+    tax_type = db.query(TaxType).filter(TaxType.id == tax_rate_in.tax_type_id).first()
+    if not tax_type:
+        raise HTTPException(status_code=404, detail="Tax type not found")
+    
+    # If this is set as default, unset other defaults for this tax type
+    if tax_rate_in.is_default:
+        db.query(TaxRate).filter(
+            TaxRate.tax_type_id == tax_rate_in.tax_type_id,
+            TaxRate.is_default == True
+        ).update({TaxRate.is_default: False})
+    
+    db_tax_rate = TaxRate(
+        **tax_rate_in.dict(),
+        created_by_id=current_user.id
+    )
+    db.add(db_tax_rate)
+    db.commit()
+    db.refresh(db_tax_rate)
+    return db_tax_rate
+
+@router.put("/taxes/rates/{tax_rate_id}", response_model=tax_schema.TaxRate)
+def update_tax_rate(
+    tax_rate_id: int,
+    tax_rate_in: tax_schema.TaxRateUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Update an existing tax rate.
+    """
+    db_tax_rate = db.query(TaxRate).filter(TaxRate.id == tax_rate_id).first()
+    if not db_tax_rate:
+        raise HTTPException(status_code=404, detail="Tax rate not found")
+    
+    update_data = tax_rate_in.dict(exclude_unset=True)
+    
+    # Verify tax type exists if being changed
+    if "tax_type_id" in update_data:
+        tax_type = db.query(TaxType).filter(TaxType.id == update_data["tax_type_id"]).first()
+        if not tax_type:
+            raise HTTPException(status_code=404, detail="Tax type not found")
+    
+    # If setting as default, unset other defaults for this tax type
+    if update_data.get("is_default"):
+        tax_type_id = update_data.get("tax_type_id", db_tax_rate.tax_type_id)
+        db.query(TaxRate).filter(
+            TaxRate.tax_type_id == tax_type_id,
+            TaxRate.is_default == True,
+            TaxRate.id != tax_rate_id
+        ).update({TaxRate.is_default: False})
+    
+    for field, value in update_data.items():
+        setattr(db_tax_rate, field, value)
+    
+    db.commit()
+    db.refresh(db_tax_rate)
+    return db_tax_rate
+
+@router.delete("/taxes/rates/{tax_rate_id}")
+def delete_tax_rate(
+    tax_rate_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Delete a tax rate.
+    """
+    db_tax_rate = db.query(TaxRate).filter(TaxRate.id == tax_rate_id).first()
+    if not db_tax_rate:
+        raise HTTPException(status_code=404, detail="Tax rate not found")
+    
+    db.delete(db_tax_rate)
+    db.commit()
+    return {"message": "Tax rate deleted successfully"}
