@@ -1,0 +1,28 @@
+
+> frontend@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.1 (Turbopack)
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 19.2s
+   Running TypeScript ...
+Failed to compile.
+
+./app/accounting/mappings/page.tsx:529:51
+Type error: No overload matches this call.
+  Overload 1 of 2, '(props: PolymorphicComponentProps<"web", FastOmit<DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>, never>, void, void, {}, {}>): Element', gave the following error.
+    Object literal may only specify known properties, but 'webkitTextFillColor' does not exist in type 'Properties<string | number, string & {}>'. Did you mean to write 'WebkitTextFillColor'?
+  Overload 2 of 2, '(props: FastOmit<DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>, never>): ReactNode', gave the following error.
+    Object literal may only specify known properties, but 'webkitTextFillColor' does not exist in type 'Properties<string | number, string & {}>'. Did you mean to write 'WebkitTextFillColor'?
+
+[0m [90m 527 |[39m           [33m<[39m[33mHeader[39m style[33m=[39m{{ marginBottom[33m:[39m [32m'40px'[39m }}[33m>[39m
+ [90m 528 |[39m             [33m<[39m[33mHeaderContent[39m[33m>[39m
+[31m[1m>[22m[39m[90m 529 |[39m               [33m<[39m[33mTitle[39m style[33m=[39m{{ background[33m:[39m [32m'none'[39m[33m,[39m webkitTextFillColor[33m:[39m [32m'inherit'[39m[33m,[39m color[33m:[39m [32m'inherit'[39m }}[33m>[39m
+ [90m     |[39m                                                   [31m[1m^[22m[39m
+ [90m 530 |[39m                 [33mAccount[39m [33mMappings[39m
+ [90m 531 |[39m               [33m<[39m[33m/[39m[33mTitle[39m[33m>[39m
+ [90m 532 |[39m               [33m<[39m[33mSubtitle[39m[33m>[39m[33mDefine[39m dynamic routing rules between system events and the [33mCOA[39m[33m<[39m[33m/[39m[33mSubtitle[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -6,27 +6,29 @@ import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 import Layout from '@/components/layout';
 import {
-    LayoutDashboard,
-    Link as LinkIcon,
-    Plus,
-    Trash2,
-    Settings2,
-    Save,
-    Search,
-    ChevronRight,
-    Loader2
+  LayoutDashboard,
+  Link as LinkIcon,
+  Plus,
+  Trash2,
+  Settings2,
+  Save,
+  Search,
+  ChevronRight,
+  Loader2,
+  Shield,
+  Database,
+  Zap,
+  X,
+  Filter
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Styled Components Definitions
 
-const PageContainer = styled.div`
+const PageWrapper = styled.div`
   min-height: 100vh;
-  background-color: #0a0a0a;
-  color: #f3f4f6; /* text-gray-100 */
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  background: linear-gradient(135deg, ${props => props.theme.colors.background} 0%, ${props => props.theme.colors.muted} 100%);
+  padding: ${props => props.theme.spacing.xl};
 `;
 
 const ContentContainer = styled.div`
@@ -51,14 +53,10 @@ const HeaderContent = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.875rem; /* 3xl */
-  font-weight: 700; /* bold */
-  letter-spacing: -0.025em; /* tracking-tight */
-  background: linear-gradient(to right, #ffffff, #9ca3af);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: ${props => props.theme.colors.textDark};
+  letter-spacing: -1px;
 `;
 
 const Subtitle = styled.p`
@@ -214,21 +212,36 @@ const ActionButton = styled.button`
   }
 `;
 
-const Badge = styled.span<{ $colorClass?: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 10px;
+const HeaderButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #4f46e5;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  
-  /* We'll handle the colors via style prop or a mapping function since Tailwind classes were used dynamically */
-  ${props => props.$colorClass === 'revenue' && css`color: #10b981; background-color: rgba(16, 185, 129, 0.1);`}
-  ${props => props.$colorClass === 'expense' && css`color: #f43f5e; background-color: rgba(244, 63, 94, 0.1);`}
-  ${props => props.$colorClass === 'payroll' && css`color: #3b82f6; background-color: rgba(59, 130, 246, 0.1);`}
-  ${props => props.$colorClass === 'inventory' && css`color: #f59e0b; background-color: rgba(245, 158, 11, 0.1);`}
-  ${props => props.$colorClass === 'banking' && css`color: #a855f7; background-color: rgba(168, 85, 247, 0.1);`}
-  ${props => !props.$colorClass && css`color: #9ca3af; background-color: rgba(107, 114, 128, 0.1);`}
+  transition: all 0.2s;
+  box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #6366f1;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const ControlBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: ${props => props.theme.spacing.xl};
 `;
 
 const SidePanel = styled.div`
@@ -243,11 +256,6 @@ const CreatePanel = styled(GlassPanel) <{ $isVisible: boolean }>`
   flex-direction: column;
   gap: 1.5rem;
   transition: all 0.3s;
-  transform: ${props => props.$isVisible ? 'translateX(0)' : 'translateX(2.5rem)'};
-  opacity: ${props => props.$isVisible ? 1 : 0.5};
-  filter: ${props => props.$isVisible ? 'none' : 'blur(4px)'};
-  pointer-events: ${props => props.$isVisible ? 'auto' : 'none'};
-  position: ${props => props.$isVisible ? 'static' : 'absolute'};
 `;
 
 const PanelHeader = styled.div`
@@ -259,7 +267,7 @@ const PanelHeader = styled.div`
 `;
 
 const PanelTitle = styled.h2`
-  font-size: 1.25rem; /* xl */
+  font-size: 1.25rem;
   font-weight: 700;
 `;
 
@@ -276,47 +284,40 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: 0.75rem; /* xs */
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #9ca3af; /* text-gray-400 */
+  color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 const Select = styled.select`
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem; /* rounded-xl */
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  color: inherit;
+  color: #1e293b;
   outline: none;
+  font-weight: 600;
   
   &:focus {
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* ring-indigo-500/50 */
-  }
-
-  option {
-    background-color: #1f2937; /* dark mode dropdown bg */
-    color: #f3f4f6;
+    border-color: #6366f1;
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem; /* rounded-xl */
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
   padding: 0.75rem 1rem;
-  color: inherit;
+  color: #1e293b;
   outline: none;
+  font-weight: 600;
 
   &:focus {
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* ring-indigo-500/50 */
-  }
-
-  &::placeholder {
-    color: #9ca3af;
+    border-color: #6366f1;
   }
 `;
 
@@ -326,18 +327,13 @@ const SubmitButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(to right, #4f46e5, #7c3aed); /* indigo-600 to violet-600 */
   padding: 1rem;
-  border-radius: 0.75rem; /* rounded-xl */
+  border-radius: 0.75rem;
   font-weight: 700;
   color: white;
   border: none;
   cursor: pointer;
   transition: all 0.2s;
-
-  &:hover {
-    box-shadow: 0 0 25px rgba(79, 70, 229, 0.4);
-  }
 `;
 
 const InfoPanel = styled(GlassPanel)`
@@ -351,7 +347,7 @@ const InfoPanel = styled(GlassPanel)`
 const IconCircle = styled.div`
   width: 4rem;
   height: 4rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: #f1f5f9;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -361,224 +357,388 @@ const IconCircle = styled.div`
 
 const InfoTitle = styled.h3`
   font-weight: 700;
-  font-size: 1.125rem; /* lg */
+  font-size: 1.125rem;
 `;
 
 const InfoText = styled.p`
-  font-size: 0.875rem; /* sm */
-  color: #6b7280; /* text-gray-500 */
+  font-size: 0.875rem;
+  color: #6b7280;
   line-height: 1.625;
 `;
 
+const Badge = styled.span<{ $colorClass?: string }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  ${props => props.$colorClass === 'revenue' && css`color: #10b981; background-color: #f0fdf4; border: 1px solid #dcfce7;`}
+  ${props => props.$colorClass === 'expense' && css`color: #f43f5e; background-color: #fff1f2; border: 1px solid #fee2e2;`}
+  ${props => props.$colorClass === 'banking' && css`color: #3b82f6; background-color: #eff6ff; border: 1px solid #dbeafe;`}
+  ${props => !props.$colorClass && css`color: #64748b; background-color: #f8fafc; border: 1px solid #f1f5f9;`}
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: ${props => props.theme.spacing.lg};
+  margin-bottom: ${props => props.theme.spacing.xxl};
+`;
+
+const StatCard = styled.div<{ $color: string }>`
+  background: ${props => props.theme.colors.card};
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: ${props => props.theme.shadows.md};
+  }
+
+  .icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: ${props => props.$color}15;
+    color: ${props => props.$color};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .content {
+    .label { font-size: 0.875rem; color: ${props => props.theme.colors.textSecondary}; font-weight: 600; }
+    .value { font-size: 1.5rem; font-weight: 800; color: ${props => props.theme.colors.textDark}; }
+  }
+`;
+
+const TableWrapper = styled(motion.div)`
+  background: ${props => props.theme.colors.card};
+  border-radius: 32px;
+  border: 1px solid ${props => props.theme.colors.border};
+  box-shadow: ${props => props.theme.shadows.sm};
+  overflow: hidden;
+`;
+
+const EmptyState = styled.div`
+  padding: 80px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  color: ${props => props.theme.colors.textSecondary};
+
+  svg { color: #cbd5e1; }
+  h3 { font-size: 1.25rem; font-weight: 700; color: ${props => props.theme.colors.textDark}; }
+`;
+
 export default function AccountMappingsPage() {
-    const [mappings, setMappings] = useState<any[]>([]);
-    const [accounts, setAccounts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isAdding, setIsAdding] = useState(false);
+  const [mappings, setMappings] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-    const [formData, setFormData] = useState({
-        module: 'revenue',
-        category: '',
-        account_id: ''
-    });
+  const [formData, setFormData] = useState({
+    module: 'revenue',
+    category: '',
+    account_id: ''
+  });
 
-    const loadData = async () => {
-        try {
-            setLoading(true);
-            const [mappingsRes, accountsRes] = await Promise.all([
-                apiClient.getAccountMappings(),
-                apiClient.getAccountingAccounts()
-            ]);
-            setMappings(mappingsRes.data);
-            setAccounts(accountsRes.data);
-        } catch (error) {
-            toast.error("Failed to load mappings");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [mappingsRes, accountsRes] = await Promise.all([
+        apiClient.getAccountMappings(),
+        apiClient.getAccountingAccounts()
+      ]);
+      setMappings(mappingsRes.data);
+      setAccounts(accountsRes.data);
+    } catch (error) {
+      toast.error("Failed to load mappings");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        loadData();
-    }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await apiClient.createAccountMapping({
-                module: formData.module,
-                category: formData.category,
-                account_id: parseInt(formData.account_id)
-            });
-            toast.success("Mapping saved successfully");
-            setIsAdding(false);
-            setFormData({ module: 'revenue', category: '', account_id: '' });
-            loadData();
-        } catch (error) {
-            toast.error("Failed to save mapping");
-        }
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiClient.createAccountMapping({
+        module: formData.module,
+        category: formData.category,
+        account_id: parseInt(formData.account_id)
+      });
+      toast.success("Mapping saved successfully");
+      setIsAdding(false);
+      setFormData({ module: 'revenue', category: '', account_id: '' });
+      loadData();
+    } catch (error) {
+      toast.error("Failed to save mapping");
+    }
+  };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this mapping?")) return;
-        try {
-            await apiClient.deleteAccountMapping(id);
-            toast.success("Mapping deleted");
-            loadData();
-        } catch (error) {
-            toast.error("Failed to delete mapping");
-        }
-    };
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this mapping?")) return;
+    try {
+      await apiClient.deleteAccountMapping(id);
+      toast.success("Mapping deleted");
+      loadData();
+    } catch (error) {
+      toast.error("Failed to delete mapping");
+    }
+  };
 
-    return (
-        <Layout>
-            <PageContainer>
-                <ContentContainer>
-                {/* Header */}
-                <Header>
-                    <HeaderContent>
-                        <Title>Dynamic COA Mappings</Title>
-                        <Subtitle>Bridge business operations to your Chart of Accounts dynamically.</Subtitle>
-                    </HeaderContent>
-                    <NewMappingButton onClick={() => setIsAdding(!isAdding)}>
-                        <Plus size={20} /> New Mapping
-                    </NewMappingButton>
-                </Header>
+  const findAccount = (id: number) => accounts.find(a => a.id === id);
 
-                <MainGrid>
-                    {/* Main Table Section */}
-                    <MainContent>
-                        <SearchWrapper>
-                            <StyledSearchIcon size={18} />
-                            <SearchInput
-                                type="text"
-                                placeholder="Search mappings..."
-                            />
-                        </SearchWrapper>
+  const filteredMappings = mappings.filter(m => {
+    const account = findAccount(m.account_id);
+    const searchStr = `${m.module} ${m.category} ${account?.name || ''} ${account?.code || ''}`.toLowerCase();
+    return searchStr.includes(searchQuery.toLowerCase());
+  });
 
-                        <GlassPanel>
-                            <Table>
-                                <Thead>
-                                    <tr>
-                                        <Th>Source Module</Th>
-                                        <Th>Category</Th>
-                                        <Th>Mapped Account</Th>
-                                        <Th>Actions</Th>
-                                    </tr>
-                                </Thead>
-                                <Tbody>
-                                    {loading ? (
-                                        <tr>
-                                            <Td colSpan={4} style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <Loader2 className="animate-spin" size={24} color="#6366f1" />
-                                                    <span style={{ color: '#9ca3af' }}>Syncing with ledger...</span>
-                                                </div>
-                                            </Td>
-                                        </tr>
-                                    ) : mappings.length === 0 ? (
-                                        <tr>
-                                            <Td colSpan={4} style={{ textAlign: 'center', padding: '5rem 1.5rem', color: '#6b7280' }}>
-                                                No active mappings found. Use defaults or create mapping.
-                                            </Td>
-                                        </tr>
-                                    ) : mappings.map((m) => (
-                                        <Tr key={m.id}>
-                                            <Td>
-                                                <Badge $colorClass={m.module}>
-                                                    {m.module}
-                                                </Badge>
-                                            </Td>
-                                            <Td>
-                                                <span style={{ fontWeight: 500, color: '#d1d5db' }}>{m.category}</span>
-                                            </Td>
-                                            <Td>
-                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                    <span style={{ color: 'white' }}>Account {m.account_id}</span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>GL Code Reference</span>
-                                                </div>
-                                            </Td>
-                                            <Td>
-                                                <ActionButton onClick={() => handleDelete(m.id)}>
-                                                    <Trash2 size={16} />
-                                                </ActionButton>
-                                            </Td>
-                                        </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
-                        </GlassPanel>
-                    </MainContent>
+  const stats = {
+    total: mappings.length,
+    modules: new Set(mappings.map(m => m.module)).size,
+    revenue: mappings.filter(m => m.module === 'revenue').length
+  };
 
-                    {/* Create/Edit Panel */}
-                    <SidePanel>
-                        <CreatePanel $isVisible={isAdding}>
-                            <PanelHeader>
-                                <Settings2 className="text-indigo-400" size={20} color="#818cf8" />
-                                <PanelTitle>Configure Mapping</PanelTitle>
-                            </PanelHeader>
+  return (
+    <Layout>
+      <PageWrapper>
+        <ContentContainer>
+          <Header style={{ marginBottom: '40px' }}>
+            <HeaderContent>
+              <Title>
+                Account Mappings
+              </Title>
+              <Subtitle>Define dynamic routing rules between system events and the COA</Subtitle>
+            </HeaderContent>
+            <HeaderButton onClick={() => setIsAdding(!isAdding)}>
+              {isAdding ? <X size={20} /> : <Plus size={20} />}
+              {isAdding ? "Close Panel" : "New Rule"}
+            </HeaderButton>
+          </Header>
 
-                            <Form onSubmit={handleSubmit}>
-                                <FormGroup>
-                                    <Label>Module</Label>
-                                    <Select
-                                        value={formData.module}
-                                        onChange={(e) => setFormData({ ...formData, module: e.target.value })}
-                                    >
-                                        <option value="revenue">Revenue Recognition</option>
-                                        <option value="expense">Expense Categorization</option>
-                                        <option value="payroll">Payroll Control</option>
-                                        <option value="inventory">Inventory Asset/Shrinkage</option>
-                                        <option value="banking">Banking & Reconcile</option>
-                                    </Select>
-                                </FormGroup>
+          {/* Stats Section */}
+          <StatsGrid>
+            <StatCard $color="#6366f1">
+              <div className="icon"><Database size={24} /></div>
+              <div className="content">
+                <div className="label">Active Rules</div>
+                <div className="value">{stats.total}</div>
+              </div>
+            </StatCard>
+            <StatCard $color="#10b981">
+              <div className="icon"><Shield size={24} /></div>
+              <div className="content">
+                <div className="label">Modules Covered</div>
+                <div className="value">{stats.modules}</div>
+              </div>
+            </StatCard>
+            <StatCard $color="#f59e0b">
+              <div className="icon"><Zap size={24} /></div>
+              <div className="content">
+                <div className="label">Revenue Rules</div>
+                <div className="value">{stats.revenue}</div>
+              </div>
+            </StatCard>
+          </StatsGrid>
 
-                                <FormGroup>
-                                    <Label>Category Key</Label>
-                                    <Input
-                                        type="text"
-                                        placeholder="e.g. software_subs, damage..."
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        required
-                                    />
-                                </FormGroup>
+          <MainGrid>
+            <MainContent>
+              <ControlBar>
+                <SearchWrapper style={{ flex: 1 }}>
+                  <StyledSearchIcon size={18} />
+                  <SearchInput
+                    type="text"
+                    placeholder="Filter by module, category, or account..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ background: 'white', borderColor: '#e2e8f0', color: '#1e293b' }}
+                  />
+                </SearchWrapper>
+              </ControlBar>
 
-                                <FormGroup>
-                                    <Label>Target GL Account</Label>
-                                    <Select
-                                        value={formData.account_id}
-                                        onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
-                                        required
-                                    >
-                                        <option value="">Select Account...</option>
-                                        {accounts.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
-                                        ))}
-                                    </Select>
-                                </FormGroup>
+              <TableWrapper layout>
+                <Table>
+                  <Thead style={{ background: '#f8fafc' }}>
+                    <tr>
+                      <Th>Source Module</Th>
+                      <Th>Category / Key</Th>
+                      <Th>Target Account</Th>
+                      <Th style={{ width: '80px' }}></Th>
+                    </tr>
+                  </Thead>
+                  <Tbody>
+                    {loading ? (
+                      <tr>
+                        <Td colSpan={4} style={{ textAlign: 'center', padding: '100px' }}>
+                          <Loader2 className="animate-spin" size={32} style={{ color: '#6366f1', margin: '0 auto' }} />
+                          <div style={{ marginTop: '12px', color: '#64748b', fontWeight: 600 }}>Syncing Mappings...</div>
+                        </Td>
+                      </tr>
+                    ) : filteredMappings.length === 0 ? (
+                      <tr>
+                        <Td colSpan={4}>
+                          <EmptyState>
+                            <Database size={48} />
+                            <h3>No Mappings Found</h3>
+                            <p>Adjust your search or create a new mapping rule.</p>
+                          </EmptyState>
+                        </Td>
+                      </tr>
+                    ) : (
+                      <AnimatePresence mode="popLayout">
+                        {filteredMappings.map((m) => {
+                          const account = findAccount(m.account_id);
+                          return (
+                            <Tr key={m.id} as={motion.tr} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} layout>
+                              <Td>
+                                <Badge $colorClass={m.module === 'revenue' ? 'revenue' : m.module === 'expense' ? 'expense' : 'banking'}>
+                                  {m.module}
+                                </Badge>
+                              </Td>
+                              <Td>
+                                <div style={{ fontWeight: 700, color: '#1e293b' }}>{m.category}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Technical Key</div>
+                              </Td>
+                              <Td>
+                                {account ? (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '40px', height: '40px', background: '#f1f5f9', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, color: '#64748b', fontSize: '0.875rem' }}>
+                                      {account.code.substring(0, 2)}
+                                    </div>
+                                    <div>
+                                      <div style={{ fontWeight: 800, color: '#1e293b' }}>{account.name}</div>
+                                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>{account.code}</div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span style={{ color: '#ef4444', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
+                                )}
+                              </Td>
+                              <Td style={{ textAlign: 'right' }}>
+                                <ActionButton onClick={() => handleDelete(m.id)} style={{ color: '#ef4444' }}>
+                                  <Trash2 size={18} />
+                                </ActionButton>
+                              </Td>
+                            </Tr>
+                          );
+                        })}
+                      </AnimatePresence>
+                    )}
+                  </Tbody>
+                </Table>
+              </TableWrapper>
+            </MainContent>
 
-                                <SubmitButton type="submit">
-                                    <Save size={18} /> Commit Configuration
-                                </SubmitButton>
-                            </Form>
-                        </CreatePanel>
+            <SidePanel>
+              <AnimatePresence>
+                {isAdding && (
+                  <CreatePanel
+                    as={motion.div}
+                    initial={{ x: 50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: 50, opacity: 0 }}
+                    $isVisible={true}
+                    style={{ position: 'relative', background: 'white', borderColor: '#e2e8f0', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
+                  >
+                    <PanelHeader style={{ borderColor: '#f1f5f9' }}>
+                      <div style={{ background: '#e0e7ff', padding: '10px', borderRadius: '12px' }}>
+                        <Settings2 size={20} style={{ color: '#6366f1' }} />
+                      </div>
+                      <PanelTitle style={{ color: '#1e293b' }}>Configure Rule</PanelTitle>
+                    </PanelHeader>
 
-                        {!isAdding && (
-                            <InfoPanel>
-                                <IconCircle>
-                                    <LinkIcon color="#6b7280" size={24} />
-                                </IconCircle>
-                                <InfoTitle>Smart Linking</InfoTitle>
-                                <InfoText>
-                                    Link your operations to specific ledger accounts to automate the "Gluer" logic.
-                                </InfoText>
-                            </InfoPanel>
-                        )}
-                    </SidePanel>
-                </MainGrid>
-                </ContentContainer>
-            </PageContainer>
-        </Layout>
-    );
+                    <Form onSubmit={handleSubmit}>
+                      <FormGroup>
+                        <Label style={{ color: '#94a3b8' }}>Business Module</Label>
+                        <Select
+                          value={formData.module}
+                          onChange={(e) => setFormData({ ...formData, module: e.target.value })}
+                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
+                        >
+                          <option value="revenue">Revenue Recognition</option>
+                          <option value="expense">Expense Categorization</option>
+                          <option value="payroll">Payroll Control</option>
+                          <option value="inventory">Inventory Asset/Shrinkage</option>
+                          <option value="banking">Banking & Reconcile</option>
+                        </Select>
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label style={{ color: '#94a3b8' }}>Category / Unique Key</Label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. software_subs, tax_withholding"
+                          value={formData.category}
+                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                          required
+                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
+                        />
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label style={{ color: '#94a3b8' }}>Target GL Account</Label>
+                        <Select
+                          value={formData.account_id}
+                          onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
+                          required
+                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
+                        >
+                          <option value="">Select Account...</option>
+                          {accounts.map(acc => (
+                            <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                          ))}
+                        </Select>
+                      </FormGroup>
+
+                      <SubmitButton type="submit" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', height: '56px', borderRadius: '16px' }}>
+                        <Save size={18} /> Commit Configuration
+                      </SubmitButton>
+                    </Form>
+                  </CreatePanel>
+                )}
+              </AnimatePresence>
+
+              {!isAdding && (
+                <InfoPanel style={{ background: 'white', borderColor: '#e2e8f0' }}>
+                  <IconCircle style={{ background: '#f1f5f9' }}>
+                    <LinkIcon style={{ color: '#6366f1' }} size={24} />
+                  </IconCircle>
+                  <InfoTitle style={{ color: '#1e293b' }}>Smart Bridging</InfoTitle>
+                  <InfoText>
+                    Connect operational categories to specific ledger accounts to automate the "Gluing" logic across the platform.
+                  </InfoText>
+                  <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '16px', textAlign: 'left', border: '1px dashed #e2e8f0' }}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>Automated Postings</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>Audit Trail Registry</span>
+                    </div>
+                  </div>
+                </InfoPanel>
+              )}
+            </SidePanel>
+          </MainGrid>
+        </ContentContainer>
+      </PageWrapper>
+    </Layout>
+  );
 }

@@ -1,0 +1,36 @@
+
+> frontend@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.1 (Turbopack)
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 24.8s
+   Running TypeScript ...
+   Collecting page data ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages (0/36) ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/inventory/warehouses". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at S (C:\Users\ASHROCK\Desktop\project1\frontend\.next\server\chunks\ssr\node_modules_next_9c24ba8d._.js:2:2111)
+    at p (C:\Users\ASHROCK\Desktop\project1\frontend\.next\server\chunks\ssr\node_modules_next_9c24ba8d._.js:4:4847)
+    at aK (C:\Users\ASHROCK\Desktop\project1\frontend\.next\server\chunks\ssr\_fc53037d._.js:934:808)
+    at ir (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84433)
+    at ia (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:86252)
+    at il (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:107981)
+    at is (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:105399)
+    at ig (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:112864)
+    at iu (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:110013)
+    at il (C:\Users\ASHROCK\Desktop\project1\frontend\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:108259)
+Error occurred prerendering page "/inventory/warehouses". Read more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on /inventory/warehouses/page: /inventory/warehouses, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null
