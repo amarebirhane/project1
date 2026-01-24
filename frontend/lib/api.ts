@@ -1892,6 +1892,18 @@ class ApiClient {
     return this.post<any>(`/accounting/journal-entries/${entryId}/post`);
   }
 
+  async updateAccountingJournalEntry(entryId: number, data: any) {
+    return this.put<any>(`/accounting/journal-entries/${entryId}`, data);
+  }
+
+  async deleteAccountingJournalEntry(entryId: number) {
+    return this.delete<any>(`/accounting/journal-entries/${entryId}`);
+  }
+
+  async reverseAccountingJournalEntry(entryId: number) {
+    return this.post<any>(`/accounting/journal-entries/${entryId}/reverse`);
+  }
+
   // Currency Endpoints
   async getCurrencies(params?: { skip?: number; limit?: number; active_only?: boolean }) {
     return this.get<any[]>('/accounting/currencies', { params });

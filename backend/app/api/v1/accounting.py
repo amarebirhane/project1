@@ -204,6 +204,120 @@ def post_journal_entry(
     db.refresh(entry)
     return entry
 
+@router.put("/journal-entries/{entry_id}", response_model=journal_entry_schema.JournalEntry)
+def update_journal_entry(
+    entry_id: int,
+    entry_in: journal_entry_schema.JournalEntryCreate, # Using Create schema because we want full lines list
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Update a draft journal entry.
+    """
+    db_entry = db.query(AccountingJournalEntry).filter(AccountingJournalEntry.id == entry_id).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    if db_entry.status != JournalEntryStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="Only draft entries can be updated")
+
+    # Update header
+    db_entry.entry_date = entry_in.entry_date
+    db_entry.description = entry_in.description
+    db_entry.reference_type = entry_in.reference_type
+    db_entry.reference_id = entry_in.reference_id
+
+    # Update lines (delete and recreate for simplicity in manual entries)
+    db.query(JournalEntryLine).filter(JournalEntryLine.journal_entry_id == entry_id).delete()
+    
+    for line in entry_in.lines:
+        db_line = JournalEntryLine(
+            journal_entry_id=db_entry.id,
+            account_id=line.account_id,
+            debit_amount=line.debit_amount,
+            credit_amount=line.credit_amount,
+            description=line.description or entry_in.description
+        )
+        db.add(db_line)
+
+    db.commit()
+    db.refresh(db_entry)
+    return db_entry
+
+@router.delete("/journal-entries/{entry_id}")
+def delete_journal_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Delete a draft journal entry.
+    """
+    db_entry = db.query(AccountingJournalEntry).filter(AccountingJournalEntry.id == entry_id).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    if db_entry.status != JournalEntryStatus.DRAFT:
+        raise HTTPException(status_code=400, detail="Only draft entries can be deleted")
+
+    db.query(JournalEntryLine).filter(JournalEntryLine.journal_entry_id == entry_id).delete()
+    db.delete(db_entry)
+    db.commit()
+    return {"message": "Journal entry deleted"}
+
+@router.post("/journal-entries/{entry_id}/reverse", response_model=journal_entry_schema.JournalEntry)
+def reverse_journal_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Reverse a posted journal entry.
+    """
+    original = db.query(AccountingJournalEntry).filter(AccountingJournalEntry.id == entry_id).first()
+    if not original:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    if original.status != JournalEntryStatus.POSTED:
+        raise HTTPException(status_code=400, detail="Only posted entries can be reversed")
+
+    # Create Reversal Entry
+    today_str = datetime.now().strftime("%Y%m%d")
+    count = db.query(func.count(AccountingJournalEntry.id)).scalar() or 0
+    reversal_number = f"REV-{today_str}-{count + 1:04d}"
+
+    reversal_entry = AccountingJournalEntry(
+        entry_number=reversal_number,
+        entry_date=datetime.utcnow(),
+        description=f"Reversal of {original.entry_number}",
+        reference_type="REVERSAL",
+        reference_id=original.id,
+        status=JournalEntryStatus.POSTED,
+        created_by_id=current_user.id,
+        posted_at=datetime.utcnow(),
+        posted_by_id=current_user.id
+    )
+    db.add(reversal_entry)
+    db.flush()
+
+    # Create Reversal Lines (swapping debit and credit)
+    for line in original.lines:
+        rev_line = JournalEntryLine(
+            journal_entry_id=reversal_entry.id,
+            account_id=line.account_id,
+            debit_amount=line.credit_amount,
+            credit_amount=line.debit_amount,
+            description=f"Reverse: {line.description}"
+        )
+        db.add(rev_line)
+
+    # Mark original as REVERSED
+    original.status = JournalEntryStatus.REVERSED
+    original.reversed_at = datetime.utcnow()
+    original.reversed_by_id = current_user.id
+    original.reversal_entry_id = reversal_entry.id
+
+    db.commit()
+    db.refresh(reversal_entry)
+    return reversal_entry
+
 # ------------------------------------------------------------------
 # Currencies
 # ------------------------------------------------------------------

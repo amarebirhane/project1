@@ -1,0 +1,24 @@
+
+> frontend@0.1.0 build
+> next build
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.1 (Turbopack)
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Compiled successfully in 20.5s
+   Running TypeScript ...
+Failed to compile.
+
+./app/accounting/journal-entries/page.tsx:134:48
+Type error: Property 'lg' does not exist on type '{ sm: string; md: string; }'.
+
+[0m [90m 132 |[39m [32m  &:hover {[39m
+ [90m 133 |[39m [32m    transform: translateY(-5px);[39m
+[31m[1m>[22m[39m[90m 134 |[39m [32m    box-shadow: ${props => props.theme.shadows.lg};[39m
+ [90m     |[39m                                                [31m[1m^[22m[39m
+ [90m 135 |[39m [32m  }[39m
+ [90m 136 |[39m [32m[39m
+ [90m 137 |[39m [32m  .icon {[39m[0m
+Next.js build worker exited with code: 1 and signal: null
