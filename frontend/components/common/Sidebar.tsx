@@ -646,21 +646,63 @@ const Sidebar: React.FC = () => {
 
                 {/* Reports */}
                 <ComponentGate componentId={ComponentId.SIDEBAR_REPORT}>
-                    <>
-                        <NavItem href="/report" $active={pathname.includes('/report')} $collapsed={collapsed}>
-                            <NavIcon $active={pathname.includes('/report')} $collapsed={collapsed} $iconType="pie-chart">
-                                <PieChart />
-                            </NavIcon>
-                            {!collapsed && 'Reports'}
-                        </NavItem>
-                        <NavItem href="/accounting/documents" $active={pathname === '/accounting/documents'} $collapsed={collapsed}>
-                            <NavIcon $active={pathname === '/accounting/documents'} $collapsed={collapsed} $iconType="brain">
-                                <Brain />
-                            </NavIcon>
-                            {!collapsed && 'AI Documents'}
-                        </NavItem>
-                    </>
+                    <NavItem href="/report" $active={pathname.includes('/report')} $collapsed={collapsed}>
+                        <NavIcon $active={pathname.includes('/report')} $collapsed={collapsed} $iconType="pie-chart">
+                            <PieChart />
+                        </NavIcon>
+                        {!collapsed && 'Reports'}
+                    </NavItem>
                 </ComponentGate>
+
+                {/* AI Dropdown - New Section */}
+                {(isAdmin || isFinanceAdmin || isAccountant) && (
+                    <>
+                        <DropdownHeader
+                            onClick={() => toggleSection('ai-tools')}
+                            $open={isOpen('ai-tools')}
+                            $active={pathname.includes('/accounting/ai') || pathname.includes('/accounting/documents') || pathname.includes('/accounting/accounts')}
+                            $collapsed={collapsed}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <DropdownIcon $active={pathname.includes('/accounting/ai') || pathname.includes('/accounting/documents')} $collapsed={collapsed} $iconType="brain">
+                                    <Brain />
+                                </DropdownIcon>
+                                {!collapsed && <span style={{ marginLeft: '12px' }}>AI Center</span>}
+                            </div>
+                            <ChevronIcon $open={isOpen('ai-tools')}>
+                                <ChevronDown />
+                            </ChevronIcon>
+                        </DropdownHeader>
+                        {isOpen('ai-tools') && (
+                            <SubMenu $collapsed={collapsed}>
+                                <NavItem href="/accounting/documents" $active={pathname === '/accounting/documents'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/documents'} $collapsed={collapsed} $size={16} $iconType="file-text">
+                                        <FileText />
+                                    </NavIcon>
+                                    {!collapsed && 'AI Documents'}
+                                </NavItem>
+                                <NavItem href="/accounting/ai" $active={pathname === '/accounting/ai' && !pathname.includes('tab=fraud')} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/ai'} $collapsed={collapsed} $size={16} $iconType="activity">
+                                        <Activity />
+                                    </NavIcon>
+                                    {!collapsed && 'Applied AI'}
+                                </NavItem>
+                                <NavItem href="/accounting/ai?tab=fraud" $active={pathname.includes('tab=fraud')} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname.includes('tab=fraud')} $collapsed={collapsed} $size={16} $iconType="shield">
+                                        <Shield />
+                                    </NavIcon>
+                                    {!collapsed && 'Fraud Detection'}
+                                </NavItem>
+                                <NavItem href="/accounting/accounts" $active={pathname === '/accounting/accounts'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/accounting/accounts'} $collapsed={collapsed} $size={16} $iconType="building">
+                                        <Building />
+                                    </NavIcon>
+                                    {!collapsed && 'AI Accounts'}
+                                </NavItem>
+                            </SubMenu>
+                        )}
+                    </>
+                )}
 
                 {/* Forecasts - Only for Admin, Finance Admin, and Manager (hidden from Accountant and Employee) */}
                 {!isAccountant && !isEmployee && (
