@@ -27,6 +27,8 @@ from .banking import BankAccount, BankTransaction, TransactionStatus
 from .fixed_asset import FixedAsset, DepreciationLog, DepreciationMethod, FixedAssetStatus
 from .fraud import FraudFlag, FraudFlagStatus
 from .payroll import EmployeeProfile, PayrollPeriod, Payslip, EmploymentStatus, PayrollStatus
+from .feedback import Feedback, FeedbackStatus, FeedbackCategory
+
 
 __all__ = [
     "User", "UserRole", "Role",
@@ -49,5 +51,6 @@ __all__ = [
     "BankAccount", "BankTransaction", "TransactionStatus",
     "FixedAsset", "DepreciationLog", "DepreciationMethod", "FixedAssetStatus",
     "FraudFlag", "FraudFlagStatus",
-    "EmployeeProfile", "PayrollPeriod", "Payslip", "EmploymentStatus", "PayrollStatus"
+    "EmployeeProfile", "PayrollPeriod", "Payslip", "EmploymentStatus", "PayrollStatus",
+    "Feedback", "FeedbackStatus", "FeedbackCategory"
 ]

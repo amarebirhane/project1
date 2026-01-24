@@ -8,7 +8,7 @@ import {
     Home, ArrowDownCircle, ArrowUpCircle, Receipt, PieChart, Building, Briefcase, Users,
     UserCog, Settings, ChevronDown, Wallet, Shield, UserPlus, List, Calculator,
     DollarSign, Plus, FileText, TrendingUp, GitCompare, BarChart3, Package, ShoppingCart, BookOpen,
-    Key, ChevronLeft, ChevronRight, Brain, Activity, Bell, Database, History, LockKeyhole, Network, Landmark,
+    Key, ChevronLeft, ChevronRight, Brain, Activity, Bell, Database, History, LockKeyhole, Network, Landmark, MessageSquare,
     Coins, BookText, Banknote, CirclePercent
 } from 'lucide-react';
 import { ComponentGate, ComponentId } from '@/lib/rbac';
@@ -769,6 +769,12 @@ const Sidebar: React.FC = () => {
                                         <FileText />
                                     </NavIcon>
                                     {!collapsed && 'Accountings'}
+                                </NavItem>
+                                <NavItem href="admin/feedback" $active={pathname === '/admin/feedback'} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname === '/admin/feedback'} $collapsed={collapsed} $size={16} $iconType="m    ">
+                                        <MessageSquare />
+                                    </NavIcon>
+                                    {!collapsed && 'Feedback'}
                                 </NavItem>
                             </SubMenu>
                         )}

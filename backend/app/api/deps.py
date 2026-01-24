@@ -1,7 +1,7 @@
 # app/api/deps.py
-from typing import Generator
+from typing import Generator, Optional
 from fastapi import Depends, HTTPException, status  # type: ignore
-from fastapi.security import OAuth2PasswordBearer  # type: ignore
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials  # type: ignore
 from sqlalchemy.orm import Session  # type: ignore
 from jose import JWTError  # type: ignore
 
@@ -41,6 +41,36 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+# ------------------------------------------------------------------
+# Get Current User (Optional)
+# ------------------------------------------------------------------
+
+# Optional bearer scheme that doesn't raise errors
+optional_oauth2_scheme = HTTPBearer(auto_error=False)
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Get current user if authenticated, otherwise return None.
+    Used for endpoints that support both authenticated and anonymous access.
+    """
+    if credentials is None:
+        return None
+    
+    try:
+        payload = verify_token(credentials.credentials)
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        user = user_crud.get(db, id=int(user_id))
+        return user
+    except (JWTError, Exception):
+        return None
 
 
 # ------------------------------------------------------------------

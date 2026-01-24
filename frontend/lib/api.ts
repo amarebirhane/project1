@@ -141,6 +141,52 @@ export interface WarehouseStock {
   item: InventoryItem;
 }
 
+export interface Feedback {
+  id: number;
+  user_id?: number;
+  rating: number;
+  message: string;
+  category: string;
+  status: string;
+  admin_notes?: string;
+  created_at: string;
+  updated_at?: string;
+  reviewed_at?: string;
+  reviewed_by_id?: number;
+  user?: {
+    id: number;
+    username?: string;
+    full_name?: string;
+    email?: string;
+  };
+  reviewed_by?: {
+    id: number;
+    username?: string;
+    full_name?: string;
+    email?: string;
+  };
+}
+
+export interface FeedbackCreate {
+  rating: number;
+  message: string;
+  category?: string;
+}
+
+export interface FeedbackUpdate {
+  status?: string;
+  admin_notes?: string;
+}
+
+export interface FeedbackStats {
+  total_feedback: number;
+  average_rating: number;
+  rating_distribution: Record<string, number>;
+  status_breakdown: Record<string, number>;
+  recent_feedback_count: number;
+}
+
+
 class ApiClient {
   private client: AxiosInstance;
 
@@ -2086,6 +2132,37 @@ class ApiClient {
 
   async getPayslips(periodId: number) {
     return this.get<any[]>(`/payroll/periods/${periodId}/payslips`);
+  }
+
+  // Feedback
+  async submitFeedback(data: FeedbackCreate): Promise<ApiResponse<Feedback>> {
+    return this.post<Feedback>('/feedback/', data);
+  }
+
+  async getFeedback(params?: {
+    skip?: number;
+    limit?: number;
+    status_filter?: string;
+    rating_filter?: number;
+    category_filter?: string;
+  }): Promise<ApiResponse<Feedback[]>> {
+    return this.get<Feedback[]>('/feedback/', { params });
+  }
+
+  async getFeedbackById(feedbackId: number): Promise<ApiResponse<Feedback>> {
+    return this.get<Feedback>(`/feedback/${feedbackId}`);
+  }
+
+  async getFeedbackStats(): Promise<ApiResponse<FeedbackStats>> {
+    return this.get<FeedbackStats>('/feedback/stats');
+  }
+
+  async updateFeedback(feedbackId: number, data: FeedbackUpdate): Promise<ApiResponse<Feedback>> {
+    return this.put<Feedback>(`/feedback/${feedbackId}`, data);
+  }
+
+  async deleteFeedback(feedbackId: number): Promise<ApiResponse<{ message: string }>> {
+    return this.delete<{ message: string }>(`/feedback/${feedbackId}`);
   }
 
 

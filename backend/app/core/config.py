@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""  # Set via SMTP_USER environment variable
     SMTP_PASSWORD: str = ""  # Set via SMTP_PASSWORD environment variable
     SMTP_FROM_EMAIL: str = ""  # Set via SMTP_FROM_EMAIL environment variable
+    
+    # Additional SMTP settings for feedback notifications
+    SMTP_SERVER: str = "smtp.gmail.com"  # Default SMTP server
+    SMTP_USERNAME: Optional[str] = None  # Set via SMTP_USERNAME environment variable
+    FROM_EMAIL: Optional[str] = None  # Set via FROM_EMAIL environment variable
+    ADMIN_EMAILS: str = ""  # Comma-separated list of admin emails for notifications
+    FRONTEND_URL: str = "http://localhost:3000"  # Frontend URL for email links
+    
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
     
