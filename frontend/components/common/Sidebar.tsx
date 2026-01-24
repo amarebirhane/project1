@@ -620,14 +620,19 @@ const Sidebar: React.FC = () => {
                                     </NavItem>
                                 )}
                                 {/* Finance Admin can also access Accounting Dashboard */}
+                                {/* Accounting - Finance Admin and Admin */}
                                 {(isAdmin || isFinanceAdmin) && (
+                                    <NavItem href="/sales/accounting" $active={pathname === '/sales/accounting'} $collapsed={collapsed}>
+                                        <NavIcon $active={pathname === '/sales/accounting'} $collapsed={collapsed} $size={16} $iconType="book-open">
+                                            <BookOpen />
+                                        </NavIcon>
+                                        {!collapsed && 'Accounting'}
+                                    </NavItem>
+                                )}
+
+                                {/* Warehouse, Mappings, Banking - Admin Only */}
+                                {isAdmin && (
                                     <>
-                                        <NavItem href="/sales/accounting" $active={pathname === '/sales/accounting'} $collapsed={collapsed}>
-                                            <NavIcon $active={pathname === '/sales/accounting'} $collapsed={collapsed} $size={16} $iconType="book-open">
-                                                <BookOpen />
-                                            </NavIcon>
-                                            {!collapsed && 'Accounting'}
-                                        </NavItem>
                                         <NavItem href="/inventory/warehouses" $active={pathname === '/inventory/warehouses'} $collapsed={collapsed}>
                                             <NavIcon $active={pathname === '/inventory/warehouses'} $collapsed={collapsed} $size={16} $iconType="book-open">
                                                 <BookOpen />
