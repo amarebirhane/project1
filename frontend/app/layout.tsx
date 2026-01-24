@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { useThemeStore } from '@/store/useThemeStore';
 import ThemeSync from '@/components/common/ThemeSync';
 import FeedbackWidget from '@/components/common/FeedbackWidget';
+import AIChatWidget from '@/components/common/AIChatWidget';
 
 // Use system fonts instead of Google Fonts to avoid download warnings
 const GlobalStyle = createGlobalStyle`
@@ -74,6 +75,7 @@ export default function RootLayout({
               </LayoutContainer>
               <Toaster position="top-right" />
               <FeedbackWidget />
+              <AIChatWidget />
             </AuthProvider>
           </ThemeProvider>
         </StyledComponentsRegistry>

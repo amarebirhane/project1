@@ -6,6 +6,7 @@ from ...core.database import get_db
 from ...api import deps
 from ...models.user import User, UserRole
 from ...schemas import fraud as schemas
+from ...schemas.ai import ChatRequest, ChatResponse
 from ...services.fraud_detection import fraud_detection_service
 from ...services.scenario_modeling import scenario_service
 from ...models.fraud import FraudFlag, FraudFlagStatus
@@ -77,3 +78,15 @@ async def run_simulation(
         expense_offset=request.fixed_expense_offset
     )
     return result
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat_with_ai(
+    request: ChatRequest,
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """
+    Chat with the AI Financial Assistant.
+    """
+    from ...services.ai_chat import ai_chat_service
+    response_text = await ai_chat_service.generate_response(request.message, request.history)
+    return {"response": response_text}

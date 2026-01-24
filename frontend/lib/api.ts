@@ -167,6 +167,20 @@ export interface Feedback {
   };
 }
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
+export interface ChatRequest {
+  message: string;
+  history?: ChatMessage[];
+}
+
+export interface ChatResponse {
+  response: string;
+}
+
 export interface FeedbackCreate {
   rating: number;
   message: string;
@@ -2137,6 +2151,11 @@ class ApiClient {
   // Feedback
   async submitFeedback(data: FeedbackCreate): Promise<ApiResponse<Feedback>> {
     return this.post<Feedback>('/feedback/', data);
+  }
+
+  // AI Chat
+  async chatWithAI(data: ChatRequest): Promise<ApiResponse<ChatResponse>> {
+    return this.post('/ai/chat', data);
   }
 
   async getFeedback(params?: {
