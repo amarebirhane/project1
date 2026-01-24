@@ -257,10 +257,10 @@ export default function AccountingHomePage() {
         try {
             setLoading(true);
             const [accountsRes, journalRes, currenciesRes, taxRatesRes] = await Promise.all([
-                apiClient.getAccountingAccounts().catch(() => ({ data: [] })),
-                apiClient.getJournalEntries().catch(() => ({ data: [] })),
-                apiClient.getCurrencies().catch(() => ({ data: [] })),
-                apiClient.getTaxRates().catch(() => ({ data: [] })),
+                apiClient.getAccountingAccounts().catch(() => ({ data: [] as any[] })),
+                apiClient.getJournalEntries().catch(() => ({ data: [] as any[] })),
+                apiClient.getCurrencies().catch(() => ({ data: [] as any[] })),
+                apiClient.getTaxRates().catch(() => ({ data: [] as any[] })),
             ]);
 
             setStats({

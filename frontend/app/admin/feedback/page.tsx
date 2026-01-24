@@ -238,7 +238,7 @@ const LoadingState = styled.div`
   .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #e4e9f2;
+    border: 4px solid ${props => props.theme.colors.border};
     border-top-color: #667eea;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -261,7 +261,7 @@ const EmptyState = styled.div`
   text-align: center;
 
   svg {
-    color: #cbd5e0;
+    color: ${props => props.theme.colors.border};
     margin: 0 auto 20px;
   }
 
