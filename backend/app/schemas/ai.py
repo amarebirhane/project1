@@ -8,6 +8,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     message: str
     history: Optional[List[ChatMessage]] = []
+    current_page: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str

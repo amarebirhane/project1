@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Bot, Sparkles, User, Loader2 } from "lucide-react";
@@ -207,6 +208,7 @@ const TypingIndicator = styled.div`
 
 export default function AIChatWidget() {
   const { user } = useAuth();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState<ChatMessage[]>([]);
@@ -231,10 +233,11 @@ export default function AIChatWidget() {
     setLoading(true);
 
     try {
-      // Pass full history including the new message
+      // Pass full history including the new message and current page context
       const response = await apiClient.chatWithAI({
         message: userMsg.content,
-        history: history // Pass previous history
+        history: history, // Pass previous history
+        current_page: pathname
       });
 
       const aiMsg: ChatMessage = { role: 'model', content: response.data.response };

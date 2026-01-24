@@ -10,31 +10,39 @@ class AIChatService:
         else:
             self.model = None
 
-    async def generate_response(self, message: str, history: list = []) -> str:
+    async def generate_response(self, message: str, history: list = [], current_page: str = None) -> str:
         if not self.model:
             return "AI Chat is not configured (missing GEMINI_API_KEY)."
 
         try:
-            # System prompt to give context to the assistant
-            system_context = "You are an expert AI Financial Assistant for a Finance Management System. Use the provided context to help users with accounting, budgeting, and financial analysis. Be professional and concise."
+            # Enriched System prompt to give deep context to the assistant
+            system_context = f"""You are the Financial Management System AI Assistant (FMS Assistant). 
+            You have expert knowledge about this specific application's architecture and features:
+            
+            1. **Automated Forecasting**: The system uses 6 ML algorithms (ARIMA, SARIMA, Prophet, XGBoost, LSTM, Linear Regression) to predict Revenue, Expenses, and Inventory.
+            2. **Auto-Learning**: Models retrain automatically when new data is added (e.g., after 5 new entries or 24 hours).
+            3. **Fraud Detection**: AI scans transactions (Revenue, Expenses, Sales) to identify anomalies and flag potential fraud with high precision.
+            4. **Financial Simulation**: Users can run "What If" scenarios to see how revenue/expense multipliers affect long-term projections.
+            5. **Modular Design**: Modules include Accounting (General Ledger, Taxes, Payroll), Inventory (Transfer, Warehousing), and advanced Reporting.
+            6. **Permissions**: Features are restricted by role (Admin, Finance Manager, Accountant, Employee).
+            
+            {f'The user is currently viewing the page: {current_page}' if current_page else ''}
+            
+            Be professional, helpful, and concise. Use this knowledge to answer questions specifically about how the system works or how to use its financial tools.
+            """
             
             # Start chat with history
-            # Gemini history format: [{"role": "user"|"model", "parts": ["..."]}]
             chat_history = []
             for msg in history:
                 role = "user" if msg.role == "user" else "model"
                 chat_history.append({"role": role, "parts": [msg.content]})
             
-            # We add the system context as a first message or instruction if supported.
-            # In older versions, we prefix the message. In newer, we use system_instruction in GenerativeModel.
-            # For compatibility with 0.3.2, we'll try a simpler approach if Needed, but let's try starting chat.
-            
             chat = self.model.start_chat(history=chat_history)
             
-            # If it's the first message, prepend system context
-            full_message = f"{system_context}\n\nUser: {message}" if not history else message
+            # Add system context to the message if it's the start of conversation or context changed
+            prompt = f"[SYSTEM CONTEXT: {system_context}]\n\nUser: {message}" if not history else message
             
-            response = chat.send_message(full_message)
+            response = chat.send_message(prompt)
             return response.text
         except Exception as e:
             print(f"Error generating AI response: {e}")
