@@ -57,6 +57,59 @@ def create_account(
     db.refresh(db_account)
     return db_account
 
+@router.put("/accounts/{account_id}", response_model=account_schema.Account)
+def update_account(
+    account_id: int,
+    account_in: account_schema.AccountUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Update an existing account.
+    """
+    db_account = db.query(Account).filter(Account.id == account_id).first()
+    if not db_account:
+        raise HTTPException(status_code=404, detail="Account not found")
+        
+    update_data = account_in.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_account, field, value)
+        
+    db.commit()
+    db.refresh(db_account)
+    return db_account
+
+@router.delete("/accounts/{account_id}")
+def delete_account(
+    account_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Delete an account. System accounts cannot be deleted.
+    """
+    db_account = db.query(Account).filter(Account.id == account_id).first()
+    if not db_account:
+        raise HTTPException(status_code=404, detail="Account not found")
+        
+    if db_account.is_system_account:
+        raise HTTPException(
+            status_code=400,
+            detail="System accounts cannot be deleted"
+        )
+        
+    # Check for linked journal entries
+    has_entries = db.query(JournalEntryLine).filter(JournalEntryLine.account_id == account_id).first()
+    if has_entries:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete account with linked journal entries. Deactivate it instead."
+        )
+        
+    db.delete(db_account)
+    db.commit()
+    return {"message": "Account deleted successfully"}
+
 # ------------------------------------------------------------------
 # Journal Entries
 # ------------------------------------------------------------------

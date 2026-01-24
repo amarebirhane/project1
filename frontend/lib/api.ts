@@ -1872,6 +1872,14 @@ class ApiClient {
     return this.post<any>('/accounting/accounts', data);
   }
 
+  async updateAccountingAccount(accountId: number, data: any) {
+    return this.put<any>(`/accounting/accounts/${accountId}`, data);
+  }
+
+  async deleteAccountingAccount(accountId: number) {
+    return this.delete<any>(`/accounting/accounts/${accountId}`);
+  }
+
   async getAccountingJournalEntries(params?: { skip?: number; limit?: number; status?: string }) {
     return this.get<any[]>('/accounting/journal-entries', { params });
   }
