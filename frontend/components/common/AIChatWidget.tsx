@@ -20,7 +20,7 @@ const FloatingButton = styled(motion.button)`
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
   cursor: pointer;
@@ -41,7 +41,8 @@ const PopupCard = styled(motion.div)`
   bottom: 70px;
   right: 0;
   width: 380px;
-  height: 500px;
+  height: 600px;
+  max-height: calc(100vh - 180px); /* Ensure it doesn't go off screen */
   background: ${props => props.theme.colors.card};
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
