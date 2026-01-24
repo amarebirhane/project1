@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from datetime import datetime
 
+from ..schemas.user import UserOut
+
 
 class FeedbackBase(BaseModel):
     """Base feedback schema"""
@@ -37,8 +39,8 @@ class Feedback(FeedbackBase):
     reviewed_by_id: Optional[int] = None
     
     # Nested user info (if available)
-    user: Optional[dict] = None
-    reviewed_by: Optional[dict] = None
+    user: Optional[UserOut] = None
+    reviewed_by: Optional[UserOut] = None
 
     model_config = ConfigDict(from_attributes=True)
 
