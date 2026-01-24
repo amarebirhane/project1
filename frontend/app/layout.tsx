@@ -9,6 +9,7 @@ import { AuthProvider } from '@/lib/rbac/auth-context';
 import { Toaster } from '@/components/ui/sonner';
 import { useThemeStore } from '@/store/useThemeStore';
 import ThemeSync from '@/components/common/ThemeSync';
+import FeedbackWidget from '@/components/common/FeedbackWidget';
 
 // Use system fonts instead of Google Fonts to avoid download warnings
 const GlobalStyle = createGlobalStyle`
@@ -72,6 +73,7 @@ export default function RootLayout({
                 </MainContent>
               </LayoutContainer>
               <Toaster position="top-right" />
+              <FeedbackWidget />
             </AuthProvider>
           </ThemeProvider>
         </StyledComponentsRegistry>

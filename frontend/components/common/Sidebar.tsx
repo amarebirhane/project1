@@ -781,14 +781,14 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Help & Support - Available to ALL users */}
-                <ComponentGate componentId={ComponentId.SIDEBAR_FEEDBACK}>
+                {/* <ComponentGate componentId={ComponentId.SIDEBAR_FEEDBACK}>
                     <NavItem href="/feedback" $active={pathname === '/feedback'} $collapsed={collapsed}>
                         <NavIcon $active={pathname === '/feedback'} $collapsed={collapsed} $iconType="message-square">
                             <MessageSquare />
                         </NavIcon>
                         {!collapsed && 'Feedback'}
                     </NavItem>
-                </ComponentGate>
+                </ComponentGate> */}
 
                 {/* Forecasts - Only for Admin, Finance Admin, and Manager (hidden from Accountant and Employee) */}
                 {!isAccountant && !isEmployee && (
