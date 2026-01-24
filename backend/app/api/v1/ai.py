@@ -92,6 +92,7 @@ async def chat_with_ai(
         request.message, 
         request.history,
         current_page=request.current_page,
-        user_id=current_user.id
+        user_id=current_user.id,
+        image_data=request.image_data
     )
     return {"response": response_text}

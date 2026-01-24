@@ -177,6 +177,7 @@ export interface ChatRequest {
   message: string;
   history?: ChatMessage[];
   current_page?: string;
+  image_data?: string;
 }
 
 export interface ChatResponse {

@@ -15,7 +15,7 @@ class AIChatService:
         else:
             self.model = None
 
-    async def generate_response(self, message: str, history: list = [], current_page: str = None, user_id: int = None) -> str:
+    async def generate_response(self, message: str, history: list = [], current_page: str = None, user_id: int = None, image_data: str = None) -> str:
         if not self.model:
             return "AI Chat is not configured (missing GEMINI_API_KEY)."
 
@@ -45,13 +45,13 @@ class AIChatService:
                 parts = [{"text": msg.content}]
                 
                 # Use getattr to safely check for image_data from Pydantic model
-                image_data = getattr(msg, 'image_data', None)
-                if image_data:
+                msg_image = getattr(msg, 'image_data', None)
+                if msg_image:
                     try:
-                        if "," in image_data:
-                            _, img_str = image_data.split(",")
+                        if "," in msg_image:
+                            _, img_str = msg_image.split(",")
                         else:
-                            img_str = image_data
+                            img_str = msg_image
                         
                         parts.append({
                             "mime_type": "image/jpeg",
@@ -66,9 +66,28 @@ class AIChatService:
             chat = self.model.start_chat(history=chat_history, enable_automatic_function_calling=True)
             
             # Prepend system context to initial message
-            prompt = f"[SYSTEM CONTEXT: {system_context}]\n\nUser: {message}" if not history else message
-            
-            response = chat.send_message(prompt)
+            prompt_parts = []
+            if not history:
+                prompt_parts.append(f"[SYSTEM CONTEXT: {system_context}]\n\nUser: {message}")
+            else:
+                prompt_parts.append(message)
+
+            # Add current image if provided
+            if image_data:
+                try:
+                    if "," in image_data:
+                        _, img_str = image_data.split(",")
+                    else:
+                        img_str = image_data
+                    
+                    prompt_parts.append({
+                        "mime_type": "image/jpeg",
+                        "data": base64.b64decode(img_str)
+                    })
+                except Exception as e:
+                    print(f"Error decoding current image: {e}")
+
+            response = chat.send_message(prompt_parts)
             return response.text
         except Exception as e:
             print(f"Error generating AI response: {e}")

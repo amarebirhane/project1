@@ -11,6 +11,7 @@ class ChatRequest(BaseModel):
     history: Optional[List[ChatMessage]] = []
     current_page: Optional[str] = None
     user_id: Optional[int] = None
+    image_data: Optional[str] = None  # Base64 encoded image
 
 class ChatResponse(BaseModel):
     response: str
