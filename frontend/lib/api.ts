@@ -1901,12 +1901,24 @@ class ApiClient {
     return this.post<any>('/accounting/currencies', data);
   }
 
+  async updateCurrency(currencyId: number, data: any) {
+    return this.put<any>(`/accounting/currencies/${currencyId}`, data);
+  }
+
+  async deleteCurrency(currencyId: number) {
+    return this.delete<any>(`/accounting/currencies/${currencyId}`);
+  }
+
   async getExchangeRates(params?: { skip?: number; limit?: number; from_currency?: string; to_currency?: string }) {
     return this.get<any[]>('/accounting/exchange-rates', { params });
   }
 
   async createExchangeRate(data: any) {
     return this.post<any>('/accounting/exchange-rates', data);
+  }
+
+  async deleteExchangeRate(rateId: number) {
+    return this.delete<any>(`/accounting/exchange-rates/${rateId}`);
   }
 
   // Tax Endpoints

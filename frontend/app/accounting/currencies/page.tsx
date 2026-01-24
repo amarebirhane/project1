@@ -3,10 +3,13 @@
 
 import { useState, useEffect } from "react";
 import styled, { css } from "styled-components";
-import { Plus, Edit, Trash2, TrendingUp, DollarSign } from "lucide-react";
+import { Plus, Edit, Trash2, TrendingUp, DollarSign, X, Check, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { toast } from "sonner";
 import Layout from "@/components/layout";
+import { motion, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { Suspense } from "react";
 
 interface Currency {
     id: number;
@@ -252,11 +255,119 @@ const ActionGroup = styled.div`
   gap: ${props => props.theme.spacing.sm};
 `;
 
-export default function CurrencyManagementPage() {
+// --- Modal Styled Components ---
+
+const ModalOverlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${props => props.theme.spacing.md};
+`;
+
+const ModalContent = styled(motion.div)`
+  background: ${props => props.theme.colors.card};
+  width: 100%;
+  max-width: 500px;
+  border-radius: 28px;
+  padding: ${props => props.theme.spacing.xxl};
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid ${props => props.theme.colors.border};
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: ${props => props.theme.spacing.lg};
+`;
+
+const Label = styled.label`
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: ${props => props.theme.colors.textDark};
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  background: ${props => props.theme.colors.muted};
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+  color: ${props => props.theme.colors.text};
+  
+  &:focus {
+    outline: none;
+    border-color: #ea580c;
+    background: ${props => props.theme.colors.card};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 12px 16px;
+  background: ${props => props.theme.colors.muted};
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: ${props => props.theme.colors.text};
+
+  &:focus {
+    outline: none;
+    border-color: #ea580c;
+  }
+`;
+
+const ModalHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: ${props => props.theme.spacing.xl};
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: ${props => props.theme.colors.textDark};
+    }
+
+    button {
+        background: none;
+        border: none;
+        color: ${props => props.theme.colors.textSecondary};
+        cursor: pointer;
+        &:hover { color: ${props => props.theme.colors.textDark}; }
+    }
+`;
+
+const SubmitButton = styled(HeaderButton)`
+    width: 100%;
+    justify-content: center;
+    margin-top: ${props => props.theme.spacing.lg};
+`;
+
+function CurrencyManagementContent() {
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<"currencies" | "rates">("currencies");
+
+    // Modal State
+    const [isCurrencyModalOpen, setIsCurrencyModalOpen] = useState(false);
+    const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+    const [editingCurrency, setEditingCurrency] = useState<Currency | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    const { register, handleSubmit, reset, setValue } = useForm();
+    const rateForm = useForm();
 
     useEffect(() => {
         fetchData();
@@ -279,6 +390,88 @@ export default function CurrencyManagementPage() {
         }
     };
 
+    const handleCurrencySubmit = async (data: any) => {
+        try {
+            setSubmitting(true);
+            const payload = {
+                ...data,
+                decimal_places: parseInt(data.decimal_places),
+                is_base_currency: data.is_base_currency === "true" || data.is_base_currency === true,
+                is_active: data.is_active === "true" || data.is_active === true,
+            };
+
+            if (editingCurrency) {
+                await apiClient.updateCurrency(editingCurrency.id, payload);
+                toast.success("Currency updated successfully");
+            } else {
+                await apiClient.createCurrency(payload);
+                toast.success("Currency added successfully");
+            }
+            setIsCurrencyModalOpen(false);
+            setEditingCurrency(null);
+            reset();
+            fetchData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || "Failed to save currency");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleRateSubmit = async (data: any) => {
+        try {
+            setSubmitting(true);
+            const payload = {
+                ...data,
+                from_currency_id: parseInt(data.from_currency_id),
+                to_currency_id: parseInt(data.to_currency_id),
+                rate: parseFloat(data.rate),
+            };
+            await apiClient.createExchangeRate(payload);
+            toast.success("Exchange rate added successfully");
+            setIsRateModalOpen(false);
+            rateForm.reset();
+            fetchData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || "Failed to add exchange rate");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const deleteCurrency = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this currency?")) return;
+        try {
+            await apiClient.deleteCurrency(id);
+            toast.success("Currency deleted");
+            fetchData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.detail || "Delete failed");
+        }
+    };
+
+    const deleteRate = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this exchange rate record?")) return;
+        try {
+            await apiClient.deleteExchangeRate(id);
+            toast.success("Record removed");
+            fetchData();
+        } catch (error: any) {
+            toast.error("Delete failed");
+        }
+    };
+
+    const openEditCurrency = (currency: Currency) => {
+        setEditingCurrency(currency);
+        setValue("code", currency.code);
+        setValue("name", currency.name);
+        setValue("symbol", currency.symbol);
+        setValue("decimal_places", currency.decimal_places);
+        setValue("is_base_currency", currency.is_base_currency);
+        setValue("is_active", currency.is_active);
+        setIsCurrencyModalOpen(true);
+    };
+
     return (
         <Layout>
             <PageWrapper>
@@ -291,7 +484,16 @@ export default function CurrencyManagementPage() {
                                 Manage currencies and exchange rates
                             </Description>
                         </div>
-                        <HeaderButton>
+                        <HeaderButton onClick={() => {
+                            if (activeTab === "currencies") {
+                                setEditingCurrency(null);
+                                reset();
+                                setIsCurrencyModalOpen(true);
+                            } else {
+                                rateForm.reset();
+                                setIsRateModalOpen(true);
+                            }
+                        }}>
                             <Plus className="w-5 h-5" />
                             {activeTab === "currencies" ? "Add Currency" : "Add Exchange Rate"}
                         </HeaderButton>
@@ -366,11 +568,11 @@ export default function CurrencyManagementPage() {
                                                     </Td>
                                                     <ActionsCell>
                                                         <ActionGroup>
-                                                            <ActionButton $variant="edit">
+                                                            <ActionButton $variant="edit" onClick={() => openEditCurrency(currency)}>
                                                                 <Edit className="w-4 h-4" />
                                                             </ActionButton>
                                                             {!currency.is_base_currency && (
-                                                                <ActionButton $variant="delete">
+                                                                <ActionButton $variant="delete" onClick={() => deleteCurrency(currency.id)}>
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </ActionButton>
                                                             )}
@@ -431,10 +633,7 @@ export default function CurrencyManagementPage() {
                                                     </Td>
                                                     <ActionsCell>
                                                         <ActionGroup>
-                                                            <ActionButton $variant="edit">
-                                                                <Edit className="w-4 h-4" />
-                                                            </ActionButton>
-                                                            <ActionButton $variant="delete">
+                                                            <ActionButton $variant="delete" onClick={() => deleteRate(rate.id)}>
                                                                 <Trash2 className="w-4 h-4" />
                                                             </ActionButton>
                                                         </ActionGroup>
@@ -449,6 +648,106 @@ export default function CurrencyManagementPage() {
                     )}
                 </ContentContainer>
             </PageWrapper>
+
+            {/* Currency Modal */}
+            <AnimatePresence>
+                {isCurrencyModalOpen && (
+                    <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <ModalContent initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
+                            <ModalHeader>
+                                <h2>{editingCurrency ? "Edit Currency" : "Add New Currency"}</h2>
+                                <button onClick={() => setIsCurrencyModalOpen(false)}><X size={24} /></button>
+                            </ModalHeader>
+                            <form onSubmit={handleSubmit(handleCurrencySubmit)}>
+                                <FormGroup>
+                                    <Label>Currency Code (ISO)</Label>
+                                    <Input {...register("code", { required: true })} placeholder="e.g. USD" />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Name</Label>
+                                    <Input {...register("name", { required: true })} placeholder="e.g. US Dollar" />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Symbol</Label>
+                                    <Input {...register("symbol", { required: true })} placeholder="e.g. $" />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Decimal Places</Label>
+                                    <Input type="number" {...register("decimal_places", { required: true })} defaultValue={2} />
+                                </FormGroup>
+                                <FormGroup style={{ display: 'flex', gap: '20px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem' }}>
+                                        <input type="checkbox" {...register("is_base_currency")} /> Base Currency
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.875rem' }}>
+                                        <input type="checkbox" {...register("is_active")} defaultChecked /> Active
+                                    </label>
+                                </FormGroup>
+                                <SubmitButton type="submit" disabled={submitting}>
+                                    {submitting ? "Saving..." : (editingCurrency ? "Update Currency" : "Add Currency")}
+                                </SubmitButton>
+                            </form>
+                        </ModalContent>
+                    </ModalOverlay>
+                )}
+            </AnimatePresence>
+
+            {/* Exchange Rate Modal */}
+            <AnimatePresence>
+                {isRateModalOpen && (
+                    <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <ModalContent initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
+                            <ModalHeader>
+                                <h2>Add Exchange Rate</h2>
+                                <button onClick={() => setIsRateModalOpen(false)}><X size={24} /></button>
+                            </ModalHeader>
+                            <form onSubmit={rateForm.handleSubmit(handleRateSubmit)}>
+                                <FormGroup>
+                                    <Label>From Currency</Label>
+                                    <Select {...rateForm.register("from_currency_id", { required: true })}>
+                                        <option value="">Select Currency</option>
+                                        {currencies.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+                                    </Select>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>To Currency</Label>
+                                    <Select {...rateForm.register("to_currency_id", { required: true })}>
+                                        <option value="">Select Currency</option>
+                                        {currencies.map(c => <option key={c.id} value={c.id}>{c.code} - {c.name}</option>)}
+                                    </Select>
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Rate (1 From = X To)</Label>
+                                    <Input type="number" step="0.000001" {...rateForm.register("rate", { required: true })} placeholder="e.g. 1.25" />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Effective Date</Label>
+                                    <Input type="date" {...rateForm.register("effective_date", { required: true })} defaultValue={new Date().toISOString().split('T')[0]} />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label>Source</Label>
+                                    <Select {...rateForm.register("source")}>
+                                        <option value="manual">Manual</option>
+                                        <option value="api">API</option>
+                                        <option value="bank">Bank</option>
+                                    </Select>
+                                </FormGroup>
+                                <SubmitButton type="submit" disabled={submitting}>
+                                    {submitting ? "Adding..." : "Add Exchange Rate"}
+                                </SubmitButton>
+                            </form>
+                        </ModalContent>
+                    </ModalOverlay>
+                )}
+            </AnimatePresence>
         </Layout>
+    );
+}
+
+export default function CurrencyManagementPage() {
+    return (
+        <Suspense fallback={<div>Loading Currencies...</div>}>
+            <CurrencyManagementContent />
+        </Suspense>
     );
 }
