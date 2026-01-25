@@ -170,7 +170,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ sourceType, sourceId })
 
     const fetchComments = async () => {
         try {
-            const response = await apiClient.get(`/api/v1/comments/${sourceType}/${sourceId}`);
+            const response = await apiClient.get(`/comments/${sourceType}/${sourceId}`);
             setComments(response.data as Comment[]);
         } catch (error) {
             console.error('Failed to fetch comments:', error);
@@ -182,7 +182,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ sourceType, sourceId })
 
         setLoading(true);
         try {
-            await apiClient.post('/api/v1/comments/', {
+            await apiClient.post('/comments/', {
                 content: newComment.trim(),
                 source_type: sourceType,
                 source_id: sourceId
