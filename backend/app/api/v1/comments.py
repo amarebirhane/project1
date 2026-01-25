@@ -2,11 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from ....core.database import get_db
-from ....core.auth import get_current_user
-from ....models.user import User
-from ....schemas.comment import CommentCreate, CommentResponse
-from ....crud.comment import comment_crud
+from ...core.database import get_db
+from ..deps import get_current_user
+from ...models.user import User
+from ...schemas.comment import CommentCreate, CommentResponse
+from ...crud.comment import comment_crud
 
 router = APIRouter()
 

@@ -7,7 +7,7 @@ import styled, { keyframes, css, useTheme } from 'styled-components';
 import {
   Search, Plus, Bell, FileSpreadsheet, Globe, User, Users, LogOut, Settings, HelpCircle,
   Clock, ChevronDown, ChevronUp, AlertCircle, XCircle, CheckCircle, Info, Sun, Moon, Monitor, Check, Sparkles, Brain,
-  Bot
+  Bot, AtSign
 } from 'lucide-react';
 import { ComponentGate, ComponentId } from '@/lib/rbac';
 import { useAuth } from '@/lib/rbac/auth-context';
@@ -1832,10 +1832,11 @@ export default function Navbar() {
                             >
                               <NotificationIconBox $type={notifType}>
                                 {notification.title?.includes('🤖') || notification.title?.includes('AI') ? <Bot size={18} color="#06b6d4" /> :
-                                  notifType === 'success' ? <CheckCircle size={18} /> :
-                                    notifType === 'error' ? <XCircle size={18} /> :
-                                      notifType === 'warning' ? <AlertCircle size={18} /> :
-                                        <Info size={18} />}
+                                  notification.type?.includes('mention') ? <AtSign size={18} color="#8b5cf6" /> :
+                                    notifType === 'success' ? <CheckCircle size={18} /> :
+                                      notifType === 'error' ? <XCircle size={18} /> :
+                                        notifType === 'warning' ? <AlertCircle size={18} /> :
+                                          <Info size={18} />}
                               </NotificationIconBox>
 
                               <NotificationContent>

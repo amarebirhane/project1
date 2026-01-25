@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
+import CommentSection from '@/components/common/CommentSection';
 
 // Type definitions for error handling
 type ErrorWithDetails = {
@@ -847,6 +848,8 @@ export default function RevenueDetailPage() {
               </InfoItem>
             )}
           </InfoGrid>
+
+          <CommentSection sourceType="revenue_entries" sourceId={revenue.id} />
 
           {revenue.description && (
             <Description>

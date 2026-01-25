@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
+import CommentSection from '@/components/common/CommentSection';
 
 const PRIMARY_COLOR = (props: any) => props.theme.colors.primary || '#00AA00';
 const TEXT_COLOR_DARK = (props: any) => props.theme.colors.textDark;
