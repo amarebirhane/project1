@@ -29,7 +29,7 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 
 const PRIMARY_COLOR = theme.colors.primary || '#00AA00';
-const PRIMARY_LIGHT =theme.mode === 'dark' ? 'rgba(0, 170, 0, 0.1)' : '#e8f5e9';
+const PRIMARY_LIGHT = theme.mode === 'dark' ? 'rgba(0, 170, 0, 0.1)' : '#e8f5e9';
 const TEXT_COLOR_DARK = theme.colors.textDark || '#000000';
 const TEXT_COLOR_MUTED = theme.colors.textSecondary || '#666';
 const BACKGROUND_GRADIENT = (props: any) => props.theme.mode === 'dark' ? `linear-gradient(180deg, #0f172a 0%, #1e293b 60%, ${props.theme.colors.background} 100%)` : `linear-gradient(180deg, #f9fafb 0%, #f3f4f6 60%, ${props.theme.colors.background} 100%)`;
@@ -386,9 +386,11 @@ const ForecastDetailPage: React.FC = () => {
   const params = useParams();
   const [forecast, setForecast] = useState<Forecast | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'charts' | 'comparison' | 'budget' | 'accuracy' | 'scenarios'>('overview');
+  const [activeTab, setActiveTab] = useState('summary');
   const [actualsData, setActualsData] = useState<ActualDataPoint[]>([]);
   const [loadingActuals, setLoadingActuals] = useState(false);
+  const [comparisonModels, setComparisonModels] = useState<Record<string, ForecastDataPoint[]>>({});
+  const [loadingComparison, setLoadingComparison] = useState<Record<string, boolean>>({});
   const [selectedBudget, setSelectedBudget] = useState<number | null>(null);
   const [budgets, setBudgets] = useState<BudgetSummary[]>([]);
   const [accuracyMetrics, setAccuracyMetrics] = useState<AccuracyMetrics | null>(null);
@@ -397,14 +399,14 @@ const ForecastDetailPage: React.FC = () => {
 
   const loadForecast = useCallback(async () => {
     if (!forecastId) return;
-    
+
     try {
       setLoading(true);
       const response = await apiClient.getForecast(forecastId);
       // Handle both axios response format and direct response
       const responseData = response?.data || response;
       const forecastData = responseData as Forecast;
-      
+
       // Parse JSON fields if they're strings
       if (typeof forecastData.forecast_data === 'string') {
         forecastData.forecast_data = JSON.parse(forecastData.forecast_data) as ForecastDataPoint[];
@@ -412,7 +414,7 @@ const ForecastDetailPage: React.FC = () => {
       if (typeof forecastData.method_params === 'string') {
         forecastData.method_params = JSON.parse(forecastData.method_params) as MethodParams;
       }
-      
+
       setForecast(forecastData);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to load forecast';
@@ -450,14 +452,14 @@ const ForecastDetailPage: React.FC = () => {
 
   const loadActuals = useCallback(async () => {
     if (!forecast) return;
-    
+
     try {
       setLoadingActuals(true);
       const startDate = new Date(forecast.start_date).toISOString();
       const endDate = new Date(forecast.end_date).toISOString();
-      
+
       const actuals: ActualDataPoint[] = [];
-      
+
       if (forecast.forecast_type === 'revenue' || forecast.forecast_type === 'all') {
         try {
           const revenueResponse = await apiClient.request({
@@ -471,7 +473,7 @@ const ForecastDetailPage: React.FC = () => {
               ...revenueData.map((r: Record<string, unknown>): ActualDataPoint => ({
                 date: (typeof r.date === 'string' ? r.date : typeof r.created_at === 'string' ? r.created_at : new Date().toISOString()),
                 value: typeof r.amount === 'number' ? r.amount : 0,
-              type: 'revenue'
+                type: 'revenue'
               }))
             );
           }
@@ -479,7 +481,7 @@ const ForecastDetailPage: React.FC = () => {
           console.error('Error loading revenue:', e);
         }
       }
-      
+
       if (forecast.forecast_type === 'expense' || forecast.forecast_type === 'all') {
         try {
           const expenseResponse = await apiClient.request({
@@ -493,7 +495,7 @@ const ForecastDetailPage: React.FC = () => {
               ...expenseData.map((expense: Record<string, unknown>): ActualDataPoint => ({
                 date: (typeof expense.date === 'string' ? expense.date : typeof expense.created_at === 'string' ? expense.created_at : new Date().toISOString()),
                 value: typeof expense.amount === 'number' ? expense.amount : 0,
-              type: 'expense'
+                type: 'expense'
               }))
             );
           }
@@ -501,7 +503,7 @@ const ForecastDetailPage: React.FC = () => {
           console.error('Error loading expenses:', e);
         }
       }
-      
+
       setActualsData(actuals);
       if (actuals.length === 0) {
         toast.info('No actual data found for the selected period');
@@ -530,9 +532,47 @@ const ForecastDetailPage: React.FC = () => {
     }
   }, []);
 
+  const loadComparisonModel = async (method: string) => {
+    if (!forecast) return;
+
+    if (comparisonModels[method]) {
+      // Toggle off if already loaded
+      const next = { ...comparisonModels };
+      delete next[method];
+      setComparisonModels(next);
+      return;
+    }
+
+    try {
+      setLoadingComparison(prev => ({ ...prev, [method]: true }));
+      const response = await apiClient.previewForecast({
+        forecast_type: forecast.forecast_type,
+        method: method,
+        start_date: forecast.start_date,
+        end_date: forecast.end_date,
+        historical_start_date: forecast.historical_start_date || undefined,
+        historical_end_date: forecast.historical_end_date || undefined,
+        window: forecast.method_params?.window,
+        growth_rate: forecast.method_params?.growth_rate
+      });
+
+      const data = response?.data || response;
+      if (Array.isArray(data)) {
+        setComparisonModels(prev => ({ ...prev, [method]: data }));
+      } else {
+        toast.error(`Failed to load ${method} forecast preview`);
+      }
+    } catch (error) {
+      console.error(`Error loading comparison model ${method}:`, error);
+      toast.error(`Model ${method} may not be trained yet.`);
+    } finally {
+      setLoadingComparison(prev => ({ ...prev, [method]: false }));
+    }
+  };
+
   const calculateAccuracy = useCallback((): AccuracyMetrics | null => {
     if (!forecast || !actualsData.length) return null;
-    
+
     const forecastData = forecast.forecast_data || [];
     const comparisons = forecastData.map((f): AccuracyComparison | null => {
       if (!f.date) return null;
@@ -541,13 +581,13 @@ const ForecastDetailPage: React.FC = () => {
         const actualDate = new Date(a.date).toISOString().split('T')[0];
         return forecastDate === actualDate;
       });
-      
+
       if (!actual) return null;
-      
+
       const forecastValue = f.forecasted_value ?? 0;
       const actualValue = actual.value ?? 0;
       const error = Math.abs(forecastValue - actualValue);
-      
+
       let percentError: number;
       if (forecastValue === 0 && actualValue === 0) {
         percentError = 0;
@@ -556,7 +596,7 @@ const ForecastDetailPage: React.FC = () => {
       } else {
         percentError = (error / Math.abs(forecastValue)) * 100;
       }
-      
+
       return {
         date: f.date,
         forecast: forecastValue,
@@ -565,14 +605,14 @@ const ForecastDetailPage: React.FC = () => {
         percentError
       };
     }).filter((comp): comp is AccuracyComparison => Boolean(comp));
-    
+
     if (comparisons.length === 0) return null;
-    
+
     const avgError = comparisons.reduce((sum, c) => sum + c.error, 0) / comparisons.length;
     const avgPercentError = comparisons.reduce((sum, c) => sum + c.percentError, 0) / comparisons.length;
     const mape = avgPercentError;
     const accuracy = Math.max(0, 100 - mape);
-    
+
     return {
       comparisons,
       avgError,
@@ -585,13 +625,13 @@ const ForecastDetailPage: React.FC = () => {
 
   const exportToPDF = () => {
     if (!forecast) return;
-    
+
     const doc = new jsPDF();
     const forecastData = forecast.forecast_data ?? [];
-    
+
     doc.setFontSize(18);
     doc.text(forecast.name, 14, 20);
-    
+
     doc.setFontSize(12);
     let yPos = 35;
     doc.text(`Type: ${forecast.forecast_type}`, 14, yPos);
@@ -600,14 +640,14 @@ const ForecastDetailPage: React.FC = () => {
     yPos += 7;
     doc.text(`Period: ${formatDate(forecast.start_date)} - ${formatDate(forecast.end_date)}`, 14, yPos);
     yPos += 15;
-    
+
     // Table headers
     doc.setFontSize(10);
     doc.text('Period', 14, yPos);
     doc.text('Date', 60, yPos);
     doc.text('Forecasted Value', 120, yPos);
     yPos += 7;
-    
+
     // Table data
     forecastData.forEach((item: ForecastDataPoint) => {
       if (yPos > 280) {
@@ -619,14 +659,14 @@ const ForecastDetailPage: React.FC = () => {
       doc.text(formatCurrency(item.forecasted_value || 0), 120, yPos);
       yPos += 7;
     });
-    
+
     doc.save(`${forecast.name.replace(/\s+/g, '_')}_forecast.pdf`);
     toast.success('PDF exported successfully');
   };
 
   const exportToExcel = () => {
     if (!forecast) return;
-    
+
     const forecastData = forecast.forecast_data ?? [];
     const worksheet = XLSX.utils.json_to_sheet(
       forecastData.map((item: ForecastDataPoint) => ({
@@ -635,10 +675,10 @@ const ForecastDetailPage: React.FC = () => {
         'Forecasted Value': item.forecasted_value || 0
       }))
     );
-    
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Forecast Data');
-    
+
     XLSX.writeFile(workbook, `${forecast.name.replace(/\s+/g, '_')}_forecast.xlsx`);
     toast.success('Excel file exported successfully');
   };
@@ -715,8 +755,8 @@ const ForecastDetailPage: React.FC = () => {
                 <div style={{ marginTop: theme.spacing.sm, display: 'flex', gap: theme.spacing.md, alignItems: 'center', flexWrap: 'wrap' }}>
                   <MethodBadge $method={forecast.method}>
                     {forecast.method.replace(/_/g, ' ')}
-                    {(forecast.method === 'arima' || forecast.method === 'prophet' || 
-                      forecast.method === 'xgboost' || forecast.method === 'lstm' || 
+                    {(forecast.method === 'arima' || forecast.method === 'prophet' ||
+                      forecast.method === 'xgboost' || forecast.method === 'lstm' ||
                       forecast.method === 'linear_regression') && ' (AI)'}
                   </MethodBadge>
                   {forecast.description && (
@@ -778,148 +818,196 @@ const ForecastDetailPage: React.FC = () => {
 
           {activeTab === 'overview' && (
             <>
-          <InfoCard>
-            <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Information</h3>
-            <InfoRow>
-              <strong>Forecast Type:</strong>
-              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
-                {getForecastTypeIcon(forecast.forecast_type)}
-                <span style={{ textTransform: 'capitalize' }}>{forecast.forecast_type}</span>
-              </div>
-            </InfoRow>
-            <InfoRow>
-              <strong>Period Type:</strong>
-              <span style={{ textTransform: 'capitalize' }}>{forecast.period_type}</span>
-            </InfoRow>
-            <InfoRow>
-              <strong>Start Date:</strong>
-              <span>{formatDate(forecast.start_date)}</span>
-            </InfoRow>
-            <InfoRow>
-              <strong>End Date:</strong>
-              <span>{formatDate(forecast.end_date)}</span>
-            </InfoRow>
-            {forecast.historical_start_date && (
-              <InfoRow>
-                <strong>Historical Start:</strong>
-                <span>{formatDate(forecast.historical_start_date)}</span>
-              </InfoRow>
-            )}
-            {forecast.historical_end_date && (
-              <InfoRow>
-                <strong>Historical End:</strong>
-                <span>{formatDate(forecast.historical_end_date)}</span>
-              </InfoRow>
-            )}
-            <InfoRow>
-              <strong>Method Parameters:</strong>
-              <span>
-                {forecast.method_params && typeof forecast.method_params === 'object' 
-                  ? JSON.stringify(forecast.method_params, null, 2)
-                  : 'None'
-                }
-              </span>
-            </InfoRow>
-            <InfoRow>
-              <strong>Created:</strong>
-              <span>{formatDate(forecast.created_at)}</span>
-            </InfoRow>
-          </InfoCard>
+              <InfoCard>
+                <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Information</h3>
+                <InfoRow>
+                  <strong>Forecast Type:</strong>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+                    {getForecastTypeIcon(forecast.forecast_type)}
+                    <span style={{ textTransform: 'capitalize' }}>{forecast.forecast_type}</span>
+                  </div>
+                </InfoRow>
+                <InfoRow>
+                  <strong>Period Type:</strong>
+                  <span style={{ textTransform: 'capitalize' }}>{forecast.period_type}</span>
+                </InfoRow>
+                <InfoRow>
+                  <strong>Start Date:</strong>
+                  <span>{formatDate(forecast.start_date)}</span>
+                </InfoRow>
+                <InfoRow>
+                  <strong>End Date:</strong>
+                  <span>{formatDate(forecast.end_date)}</span>
+                </InfoRow>
+                {forecast.historical_start_date && (
+                  <InfoRow>
+                    <strong>Historical Start:</strong>
+                    <span>{formatDate(forecast.historical_start_date)}</span>
+                  </InfoRow>
+                )}
+                {forecast.historical_end_date && (
+                  <InfoRow>
+                    <strong>Historical End:</strong>
+                    <span>{formatDate(forecast.historical_end_date)}</span>
+                  </InfoRow>
+                )}
+                <InfoRow>
+                  <strong>Method Parameters:</strong>
+                  <span>
+                    {forecast.method_params && typeof forecast.method_params === 'object'
+                      ? JSON.stringify(forecast.method_params, null, 2)
+                      : 'None'
+                    }
+                  </span>
+                </InfoRow>
+                <InfoRow>
+                  <strong>Created:</strong>
+                  <span>{formatDate(forecast.created_at)}</span>
+                </InfoRow>
+              </InfoCard>
 
-          <ForecastDataCard>
-            <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Data</h3>
-            {forecastDataArray.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: theme.spacing.xl, color: TEXT_COLOR_MUTED }}>
-                <FileText size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
-                <p>No forecast data available.</p>
-              </div>
-            ) : (
-              <>
-                <ForecastTable>
-                  <thead>
-                    <tr>
-                      <th>Period</th>
-                      <th>Date</th>
-                      <th>Forecasted Value</th>
-                      {forecastDataArray[0]?.method && <th>Method</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {forecastDataArray.map((item: ForecastDataPoint, index: number) => (
-                      <tr key={index}>
-                        <td>{item.period || '-'}</td>
-                        <td>{item.date ? formatDate(item.date) : '-'}</td>
-                        <td style={{ fontWeight: theme.typography.fontWeights.bold }}>
-                          {formatCurrency(item.forecasted_value || 0)}
-                        </td>
-                        {item.method && (
-                          <td>
-                            <span style={{ textTransform: 'capitalize' }}>
-                              {item.method.replace('_', ' ')}
-                            </span>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </ForecastTable>
-                
-                <div style={{ marginTop: theme.spacing.lg, padding: theme.spacing.md, background: PRIMARY_LIGHT, borderRadius: theme.borderRadius.sm }}>
-                  <strong>Total Forecast: </strong>
-                  {formatCurrency(forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0))}
-                  <br />
-                  <strong>Average per Period: </strong>
-                  {formatCurrency(forecastDataArray.length > 0 
-                    ? forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0) / forecastDataArray.length
-                    : 0
-                  )}
-                  <br />
-                  <strong>Number of Periods: </strong>
-                  {forecastDataArray.length}
-                </div>
-              </>
-            )}
-          </ForecastDataCard>
-          </>
+              <ForecastDataCard>
+                <h3 style={{ marginTop: 0, marginBottom: 0, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Data</h3>
+                {forecastDataArray.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: theme.spacing.xl, color: TEXT_COLOR_MUTED }}>
+                    <FileText size={48} style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+                    <p>No forecast data available.</p>
+                  </div>
+                ) : (
+                  <>
+                    <ForecastTable>
+                      <thead>
+                        <tr>
+                          <th>Period</th>
+                          <th>Date</th>
+                          <th>Forecasted Value</th>
+                          {forecastDataArray[0]?.method && <th>Method</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {forecastDataArray.map((item: ForecastDataPoint, index: number) => (
+                          <tr key={index}>
+                            <td>{item.period || '-'}</td>
+                            <td>{item.date ? formatDate(item.date) : '-'}</td>
+                            <td style={{ fontWeight: theme.typography.fontWeights.bold }}>
+                              {formatCurrency(item.forecasted_value || 0)}
+                            </td>
+                            {item.method && (
+                              <td>
+                                <span style={{ textTransform: 'capitalize' }}>
+                                  {item.method.replace('_', ' ')}
+                                </span>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </ForecastTable>
+
+                    <div style={{ marginTop: theme.spacing.lg, padding: theme.spacing.md, background: PRIMARY_LIGHT, borderRadius: theme.borderRadius.sm }}>
+                      <strong>Total Forecast: </strong>
+                      {formatCurrency(forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0))}
+                      <br />
+                      <strong>Average per Period: </strong>
+                      {formatCurrency(forecastDataArray.length > 0
+                        ? forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0) / forecastDataArray.length
+                        : 0
+                      )}
+                      <br />
+                      <strong>Number of Periods: </strong>
+                      {forecastDataArray.length}
+                    </div>
+                  </>
+                )}
+              </ForecastDataCard>
+            </>
           )}
 
           {activeTab === 'charts' && (
             <ForecastDataCard>
-              <h3 style={{ marginTop: 0, marginBottom: theme.spacing.lg, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Visualization</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.lg }}>
+                <h3 style={{ margin: 0, fontSize: theme.typography.fontSizes.lg, fontWeight: theme.typography.fontWeights.bold, color: TEXT_COLOR_DARK }}>Forecast Visualization</h3>
+                <div style={{ display: 'flex', gap: theme.spacing.sm, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', color: TEXT_COLOR_MUTED, alignSelf: 'center', marginRight: '8px' }}>Compare Models:</span>
+                  {['moving_average', 'linear_growth', 'trend', 'arima', 'prophet', 'xgboost', 'lstm', 'linear_regression'].filter(m => m !== forecast?.method).map(method => (
+                    <Button
+                      key={method}
+                      variant={comparisonModels[method] ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => loadComparisonModel(method)}
+                      disabled={loadingComparison[method]}
+                      style={{ fontSize: '10px', height: '24px', textTransform: 'capitalize' }}
+                    >
+                      {loadingComparison[method] ? '...' : method.replace('_', ' ')}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               {forecastDataArray.length > 0 ? (
                 <>
                   <ChartContainer>
                     <ResponsiveContainer width="100%" height="100%">
-                      <RechartsLineChart data={forecastDataArray.map((item: ForecastDataPoint) => ({
-                        period: item.period || '-',
-                        date: item.date ? new Date(item.date).toLocaleDateString() : '-',
-                        value: item.forecasted_value || 0
-                      }))}>
+                      <RechartsLineChart data={forecastDataArray.map((item: ForecastDataPoint, idx: number) => {
+                        const base = {
+                          period: item.period || '-',
+                          date: item.date ? new Date(item.date).toLocaleDateString() : '-',
+                          [forecast?.method || 'value']: item.forecasted_value || 0
+                        };
+
+                        // Add comparison values
+                        Object.keys(comparisonModels).forEach(method => {
+                          const compData = comparisonModels[method];
+                          if (compData && compData[idx]) {
+                            base[method] = compData[idx].forecasted_value || 0;
+                          }
+                        });
+
+                        return base;
+                      })}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="period" />
                         <YAxis />
                         <Tooltip formatter={(value: number) => formatCurrency(value)} />
                         <Legend />
-                        <Line type="monotone" dataKey="value" stroke={PRIMARY_COLOR} strokeWidth={2} name="Forecasted Value" />
+                        <Line
+                          type="monotone"
+                          dataKey={forecast?.method || 'value'}
+                          stroke={PRIMARY_COLOR}
+                          strokeWidth={3}
+                          name={`${forecast?.method?.replace('_', ' ') || 'Primary'} (Actual)`}
+                          dot={{ r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                        {Object.keys(comparisonModels).map((method, index) => (
+                          <Line
+                            key={method}
+                            type="monotone"
+                            dataKey={method}
+                            stroke={['#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316'][index % 6]}
+                            strokeWidth={2}
+                            strokeDasharray="5 5"
+                            name={`${method.replace('_', ' ')} (Preview)`}
+                            dot={false}
+                          />
+                        ))}
                       </RechartsLineChart>
                     </ResponsiveContainer>
                   </ChartContainer>
-                  <ChartContainer>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={forecastDataArray.map((item: ForecastDataPoint) => ({
-                        period: item.period || '-',
-                        date: item.date ? new Date(item.date).toLocaleDateString() : '-',
-                        value: item.forecasted_value || 0
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="period" />
-                        <YAxis />
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                        <Legend />
-                        <Bar dataKey="value" fill={PRIMARY_COLOR} name="Forecasted Value" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+
+                  {/* Summary remains the same or only for primary */}
+                  <div style={{ marginTop: theme.spacing.lg, padding: theme.spacing.md, background: PRIMARY_LIGHT, borderRadius: theme.borderRadius.sm }}>
+                    <strong>Primary Method: </strong> <span style={{ textTransform: 'capitalize' }}>{(forecast?.method || '').replace('_', ' ')}</span>
+                    <br />
+                    <strong>Total Forecast: </strong>
+                    {formatCurrency(forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0))}
+                    <br />
+                    <strong>Average per Period: </strong>
+                    {formatCurrency(forecastDataArray.length > 0
+                      ? forecastDataArray.reduce((sum: number, item: ForecastDataPoint) => sum + (item.forecasted_value || 0), 0) / forecastDataArray.length
+                      : 0
+                    )}
+                  </div>
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: theme.spacing.xl, color: TEXT_COLOR_MUTED }}>
@@ -1001,7 +1089,7 @@ const ForecastDetailPage: React.FC = () => {
                         const actualValue = actual?.value ?? null;
                         const variance = actualValue !== null ? forecastValue - actualValue : null;
                         const percentVariance = actualValue !== null && forecastValue > 0 && variance !== null ? ((variance / forecastValue) * 100) : null;
-                        
+
                         return actualValue !== null ? (
                           <tr key={index}>
                             <td>{item.period || '-'}</td>

@@ -38,7 +38,8 @@ class AnalyticsService:
         end_date: datetime,
         interval: str = "day",
         user_id: Optional[int] = None,
-        user_role: Optional[UserRole] = None
+        user_role: Optional[UserRole] = None,
+        category: Optional[str] = None
     ) -> Dict[str, List]:
         """
         Get time-series data for revenue and expenses
@@ -84,6 +85,10 @@ class AnalyticsService:
             ]
 
         # Group by interval - ONLY from approved entries
+        if category:
+            all_revenue = [r for r in all_revenue if (r.category.value if hasattr(r.category, 'value') else str(r.category)) == category]
+            all_expenses = [e for e in all_expenses if (e.category.value if hasattr(e.category, 'value') else str(e.category)) == category]
+
         for entry in all_revenue:
             date_key = AnalyticsService._get_interval_key(entry.date, interval)
             date_map[date_key]["revenue"] += float(entry.amount)
@@ -177,7 +182,8 @@ class AnalyticsService:
         start_date: datetime,
         end_date: datetime,
         user_id: Optional[int] = None,
-        user_role: Optional[UserRole] = None
+        user_role: Optional[UserRole] = None,
+        category: Optional[str] = None
     ) -> Dict:
         """Calculate advanced KPIs and metrics"""
         # Previous period for comparison
@@ -214,21 +220,25 @@ class AnalyticsService:
                 float(r.amount) for r in all_revenue_curr 
                 if start_date <= AnalyticsService._normalize_date_for_comparison(r.date, start_date) <= end_date 
                 and r.is_approved == True
+                and (not category or (r.category.value if hasattr(r.category, 'value') else str(r.category)) == category)
             )
             current_expenses = sum(
                 float(e.amount) for e in all_expenses_curr 
                 if start_date <= AnalyticsService._normalize_date_for_comparison(e.date, start_date) <= end_date 
                 and e.is_approved == True
+                and (not category or (e.category.value if hasattr(e.category, 'value') else str(e.category)) == category)
             )
             prev_revenue = sum(
                 float(r.amount) for r in all_revenue_prev 
                 if prev_start_date <= AnalyticsService._normalize_date_for_comparison(r.date, prev_start_date) <= prev_end_date 
                 and r.is_approved == True
+                and (not category or (r.category.value if hasattr(r.category, 'value') else str(r.category)) == category)
             )
             prev_expenses = sum(
                 float(e.amount) for e in all_expenses_prev 
                 if prev_start_date <= AnalyticsService._normalize_date_for_comparison(e.date, prev_start_date) <= prev_end_date 
                 and e.is_approved == True
+                and (not category or (e.category.value if hasattr(e.category, 'value') else str(e.category)) == category)
             )
 
         current_profit = current_revenue - current_expenses
@@ -286,7 +296,8 @@ class AnalyticsService:
         end_date: datetime,
         metric: str = "profit",
         user_id: Optional[int] = None,
-        user_role: Optional[UserRole] = None
+        user_role: Optional[UserRole] = None,
+        category: Optional[str] = None
     ) -> Dict:
         """Analyze trends and provide predictions"""
         # Get historical data points
@@ -314,8 +325,8 @@ class AnalyticsService:
                 all_rev = revenue_crud.get_by_user(db, user_id, 0, 10000)
                 all_exp = expense_crud.get_by_user(db, user_id, 0, 10000)
                 # Filter by date range AND approved status
-                revenue = sum(float(r.amount) for r in all_rev if point_start <= r.date <= point_end and r.is_approved == True)
-                expenses = sum(float(e.amount) for e in all_exp if point_start <= e.date <= point_end and e.is_approved == True)
+                revenue = sum(float(r.amount) for r in all_rev if point_start <= r.date <= point_end and r.is_approved == True and (not category or (r.category.value if hasattr(r.category, 'value') else str(r.category)) == category))
+                expenses = sum(float(e.amount) for e in all_exp if point_start <= e.date <= point_end and e.is_approved == True and (not category or (e.category.value if hasattr(e.category, 'value') else str(e.category)) == category))
 
             if metric == "revenue":
                 value = float(revenue)

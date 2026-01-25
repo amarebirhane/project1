@@ -622,6 +622,103 @@ def create_forecast(
     return new_forecast
 
 
+@router.get("/forecasts/preview", response_model=List)
+def preview_forecast(
+    forecast_type: str = Query(..., regex="^(revenue|expense|profit|all)$"),
+    method: str = Query(..., regex="^(moving_average|linear_growth|trend|arima|prophet|xgboost|lstm|linear_regression|sarima)$"),
+    start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
+    historical_start_date: Optional[str] = Query(None),
+    historical_end_date: Optional[str] = Query(None),
+    window: Optional[int] = Query(3),
+    growth_rate: Optional[float] = Query(0.05),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Generate a forecast preview without saving to database"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.MANAGER]:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    try:
+        start_date_dt = datetime.fromisoformat(start_date)
+        end_date_dt = datetime.fromisoformat(end_date)
+        hist_start = datetime.fromisoformat(historical_start_date) if historical_start_date else start_date_dt - timedelta(days=365)
+        hist_end = datetime.fromisoformat(historical_end_date) if historical_end_date else start_date_dt
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    forecast_values = []
+    
+    if method == "moving_average":
+        forecast_values = ForecastingService.generate_moving_average_forecast(
+            db, forecast_type, start_date_dt, end_date_dt, hist_start, hist_end,
+            window=window,
+            user_id=current_user.id,
+            user_role=current_user.role
+        )
+    elif method == "linear_growth":
+        forecast_values = ForecastingService.generate_linear_growth_forecast(
+            db, forecast_type, start_date_dt, end_date_dt, hist_start, hist_end,
+            growth_rate=growth_rate,
+            user_id=current_user.id,
+            user_role=current_user.role
+        )
+    elif method == "trend":
+        forecast_values = ForecastingService.generate_trend_forecast(
+            db, forecast_type, start_date_dt, end_date_dt, hist_start, hist_end,
+            user_id=current_user.id,
+            user_role=current_user.role
+        )
+    # AI/ML Methods
+    elif method == "arima":
+        try:
+            periods = (end_date_dt - start_date_dt).days // 30
+            forecast_values = MLForecastingService.generate_forecast_with_trained_model(
+                forecast_type, "arima", start_date_dt, end_date_dt, current_user.id, periods,
+                db=db, user_role=current_user.role
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"ARIMA forecast failed: {str(e)}")
+    elif method == "prophet":
+        try:
+            periods = (end_date_dt - start_date_dt).days
+            forecast_values = MLForecastingService.generate_forecast_with_trained_model(
+                forecast_type, "prophet", start_date_dt, end_date_dt, current_user.id, periods,
+                db=db, user_role=current_user.role
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Prophet forecast failed: {str(e)}")
+    elif method == "xgboost":
+        try:
+            periods = (end_date_dt - start_date_dt).days // 30
+            forecast_values = MLForecastingService.generate_forecast_with_trained_model(
+                forecast_type, "xgboost", start_date_dt, end_date_dt, current_user.id, periods,
+                db=db, user_role=current_user.role
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"XGBoost forecast failed: {str(e)}")
+    elif method == "lstm":
+        try:
+            periods = (end_date_dt - start_date_dt).days // 30
+            forecast_values = MLForecastingService.generate_forecast_with_trained_model(
+                forecast_type, "lstm", start_date_dt, end_date_dt, current_user.id, periods,
+                db=db, user_role=current_user.role
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"LSTM forecast failed: {str(e)}")
+    elif method == "linear_regression":
+        try:
+            periods = (end_date_dt - start_date_dt).days // 30
+            forecast_values = MLForecastingService.generate_forecast_with_trained_model(
+                forecast_type, "linear_regression", start_date_dt, end_date_dt, current_user.id, periods,
+                db=db, user_role=current_user.role
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Linear Regression forecast failed: {str(e)}")
+    
+    return forecast_values
+
+
 @router.get("/forecasts", response_model=List[ForecastOut])
 def get_forecasts(
     skip: int = Query(0, ge=0),

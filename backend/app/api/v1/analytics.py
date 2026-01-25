@@ -26,6 +26,7 @@ def get_advanced_kpis(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     period: str = Query("month", regex="^(week|month|quarter|year|custom)$"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -62,7 +63,8 @@ def get_advanced_kpis(
     kpis = analytics.calculate_advanced_kpis(
         db, start_date_dt, end_date_dt, 
         user_id=current_user.id, 
-        user_role=current_user.role
+        user_role=current_user.role,
+        category=category
     )
 
     return kpis
@@ -74,6 +76,7 @@ def get_trend_analysis(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     period: str = Query("month", regex="^(week|month|quarter|year|custom)$"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -110,7 +113,8 @@ def get_trend_analysis(
     trend_data = analytics.get_trend_analysis(
         db, start_date_dt, end_date_dt, metric,
         user_id=current_user.id,
-        user_role=current_user.role
+        user_role=current_user.role,
+        category=category
     )
 
     return trend_data
@@ -122,6 +126,7 @@ def get_time_series_data(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     period: str = Query("month", regex="^(week|month|quarter|year|custom)$"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -158,7 +163,8 @@ def get_time_series_data(
     time_series = analytics.get_time_series_data(
         db, start_date_dt, end_date_dt, interval,
         user_id=current_user.id,
-        user_role=current_user.role
+        user_role=current_user.role,
+        category=category
     )
 
     return time_series
@@ -215,6 +221,7 @@ def get_analytics_overview(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     period: str = Query("month", regex="^(week|month|quarter|year|custom)$"),
+    category: Optional[str] = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -253,7 +260,8 @@ def get_analytics_overview(
         kpis = analytics.calculate_advanced_kpis(
             db, start_date_dt, end_date_dt,
             user_id=current_user.id,
-            user_role=current_user.role
+            user_role=current_user.role,
+            category=category
         )
 
         # Determine interval based on period
@@ -279,7 +287,8 @@ def get_analytics_overview(
         time_series = analytics.get_time_series_data(
             db, start_date_dt, end_date_dt, interval,
             user_id=current_user.id,
-            user_role=current_user.role
+            user_role=current_user.role,
+            category=category
         )
 
         category_breakdown = analytics.get_category_breakdown(
@@ -291,7 +300,8 @@ def get_analytics_overview(
         profit_trend = analytics.get_trend_analysis(
             db, start_date_dt, end_date_dt, "profit",
             user_id=current_user.id,
-            user_role=current_user.role
+            user_role=current_user.role,
+            category=category
         )
 
         # Get inventory summary (if user has permission)

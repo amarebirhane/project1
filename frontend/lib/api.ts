@@ -1541,6 +1541,19 @@ class ApiClient {
     return this.post(`/budgeting/forecasts/${id}/delete`, { password });
   }
 
+  async previewForecast(params: {
+    forecast_type: string;
+    method: string;
+    start_date: string;
+    end_date: string;
+    historical_start_date?: string;
+    historical_end_date?: string;
+    window?: number;
+    growth_rate?: number;
+  }) {
+    return this.get<any[]>('/budgeting/forecasts/preview', { params });
+  }
+
   // ============================================================================
   // AI/ML MODEL TRAINING
   // ============================================================================

@@ -6,11 +6,12 @@ import {
   BarChart3, TrendingUp, TrendingDown,
   Activity, Calendar, RefreshCw,
   AlertCircle, ArrowUpRight, ArrowDownRight,
-  Package, ShoppingCart, Check
+  Package, ShoppingCart, Check, X
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  PieChart, Pie, Cell, Sector
 } from 'recharts';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
@@ -545,6 +546,7 @@ const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState<'week' | 'month' | 'quarter' | 'year' | 'custom'>('month');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; text: string }>({
     visible: false,
     x: 0,
@@ -579,10 +581,13 @@ const AnalyticsPage: React.FC = () => {
     setError(null);
 
     try {
-      const params: { period: typeof period; start_date?: string; end_date?: string } = { period };
+      const params: { period: typeof period; start_date?: string; end_date?: string, category?: string } = { period };
       if (period === 'custom' && startDate && endDate) {
         params.start_date = startDate;
         params.end_date = endDate;
+      }
+      if (selectedCategory) {
+        params.category = selectedCategory;
       }
 
       const response = await apiClient.getAnalyticsOverview(params);
@@ -635,7 +640,7 @@ const AnalyticsPage: React.FC = () => {
     }
 
     loadAnalytics();
-  }, [user, period, startDate, endDate, loadAnalytics]);
+  }, [user, period, startDate, endDate, selectedCategory, loadAnalytics]);
 
   const formatCurrency = (value: number) => {
     return `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -662,7 +667,11 @@ const AnalyticsPage: React.FC = () => {
   };
 
   const renderLineChart = (labels: string[], revenueData: number[], expenseData: number[]) => {
-    if (!revenueData || revenueData.length === 0) return null;
+    if (!revenueData || revenueData.length === 0) return (
+      <div style={{ height: '350px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: TEXT_COLOR_MUTED }}>
+        No time-series data for this selection
+      </div>
+    );
 
     // Transform data for Recharts
     const chartData = labels.map((label, index) => ({
@@ -1125,34 +1134,118 @@ const AnalyticsPage: React.FC = () => {
                 </div>
               </ChartCard>
 
-              <SectionTitle>Category Breakdown</SectionTitle>
+              <SectionTitle>
+                Category Breakdown
+                {selectedCategory && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedCategory(null)}
+                    style={{ marginLeft: theme.spacing.md, fontSize: '12px', color: '#ef4444' }}
+                  >
+                    Clear Filter: {selectedCategory} <X size={14} style={{ marginLeft: '4px' }} />
+                  </Button>
+                )}
+              </SectionTitle>
               <TwoColumnGrid>
                 <ChartCard>
                   <ChartTitle>Revenue by Category</ChartTitle>
-                  <CategoryList>
-                    {analyticsData.category_breakdown?.revenue_by_category?.map((item: CategoryStat, index: number) => (
-                      <CategoryItem key={index}>
-                        <span className="category-name">{item.category || 'Unknown'}</span>
-                        <span className="category-amount">
-                          {formatCurrency(item.total || 0)}
-                        </span>
-                      </CategoryItem>
-                    ))}
-                  </CategoryList>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.lg }}>
+                    <div style={{ height: '250px', width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={analyticsData.category_breakdown?.revenue_by_category || []}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="total"
+                            nameKey="category"
+                            onClick={(data) => setSelectedCategory(data.category)}
+                            cursor="pointer"
+                          >
+                            {(analyticsData.category_breakdown?.revenue_by_category || []).map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={selectedCategory === entry.category ? PRIMARY_COLOR : ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0'][index % 4]}
+                                opacity={selectedCategory && selectedCategory !== entry.category ? 0.3 : 1}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <CategoryList>
+                      {analyticsData.category_breakdown?.revenue_by_category?.map((item: CategoryStat, index: number) => (
+                        <CategoryItem
+                          key={index}
+                          onClick={() => setSelectedCategory(item.category || null)}
+                          style={{
+                            borderLeftColor: selectedCategory === item.category ? PRIMARY_COLOR : 'transparent',
+                            background: selectedCategory === item.category ? 'rgba(0, 170, 0, 0.1)' : undefined
+                          }}
+                        >
+                          <span className="category-name">{item.category || 'Unknown'}</span>
+                          <span className="category-amount">
+                            {formatCurrency(item.total || 0)}
+                          </span>
+                        </CategoryItem>
+                      ))}
+                    </CategoryList>
+                  </div>
                 </ChartCard>
 
                 <ChartCard>
                   <ChartTitle>Expenses by Category</ChartTitle>
-                  <CategoryList>
-                    {analyticsData.category_breakdown?.expenses_by_category?.map((item: CategoryStat, index: number) => (
-                      <CategoryItem key={index}>
-                        <span className="category-name">{item.category || 'Unknown'}</span>
-                        <span className="category-amount">
-                          {formatCurrency(item.total || 0)}
-                        </span>
-                      </CategoryItem>
-                    ))}
-                  </CategoryList>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.lg }}>
+                    <div style={{ height: '250px', width: '100%' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={analyticsData.category_breakdown?.expenses_by_category || []}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="total"
+                            nameKey="category"
+                            onClick={(data) => setSelectedCategory(data.category)}
+                            cursor="pointer"
+                          >
+                            {(analyticsData.category_breakdown?.expenses_by_category || []).map((entry, index) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={selectedCategory === entry.category ? '#ef4444' : ['#ef4444', '#f87171', '#fca5a5', '#fecaca'][index % 4]}
+                                opacity={selectedCategory && selectedCategory !== entry.category ? 0.3 : 1}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <CategoryList>
+                      {analyticsData.category_breakdown?.expenses_by_category?.map((item: CategoryStat, index: number) => (
+                        <CategoryItem
+                          key={index}
+                          onClick={() => setSelectedCategory(item.category || null)}
+                          style={{
+                            borderLeftColor: selectedCategory === item.category ? '#ef4444' : 'transparent',
+                            background: selectedCategory === item.category ? 'rgba(239, 68, 68, 0.05)' : undefined
+                          }}
+                        >
+                          <span className="category-name">{item.category || 'Unknown'}</span>
+                          <span className="category-amount">
+                            {formatCurrency(item.total || 0)}
+                          </span>
+                        </CategoryItem>
+                      ))}
+                    </CategoryList>
+                  </div>
                 </ChartCard>
               </TwoColumnGrid>
             </>
