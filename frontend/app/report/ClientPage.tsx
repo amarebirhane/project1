@@ -27,8 +27,17 @@ import {
   Zap,
   Lightbulb,
   Target,
-  CheckCircle2
+  CheckCircle2,
+  Trash2
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const PRIMARY_COLOR = (props: any) => props.theme.colors.primary || '#00AA00';
 const TEXT_COLOR_DARK = (props: any) => props.theme.colors.textDark || '#000';
@@ -738,6 +747,14 @@ export default function ReportPage() {
     end_date: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
     method_params: {}
   });
+
+  const [dailyCashFlowSearch, setDailyCashFlowSearch] = useState('');
+
+  // Delete Confirmation Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedForecastForDelete, setSelectedForecastForDelete] = useState<Forecast | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Helper function to safely convert values to numbers, handling NaN, null, undefined
   const safeNumber = (value: unknown): number => {
@@ -1505,21 +1522,34 @@ export default function ReportPage() {
   };
 
   // Delete forecast
-  const handleDeleteForecast = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this forecast?')) return;
+  // Delete forecast
+  const handleDeleteForecastClick = (forecast: Forecast) => {
+    setSelectedForecastForDelete(forecast);
+    setDeletePassword('');
+    setDeleteModalOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!selectedForecastForDelete) return;
+    if (!deletePassword) {
+      toast.error('Please enter your password to confirm deletion');
+      return;
+    }
+
+    setIsDeleting(true);
     try {
-      // Prompt for password if the backend requires it
-      const password = window.prompt('Please enter your password to confirm deletion:');
-      if (password === null) return;
-
-      const response = await apiClient.deleteForecast(id, password);
+      const response = await apiClient.deleteForecast(selectedForecastForDelete.id, deletePassword);
       if (response.data) {
         toast.success('Forecast deleted successfully');
         loadReports(true);
+        setDeleteModalOpen(false);
+        setSelectedForecastForDelete(null);
+        setDeletePassword('');
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || 'Failed to delete forecast');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -2061,7 +2091,17 @@ export default function ReportPage() {
                     </SummaryGrid>
 
                     <div style={{ marginTop: theme.spacing.xl }}>
-                      <SectionTitle>Daily Cash Flow</SectionTitle>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing.md }}>
+                        <SectionTitle style={{ marginBottom: 0 }}>Daily Cash Flow</SectionTitle>
+                        <div style={{ width: '250px' }}>
+                          <Input
+                            placeholder="Search by date..."
+                            value={dailyCashFlowSearch}
+                            onChange={(e) => setDailyCashFlowSearch(e.target.value)}
+                            style={{ height: '36px' }}
+                          />
+                        </div>
+                      </div>
                       <CashFlowTable>
                         <thead>
                           <tr>
@@ -2074,6 +2114,7 @@ export default function ReportPage() {
                         <tbody>
                           {cashFlow.daily_cash_flow && Object.entries(cashFlow.daily_cash_flow).length > 0 ? (
                             Object.entries(cashFlow.daily_cash_flow)
+                              .filter(([date]) => formatDate(date).toLowerCase().includes(dailyCashFlowSearch.toLowerCase()))
                               .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
                               .map(([date, flow]: [string, { inflow: number; outflow: number; net: number }]) => (
                                 <tr key={date}>
@@ -2872,7 +2913,7 @@ export default function ReportPage() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => handleDeleteForecast(forecast.id)}
+                                      onClick={() => handleDeleteForecastClick(forecast)}
                                       style={{ color: '#dc2626' }}
                                     >
                                       Delete
@@ -2935,6 +2976,60 @@ export default function ReportPage() {
                 </ReportCard>
               </ReportSection>
             )}
+
+            <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Forecast</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to delete this forecast? This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+
+                {selectedForecastForDelete && (
+                  <div style={{ padding: '10px 0' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong>Name:</strong> {selectedForecastForDelete.name}
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong>Type:</strong> {capitalize(selectedForecastForDelete.forecast_type)}
+                    </div>
+                    <div style={{ marginBottom: '20px' }}>
+                      <strong>Method:</strong> {capitalize(selectedForecastForDelete.method.replace('_', ' '))}
+                    </div>
+
+                    <Label htmlFor="delete-password">Confirm with Password</Label>
+                    <Input
+                      id="delete-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      style={{ marginTop: '5px' }}
+                    />
+                  </div>
+                )}
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDeleteModalOpen(false)} disabled={isDeleting}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Forecast
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </>
         )}
       </PageContainer>
