@@ -677,6 +677,10 @@ def preview_forecast(
                 forecast_type, "arima", start_date_dt, end_date_dt, current_user.id, periods,
                 db=db, user_role=current_user.role
             )
+        except FileNotFoundError:
+            raise HTTPException(status_code=400, detail=f"ARIMA model for {forecast_type} not found. Please train the model in Settings > AI Models.")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"ARIMA forecast failed: {str(e)}")
     elif method == "prophet":
@@ -686,6 +690,10 @@ def preview_forecast(
                 forecast_type, "prophet", start_date_dt, end_date_dt, current_user.id, periods,
                 db=db, user_role=current_user.role
             )
+        except FileNotFoundError:
+            raise HTTPException(status_code=400, detail=f"Prophet model for {forecast_type} not found. Please train the model in Settings > AI Models.")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Prophet forecast failed: {str(e)}")
     elif method == "xgboost":
@@ -695,6 +703,10 @@ def preview_forecast(
                 forecast_type, "xgboost", start_date_dt, end_date_dt, current_user.id, periods,
                 db=db, user_role=current_user.role
             )
+        except FileNotFoundError:
+            raise HTTPException(status_code=400, detail=f"XGBoost model for {forecast_type} not found. Please train the model in Settings > AI Models.")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"XGBoost forecast failed: {str(e)}")
     elif method == "lstm":
@@ -704,6 +716,10 @@ def preview_forecast(
                 forecast_type, "lstm", start_date_dt, end_date_dt, current_user.id, periods,
                 db=db, user_role=current_user.role
             )
+        except FileNotFoundError:
+            raise HTTPException(status_code=400, detail=f"LSTM model for {forecast_type} not found. Please train the model in Settings > AI Models.")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"LSTM forecast failed: {str(e)}")
     elif method == "linear_regression":
@@ -713,6 +729,10 @@ def preview_forecast(
                 forecast_type, "linear_regression", start_date_dt, end_date_dt, current_user.id, periods,
                 db=db, user_role=current_user.role
             )
+        except FileNotFoundError:
+            raise HTTPException(status_code=400, detail=f"Linear Regression model for {forecast_type} not found. Please train the model in Settings > AI Models.")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Linear Regression forecast failed: {str(e)}")
     

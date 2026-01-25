@@ -462,15 +462,17 @@ const ForecastDetailPage: React.FC = () => {
 
       if (forecast.forecast_type === 'revenue' || forecast.forecast_type === 'all') {
         try {
-          const revenueResponse = await apiClient.request({
-            method: 'GET',
-            url: '/revenue',
-            params: { start_date: startDate, end_date: endDate, limit: 1000 }
+          // Use helper method instead of raw request
+          const revenueResponse = await apiClient.getRevenues({
+            start_date: startDate,
+            end_date: endDate
           });
+
           if (revenueResponse.data) {
-            const revenueData = Array.isArray(revenueResponse.data) ? revenueResponse.data : [];
+            // Helper method already ensures data is an array
+            const revenueData = revenueResponse.data;
             actuals.push(
-              ...revenueData.map((r: Record<string, unknown>): ActualDataPoint => ({
+              ...revenueData.map((r: any): ActualDataPoint => ({
                 date: (typeof r.date === 'string' ? r.date : typeof r.created_at === 'string' ? r.created_at : new Date().toISOString()),
                 value: typeof r.amount === 'number' ? r.amount : 0,
                 type: 'revenue'
@@ -484,15 +486,17 @@ const ForecastDetailPage: React.FC = () => {
 
       if (forecast.forecast_type === 'expense' || forecast.forecast_type === 'all') {
         try {
-          const expenseResponse = await apiClient.request({
-            method: 'GET',
-            url: '/expenses',
-            params: { start_date: startDate, end_date: endDate, limit: 1000 }
+          // Use helper method instead of raw request
+          const expenseResponse = await apiClient.getExpenses({
+            start_date: startDate,
+            end_date: endDate
           });
+
           if (expenseResponse.data) {
-            const expenseData = Array.isArray(expenseResponse.data) ? expenseResponse.data : [];
+            // Helper method already ensures data is an array
+            const expenseData = expenseResponse.data;
             actuals.push(
-              ...expenseData.map((expense: Record<string, unknown>): ActualDataPoint => ({
+              ...expenseData.map((expense: any): ActualDataPoint => ({
                 date: (typeof expense.date === 'string' ? expense.date : typeof expense.created_at === 'string' ? expense.created_at : new Date().toISOString()),
                 value: typeof expense.amount === 'number' ? expense.amount : 0,
                 type: 'expense'
@@ -683,18 +687,27 @@ const ForecastDetailPage: React.FC = () => {
     toast.success('Excel file exported successfully');
   };
 
+  // Load actuals when entering comparison tab
   useEffect(() => {
     if (forecast && activeTab === 'comparison') {
       loadActuals();
     }
+  }, [activeTab, forecast, loadActuals]);
+
+  // Load budgets when entering budget tab
+  useEffect(() => {
     if (activeTab === 'budget') {
       loadBudgets();
     }
+  }, [activeTab, loadBudgets]);
+
+  // Calculate accuracy when entering accuracy tab or when data changes
+  useEffect(() => {
     if (forecast && activeTab === 'accuracy') {
       const metrics = calculateAccuracy();
       setAccuracyMetrics(metrics);
     }
-  }, [activeTab, calculateAccuracy, forecast, loadActuals, loadBudgets]);
+  }, [activeTab, forecast, calculateAccuracy]);
 
   const forecastDataArray = useMemo<ForecastDataPoint[]>(() => {
     if (forecast && Array.isArray(forecast.forecast_data)) {

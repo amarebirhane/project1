@@ -22,7 +22,7 @@ from ...api.v1.auth import get_client_info
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ExpenseOut])
+@router.get("", response_model=List[ExpenseOut])
 def read_expense_entries(
     skip: int = 0,
     limit: int = 100,
@@ -166,7 +166,7 @@ def read_expense_entry(
         )
 
 
-@router.post("/", response_model=ExpenseOut)
+@router.post("", response_model=ExpenseOut)
 def create_expense_entry(
     expense_data: ExpenseCreate,
     background_tasks: BackgroundTasks,

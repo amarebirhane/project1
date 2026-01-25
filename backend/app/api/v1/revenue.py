@@ -22,7 +22,7 @@ from ...api.v1.auth import get_client_info
 router = APIRouter()
 
 
-@router.get("/", response_model=List[RevenueOut])
+@router.get("", response_model=List[RevenueOut])
 def read_revenue_entries(
     skip: int = 0,
     limit: int = 100,
@@ -204,7 +204,7 @@ def read_revenue_entry(
         )
 
 
-@router.post("/", response_model=RevenueOut)
+@router.post("", response_model=RevenueOut)
 def create_revenue_entry(
     revenue_data: RevenueCreate,
     background_tasks: BackgroundTasks,

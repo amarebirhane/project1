@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -100,49 +100,87 @@ class ForecastingService:
         """Helper to fetch and prepare historical data for forecasting"""
         # For simplicity, we'll try to use the logic from MLForecastingService if possible
         # but since we want to avoid circular imports, we'll implement a basic version
+        import logging
+        logger = logging.getLogger(__name__)
         
-        from ..models.revenue import RevenueEntry
-        from ..models.expense import ExpenseEntry
-        
-        data_points = []
-        dates = []
-        
-        if forecast_type in ["revenue", "all"]:
-            revenues = db.query(RevenueEntry).filter(
-                RevenueEntry.date >= start_date,
-                RevenueEntry.date <= end_date,
-                RevenueEntry.is_approved == True
-            ).all()
-            for r in revenues:
-                data_points.append(float(r.amount))
-                dates.append(r.date)
-                
-        if forecast_type in ["expense", "all"]:
-            expenses = db.query(ExpenseEntry).filter(
-                ExpenseEntry.date >= start_date,
-                ExpenseEntry.date <= end_date,
-                ExpenseEntry.is_approved == True
-            ).all()
-            for e in expenses:
-                # If "all", we might want to distinguish or net them, but usually 
-                # forecast_type is specific for these methods.
-                val = float(e.amount)
-                if forecast_type == "all":
-                    # Net flow
-                    data_points.append(-val)
-                else:
-                    data_points.append(val)
-                dates.append(e.date)
-        
-        if not data_points:
-            return pd.DataFrame(columns=['date', 'value'])
+        try:
+            from ..models.revenue import RevenueEntry
+            from ..models.expense import ExpenseEntry
             
-        df = pd.DataFrame({'date': pd.to_datetime(dates, utc=True), 'value': data_points})
-        df = df.groupby(df['date'].dt.to_period('M'))['value'].sum().reset_index()
-        df['date'] = df['date'].dt.to_timestamp()
-        df = df.sort_values('date')
-        
-        return df
+            logger.info(f"Fetching historical data for {forecast_type} from {start_date} to {end_date}")
+            
+            data_points = []
+            dates = []
+            
+            if forecast_type in ["revenue", "all"]:
+                expenses_query = db.query(RevenueEntry).filter(
+                    RevenueEntry.date >= start_date,
+                    RevenueEntry.date <= end_date,
+                    RevenueEntry.is_approved == True
+                )
+                logger.info(f"Querying revenue entries...")
+                revenues = expenses_query.all()
+                logger.info(f"Found {len(revenues)} revenue entries")
+                
+                for r in revenues:
+                    data_points.append(float(r.amount))
+                    dates.append(r.date)
+                    
+            if forecast_type in ["expense", "all"]:
+                expenses_query = db.query(ExpenseEntry).filter(
+                    ExpenseEntry.date >= start_date,
+                    ExpenseEntry.date <= end_date,
+                    ExpenseEntry.is_approved == True
+                )
+                logger.info(f"Querying expense entries...")
+                expenses = expenses_query.all()
+                logger.info(f"Found {len(expenses)} expense entries")
+                
+                for e in expenses:
+                    # If "all", we might want to distinguish or net them, but usually 
+                    # forecast_type is specific for these methods.
+                    val = float(e.amount)
+                    if forecast_type == "all":
+                        # Net flow
+                        data_points.append(-val)
+                    else:
+                        data_points.append(val)
+                    dates.append(e.date)
+            
+            if not data_points:
+                logger.info("No data points found")
+                return pd.DataFrame(columns=['date', 'value'])
+                
+            logger.info(f"Creating DataFrame with {len(data_points)} points")
+            # Ensure dates are compatible
+            try:
+                # Convert to UTC-aware datetime
+                formatted_dates = []
+                for d in dates:
+                    if isinstance(d, datetime):
+                        if d.tzinfo is None:
+                            formatted_dates.append(d.replace(tzinfo=timezone.utc))
+                        else:
+                            formatted_dates.append(d.astimezone(timezone.utc))
+                    else:
+                        # Assuming it's a date object
+                        formatted_dates.append(datetime(d.year, d.month, d.day, tzinfo=timezone.utc))
+                
+                df = pd.DataFrame({'date': formatted_dates, 'value': data_points})
+                df['date'] = pd.to_datetime(df['date'], utc=True)
+                df = df.groupby(df['date'].dt.to_period('M'))['value'].sum().reset_index()
+                df['date'] = df['date'].dt.to_timestamp()
+                df = df.sort_values('date')
+                
+                logger.info("Historical data prepared successfully")
+                return df
+            except Exception as e:
+                logger.error(f"Error processing DataFrame: {e}", exc_info=True)
+                return pd.DataFrame(columns=['date', 'value'])
+                
+        except Exception as e:
+            logger.error(f"Error in _fetch_historical_data: {e}", exc_info=True)
+            return pd.DataFrame(columns=['date', 'value'])
 
     @staticmethod
     def generate_moving_average_forecast(
