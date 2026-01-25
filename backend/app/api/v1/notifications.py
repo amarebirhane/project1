@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 @router.get("/", response_model=List[NotificationOut])
 def read_notifications(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 1000000,
     unread_only: bool = Query(False),
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -39,9 +39,8 @@ def read_notifications(
             from ...services.notification_service import NotificationService
             from ...crud.approval import approval as approval_crud
             
-            # Only check for managers, finance admins, and admins
             if current_user.role in [UserRole.MANAGER, UserRole.FINANCE_ADMIN, UserRole.ADMIN, UserRole.SUPER_ADMIN]:
-                pending_approvals = approval_crud.get_pending(db, current_user.id, 0, 100)
+                pending_approvals = approval_crud.get_pending(db, current_user.id, 0, 1000000)
                 if pending_approvals:
                     NotificationService.notify_pending_approvals(
                         db=db,
@@ -84,7 +83,7 @@ def check_pending_approvals(
         # Only check for managers, finance admins, and admins
         if current_user.role in [UserRole.MANAGER, UserRole.FINANCE_ADMIN, UserRole.ADMIN, UserRole.SUPER_ADMIN]:
             # Use query to get pending count efficiently
-            pending_approvals = approval_crud.get_pending(db, current_user.id, 0, 100)
+            pending_approvals = approval_crud.get_pending(db, current_user.id, 0, 1000)
             
             if pending_approvals:
                 NotificationService.notify_pending_approvals(

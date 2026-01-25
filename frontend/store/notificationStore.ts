@@ -118,7 +118,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         if (showLoading) set({ isLoading: true });
 
         try {
-            const response = await apiClient.getNotifications(false, 100); // Reduce limit for performance
+            const response = await apiClient.getNotifications(false, 1000000); // Increased limit as per user request
             const notificationsData = Array.isArray(response?.data)
                 ? response.data
                 : (response?.data && typeof response.data === 'object' && response.data !== null && 'data' in response.data
