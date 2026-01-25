@@ -52,7 +52,7 @@ const FloatingButton = styled(motion.button)`
 
 const PopupCard = styled(motion.div)`
   position: relative;
-  width: 380px;
+  width: 450px;
   height: 600px;
   max-height: calc(100vh - 180px); /* Ensure it doesn't go off screen */
   background: ${props => props.theme.colors.card};

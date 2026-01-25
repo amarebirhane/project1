@@ -2913,6 +2913,7 @@ export default function ReportPage() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
+                                      disabled={isDeleting}
                                       onClick={() => handleDeleteForecastClick(forecast)}
                                       style={{ color: '#dc2626' }}
                                     >
