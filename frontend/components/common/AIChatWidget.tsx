@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon, History, Plus } from "lucide-react";
+import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon, History, Plus, Mic, MicOff } from "lucide-react";
 import { apiClient, ChatMessage } from "@/lib/api";
 import { useAuth } from "@/lib/rbac/auth-context";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 // --- Types ---
 interface ChatSession {
@@ -366,6 +368,35 @@ const SendButton = styled.button`
   }
 `;
 
+const MicButton = styled(motion.button) <{ $isRecording: boolean }>`
+  background: ${props => props.$isRecording ? '#ef4444' : 'transparent'};
+  color: ${props => props.$isRecording ? 'white' : props.theme.colors.textSecondary};
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: ${props => props.$isRecording ? '#dc2626' : props.theme.colors.backgroundSecondary};
+    color: ${props => props.$isRecording ? 'white' : '#2563eb'};
+  }
+`;
+
+const PulsingRing = styled(motion.div)`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.4);
+  z-index: -1;
+`;
+
 const TypingIndicator = styled(motion.div)`
   display: flex;
   gap: 4px;
@@ -405,6 +436,8 @@ export default function AIChatWidget() {
   const [loading, setLoading] = useState(false);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -414,6 +447,61 @@ export default function AIChatWidget() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // --- Voice Logic ---
+  useEffect(() => {
+    // Check for browser support
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result) => result.transcript)
+          .join('');
+
+        setMessage(transcript);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        setIsRecording(false);
+        toast.error("Voice recognition failed. Check your microphone.");
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsRecording(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const toggleVoiceRecording = () => {
+    if (!recognitionRef.current) {
+      toast.error("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      setMessage(""); // Clear message for new recording
+      recognitionRef.current.start();
+      setIsRecording(true);
+      toast.info("Listening...");
+    }
   };
 
   // Load logic
@@ -737,10 +825,31 @@ export default function AIChatWidget() {
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder={selectedImage ? "Describe this image..." : "Ask a question..."}
+                placeholder={isRecording ? "Listening..." : (selectedImage ? "Describe this image..." : "Ask a question...")}
                 disabled={loading}
               />
-              <SendButton type="submit" disabled={(!message.trim() && !selectedImage) || loading}>
+
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <AnimatePresence>
+                  {isRecording && (
+                    <PulsingRing
+                      initial={{ scale: 1, opacity: 0.8 }}
+                      animate={{ scale: 1.6, opacity: 0 }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut" }}
+                    />
+                  )}
+                </AnimatePresence>
+                <MicButton
+                  type="button"
+                  onClick={toggleVoiceRecording}
+                  $isRecording={isRecording}
+                  title={isRecording ? "Stop Recording" : "Voice Query"}
+                >
+                  {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                </MicButton>
+              </div>
+
+              <SendButton type="submit" disabled={(!message.trim() && !selectedImage) || loading || isRecording}>
                 {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={20} />}
               </SendButton>
             </InputArea>
