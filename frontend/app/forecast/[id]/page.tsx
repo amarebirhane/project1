@@ -50,7 +50,7 @@ const PageContainer = styled.div`
 const ContentContainer = styled.div`
   flex: 1;
   width: 100%;
-  max-width: 1400px;
+  max-width: 980px;
   margin-left: auto;
   margin-right: 0;
   padding: ${theme.spacing.sm} ${theme.spacing.sm} ${theme.spacing.sm};
@@ -552,8 +552,8 @@ const ForecastDetailPage: React.FC = () => {
         end_date: forecast.end_date,
         historical_start_date: forecast.historical_start_date || undefined,
         historical_end_date: forecast.historical_end_date || undefined,
-        window: forecast.method_params?.window,
-        growth_rate: forecast.method_params?.growth_rate
+        window: typeof forecast.method_params?.window === 'number' ? forecast.method_params.window : undefined,
+        growth_rate: typeof forecast.method_params?.growth_rate === 'number' ? forecast.method_params.growth_rate : undefined
       });
 
       const data = response?.data || response;

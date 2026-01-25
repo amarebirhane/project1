@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from ..models.journal_entry import AccountingJournalEntry, JournalEntryLine
 from ..models.account import Account, AccountType
@@ -87,5 +87,187 @@ class ForecastingService:
             })
         
         return forecast
+
+    @staticmethod
+    def _fetch_historical_data(
+        db: Session,
+        forecast_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        user_id: Optional[int] = None,
+        user_role: Optional[Any] = None
+    ) -> pd.DataFrame:
+        """Helper to fetch and prepare historical data for forecasting"""
+        # For simplicity, we'll try to use the logic from MLForecastingService if possible
+        # but since we want to avoid circular imports, we'll implement a basic version
+        
+        from ..models.revenue import RevenueEntry
+        from ..models.expense import ExpenseEntry
+        
+        data_points = []
+        dates = []
+        
+        if forecast_type in ["revenue", "all"]:
+            revenues = db.query(RevenueEntry).filter(
+                RevenueEntry.date >= start_date,
+                RevenueEntry.date <= end_date,
+                RevenueEntry.is_approved == True
+            ).all()
+            for r in revenues:
+                data_points.append(float(r.amount))
+                dates.append(r.date)
+                
+        if forecast_type in ["expense", "all"]:
+            expenses = db.query(ExpenseEntry).filter(
+                ExpenseEntry.date >= start_date,
+                ExpenseEntry.date <= end_date,
+                ExpenseEntry.is_approved == True
+            ).all()
+            for e in expenses:
+                # If "all", we might want to distinguish or net them, but usually 
+                # forecast_type is specific for these methods.
+                val = float(e.amount)
+                if forecast_type == "all":
+                    # Net flow
+                    data_points.append(-val)
+                else:
+                    data_points.append(val)
+                dates.append(e.date)
+        
+        if not data_points:
+            return pd.DataFrame(columns=['date', 'value'])
+            
+        df = pd.DataFrame({'date': pd.to_datetime(dates, utc=True), 'value': data_points})
+        df = df.groupby(df['date'].dt.to_period('M'))['value'].sum().reset_index()
+        df['date'] = df['date'].dt.to_timestamp()
+        df = df.sort_values('date')
+        
+        return df
+
+    @staticmethod
+    def generate_moving_average_forecast(
+        db: Session,
+        forecast_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        hist_start: datetime,
+        hist_end: datetime,
+        window: int = 3,
+        user_id: Optional[int] = None,
+        user_role: Optional[Any] = None
+    ) -> List[Dict[str, Any]]:
+        """Generate forecast using moving average"""
+        df = ForecastingService._fetch_historical_data(db, forecast_type, hist_start, hist_end, user_id, user_role)
+        
+        if len(df) < window:
+            # Fallback if not enough data
+            avg_val = df['value'].mean() if not df.empty else 0.0
+        else:
+            avg_val = df['value'].iloc[-window:].mean()
+            
+        # Project forward
+        forecast_data = []
+        current_date = start_date
+        period_idx = 1
+        
+        while current_date <= end_date:
+            forecast_data.append({
+                "period": f"Period {period_idx}",
+                "date": current_date.strftime("%Y-%m-%d"),
+                "forecasted_value": round(float(avg_val), 2),
+                "method": "moving_average"
+            })
+            # Advance by one month
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+            period_idx += 1
+            
+        return forecast_data
+
+    @staticmethod
+    def generate_linear_growth_forecast(
+        db: Session,
+        forecast_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        hist_start: datetime,
+        hist_end: datetime,
+        growth_rate: float = 0.05,
+        user_id: Optional[int] = None,
+        user_role: Optional[Any] = None
+    ) -> List[Dict[str, Any]]:
+        """Generate forecast using linear growth"""
+        df = ForecastingService._fetch_historical_data(db, forecast_type, hist_start, hist_end, user_id, user_role)
+        
+        last_val = df['value'].iloc[-1] if not df.empty else 1000.0  # Default if no data
+        
+        forecast_data = []
+        current_date = start_date
+        period_idx = 1
+        
+        while current_date <= end_date:
+            last_val *= (1 + growth_rate)
+            forecast_data.append({
+                "period": f"Period {period_idx}",
+                "date": current_date.strftime("%Y-%m-%d"),
+                "forecasted_value": round(float(last_val), 2),
+                "method": "linear_growth"
+            })
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+            period_idx += 1
+            
+        return forecast_data
+
+    @staticmethod
+    def generate_trend_forecast(
+        db: Session,
+        forecast_type: str,
+        start_date: datetime,
+        end_date: datetime,
+        hist_start: datetime,
+        hist_end: datetime,
+        user_id: Optional[int] = None,
+        user_role: Optional[Any] = None
+    ) -> List[Dict[str, Any]]:
+        """Generate forecast using linear trend regression"""
+        df = ForecastingService._fetch_historical_data(db, forecast_type, hist_start, hist_end, user_id, user_role)
+        
+        if len(df) < 2:
+            return ForecastingService.generate_moving_average_forecast(db, forecast_type, start_date, end_date, hist_start, hist_end, 1, user_id, user_role)
+            
+        X = np.arange(len(df)).reshape(-1, 1)
+        y = df['value'].values
+        
+        model = LinearRegression()
+        model.fit(X, y)
+        
+        forecast_data = []
+        current_date = start_date
+        period_idx = 1
+        
+        # Start prediction index from the end of historical data
+        future_idx = len(df)
+        
+        while current_date <= end_date:
+            pred = model.predict([[future_idx]])[0]
+            forecast_data.append({
+                "period": f"Period {period_idx}",
+                "date": current_date.strftime("%Y-%m-%d"),
+                "forecasted_value": round(float(pred), 2),
+                "method": "trend"
+            })
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+            period_idx += 1
+            future_idx += 1
+            
+        return forecast_data
 
 forecasting_service = ForecastingService()
