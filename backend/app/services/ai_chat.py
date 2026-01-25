@@ -97,13 +97,21 @@ class AIChatService:
             error_msg = str(e)
             print(f"Error generating AI response: {error_msg}")
             
+            # Handle Quota / Rate Limit errors (429)
             if "429" in error_msg or "quota" in error_msg.lower():
                 import re
-                # Try to extract "retry in X.Xs"
+                # Check for "exhausted" quota (billing/daily limit) vs "rate limit" (temporary wait)
+                is_exhausted = "quota" in error_msg.lower() and ("exhausted" in error_msg.lower() or "limit" in error_msg.lower())
+                
+                # Try to extract "retry in X.Xs" for rate limits
                 match = re.search(r"retry in (\d+\.?\d*)s", error_msg)
                 if match:
-                    seconds = float(match.group(1))
-                    return f"The AI Assistant is resting. Please try again in {int(seconds)} seconds."
+                    seconds = int(float(match.group(1)))
+                    return f"The AI Assistant is resting (Rate Limit). Please try again in {seconds} seconds."
+                
+                if is_exhausted:
+                    return "The AI Assistant has reached its daily quota (Free Tier). Please check your plan in Google AI Studio or try again later."
+                
                 return "The AI Assistant is currently receiving many requests. Please wait a moment before trying again."
                 
             return f"I apologize, but I encountered an error: {error_msg}"

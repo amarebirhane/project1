@@ -4,9 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon } from "lucide-react";
+import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon, History, Plus } from "lucide-react";
 import { apiClient, ChatMessage } from "@/lib/api";
 import { useAuth } from "@/lib/rbac/auth-context";
+
+// --- Types ---
+interface ChatSession {
+  id: string;
+  title: string;
+  history: ChatMessage[];
+  timestamp: number;
+}
 
 // --- Styled Components ---
 const WidgetContainer = styled.div`
@@ -15,6 +23,9 @@ const WidgetContainer = styled.div`
   right: 30px;
   z-index: 9999;
   font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
 `;
 
 const FloatingButton = styled(motion.button)`
@@ -38,9 +49,7 @@ const FloatingButton = styled(motion.button)`
 `;
 
 const PopupCard = styled(motion.div)`
-  position: absolute;
-  bottom: 70px;
-  right: 0;
+  position: relative;
   width: 380px;
   height: 600px;
   max-height: calc(100vh - 180px); /* Ensure it doesn't go off screen */
@@ -52,6 +61,79 @@ const PopupCard = styled(motion.div)`
   flex-direction: column;
   overflow: hidden;
   max-width: calc(100vw - 40px);
+`;
+
+const HistorySidebar = styled(motion.div)`
+  width: 250px;
+  height: 600px;
+  max-height: calc(100vh - 180px);
+  background: ${props => props.theme.colors.backgroundSecondary};
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9998;
+`;
+
+const HistoryHeader = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: ${props => props.theme.colors.textDark};
+`;
+
+const SessionList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SessionItem = styled.div<{ $active: boolean }>`
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: ${props => props.$active ? props.theme.colors.card : 'transparent'};
+  border: 1px solid ${props => props.$active ? props.theme.colors.border : 'transparent'};
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.theme.colors.card};
+    border-color: ${props => props.theme.colors.border};
+  }
+
+  .session-info {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .session-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: ${props => props.theme.colors.textDark};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .session-date {
+    font-size: 0.7rem;
+    color: ${props => props.theme.colors.textSecondary};
+  }
 `;
 
 const Header = styled.div`
@@ -222,12 +304,12 @@ const PreviewThumbnail = styled.div`
   img { width: 100%; height: 100%; object-fit: cover; }
 `;
 
-const IconButton = styled.button`
+const IconButton = styled.button<{ size?: 'small' | 'medium' }>`
   background: transparent;
   border: none;
   color: ${props => props.theme.colors.textSecondary};
   cursor: pointer;
-  padding: 8px;
+  padding: ${props => props.size === 'small' ? '4px' : '8px'};
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -316,41 +398,98 @@ export default function AIChatWidget() {
   const { user } = useAuth();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-  const [history, setHistory] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Computed state
+  const activeSession = sessions.find(s => s.id === activeSessionId) || null;
+  const history = activeSession?.history || [];
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load history from localStorage on mount
+  // Load logic
   useEffect(() => {
-    const saved = localStorage.getItem("fms_ai_chat_history");
-    if (saved) {
-      try { setHistory(JSON.parse(saved)); } catch (e) { console.error(e); }
+    const savedSessions = localStorage.getItem("fms_ai_sessions");
+    if (savedSessions) {
+      try {
+        const parsed = JSON.parse(savedSessions);
+        setSessions(parsed);
+        if (parsed.length > 0) {
+          setActiveSessionId(parsed[0].id);
+        }
+      } catch (e) {
+        console.error("Failed to load sessions:", e);
+      }
     }
   }, []);
 
-  // Save history to localStorage (strip images to keep under 5MB quota)
-  useEffect(() => {
-    if (history.length > 0) {
-      try {
-        const leanHistory = history.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-          // We don't save image_data to localStorage to avoid QuotaExceededError
-        }));
-        localStorage.setItem("fms_ai_chat_history", JSON.stringify(leanHistory));
-      } catch (e) {
-        console.error("Failed to save chat history:", e);
-      }
+  // Sync active session history to main sessions state
+  const setHistory = (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    if (!activeSessionId) {
+      // Create a default session if none exists
+      const newSession: ChatSession = {
+        id: Date.now().toString(),
+        title: "New Conversation",
+        history: updater([]),
+        timestamp: Date.now()
+      };
+      setSessions([newSession]);
+      setActiveSessionId(newSession.id);
+      return;
     }
-  }, [history]);
+
+    setSessions(prev => prev.map(s => {
+      if (s.id === activeSessionId) {
+        const newHistory = updater(s.history);
+        // Only update title if it's still "New Conversation" and we have a message
+        const newTitle = s.title === "New Conversation" && newHistory.length > 0
+          ? newHistory[0].content.slice(0, 30) + (newHistory[0].content.length > 30 ? "..." : "")
+          : s.title;
+
+        return { ...s, history: newHistory, title: newTitle, timestamp: Date.now() };
+      }
+      return s;
+    }));
+  };
+
+  // Persist sessions
+  useEffect(() => {
+    if (sessions.length > 0) {
+      localStorage.setItem("fms_ai_sessions", JSON.stringify(sessions));
+    }
+  }, [sessions]);
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: "New Conversation",
+      history: [],
+      timestamp: Date.now()
+    };
+    setSessions(prev => [newSession, ...prev]);
+    setActiveSessionId(newSession.id);
+    setIsHistoryOpen(false);
+  };
+
+  const deleteSession = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setSessions(prev => prev.filter(s => s.id !== id));
+    if (activeSessionId === id) {
+      setActiveSessionId(null);
+    }
+    if (sessions.length <= 1) {
+      localStorage.removeItem("fms_ai_sessions");
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -445,8 +584,11 @@ export default function AIChatWidget() {
   };
 
   const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem("fms_ai_chat_history");
+    if (activeSessionId) {
+      setSessions(prev => prev.map(s =>
+        s.id === activeSessionId ? { ...s, history: [], title: "New Conversation" } : s
+      ));
+    }
   };
 
   return (
@@ -465,6 +607,9 @@ export default function AIChatWidget() {
                 <span style={{ letterSpacing: '-0.01em' }}>FMS Assistant</span>
               </h3>
               <div style={{ display: 'flex', gap: '8px' }}>
+                <CloseButton onClick={() => setIsHistoryOpen(!isHistoryOpen)} title="View History">
+                  <History size={18} />
+                </CloseButton>
                 {history.length > 0 && (
                   <CloseButton onClick={clearHistory} title="Clear Chat history">
                     <RotateCcw size={16} />
@@ -602,6 +747,43 @@ export default function AIChatWidget() {
           </PopupCard>
         )}
       </AnimatePresence>
+
+      {isOpen && (
+        <HistorySidebar
+          initial={{ opacity: 0, x: 20, scale: 0.95 }}
+          animate={{ opacity: isHistoryOpen ? 1 : 0, x: isHistoryOpen ? 0 : 20, width: isHistoryOpen ? 250 : 0 }}
+          style={{ pointerEvents: isHistoryOpen ? 'auto' : 'none', display: isHistoryOpen ? 'flex' : 'none' }}
+        >
+          <HistoryHeader>
+            <span>History</span>
+            <IconButton onClick={createNewSession} title="New Chat">
+              <Plus size={18} />
+            </IconButton>
+          </HistoryHeader>
+          <SessionList>
+            {sessions.length === 0 && (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280', fontSize: '0.85rem' }}>
+                No history yet.
+              </div>
+            )}
+            {sessions.map(s => (
+              <SessionItem
+                key={s.id}
+                $active={s.id === activeSessionId}
+                onClick={() => { setActiveSessionId(s.id); setIsHistoryOpen(false); }}
+              >
+                <div className="session-info">
+                  <div className="session-title">{s.title}</div>
+                  <div className="session-date">{new Date(s.timestamp).toLocaleDateString()}</div>
+                </div>
+                <IconButton size="small" onClick={(e) => deleteSession(e, s.id)} style={{ padding: '4px' }}>
+                  <Trash2 size={14} color="#ef4444" />
+                </IconButton>
+              </SessionItem>
+            ))}
+          </SessionList>
+        </HistorySidebar>
+      )}
 
       <FloatingButton
         onClick={() => setIsOpen(!isOpen)}
