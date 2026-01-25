@@ -85,7 +85,7 @@ def _can_create_sale(user_role: UserRole) -> bool:
     return role_str in ['employee', 'accountant', 'finance_manager', 'finance_admin', 'admin', 'super_admin']
 
 
-@router.post("/", response_model=SaleOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=SaleOut, status_code=status.HTTP_201_CREATED)
 def create_sale(
     sale_data: SaleCreate,
     background_tasks: BackgroundTasks,
@@ -170,7 +170,7 @@ def create_sale(
         )
 
 
-@router.get("/", response_model=List[SaleOut])
+@router.get("", response_model=List[SaleOut])
 def get_sales(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),

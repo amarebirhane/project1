@@ -15,7 +15,7 @@ from ...services.report import ReportService
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ReportOut])
+@router.get("", response_model=List[ReportOut])
 def read_reports(
     skip: int = 0,
     limit: int = 100,
@@ -110,7 +110,7 @@ def read_report(
     return report
 
 
-@router.post("/", response_model=ReportOut)
+@router.post("", response_model=ReportOut)
 def create_report(
     report_data: ReportCreate,
     background_tasks: BackgroundTasks,

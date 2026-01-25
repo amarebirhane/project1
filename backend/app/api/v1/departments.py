@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 def get_departments(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -128,7 +128,7 @@ def get_department(
     }
 
 
-@router.post("/")
+@router.post("")
 def create_department(
     department_data: dict,
     current_user: User = Depends(require_min_role(UserRole.ADMIN)),

@@ -498,7 +498,7 @@ def admin_reset_password(
 # ------------------------------------------------------------------
 # GET / (List users - manager and above)
 # ------------------------------------------------------------------
-@router.get("/", response_model=List[UserOut])
+@router.get("", response_model=List[UserOut])
 def list_users(
     skip: int = 0,
     limit: int = 100,
@@ -594,7 +594,7 @@ def read_user(
 # ------------------------------------------------------------------
 # POST / (Admin creates any user)
 # ------------------------------------------------------------------
-@router.post("/", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(
     user_in: UserCreate,
     background_tasks: BackgroundTasks,
