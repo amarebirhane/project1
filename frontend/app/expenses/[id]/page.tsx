@@ -817,6 +817,8 @@ export default function ExpenseDetailPage() {
             )}
           </InfoGrid>
 
+          <CommentSection sourceType="expense_entries" sourceId={expense.id} />
+
           {expense.description && (
             <Description>
               <p>{expense.description}</p>
