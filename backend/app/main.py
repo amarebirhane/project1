@@ -688,6 +688,19 @@ except ImportError:
 # Background tasks
 if celery_app:
     @celery_app.task
+    def run_proactive_agent_scan():
+        """Periodic task to scan for financial insights using AI"""
+        import asyncio
+        from .services.proactive_agent import proactive_agent_service
+        try:
+            # Since generating AI responses is async, we run it in the event loop
+            asyncio.run(proactive_agent_service.run_daily_insight_scan())
+            return True
+        except Exception as e:
+            logger.error(f"Proactive scan task failed: {str(e)}")
+            return False
+
+    @celery_app.task
     def send_email_task(to_email: str, subject: str, body: str):
         """Background task for sending emails"""
         try:
@@ -794,6 +807,10 @@ if celery_app:
         'cleanup-expired-notifications': {
             'task': 'app.main.cleanup_notifications_task',
             'schedule': crontab(hour=4, minute=0),  # Daily at 4 AM
+        },
+        'proactive-ai-insight': {
+            'task': 'app.main.run_proactive_agent_scan',
+            'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
         }
     }
 
