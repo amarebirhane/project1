@@ -25,6 +25,7 @@ class NotificationType(str, enum.Enum):
     ML_TRAINING_COMPLETE = "ml_training_complete"
     INVENTORY_LOW = "inventory_low"
     INVENTORY_UPDATED = "inventory_updated"
+    COMMENT_MENTION = "comment_mention"
 
 
 class NotificationPriority(str, enum.Enum):
