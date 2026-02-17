@@ -38,6 +38,10 @@ A comprehensive FastAPI-based backend API for managing financial data, budgets, 
 python -c "from app.core.database import engine, Base; from app.models import *; Base.metadata.create_all(bind=engine)"
 
 # Start the application
+# Option 1: Automated (activates venv automatically)
+start.bat
+
+# Option 2: Manual
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
