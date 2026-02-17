@@ -1,44 +1,45 @@
-# Environment Variables
-.env
-.env.example
-.env.local
-.env.*.local
-.env.development
-.env.development.local
-.env.test
-.env.test.local
-.env.production
-.env.production.local
-*.env
-.envrc
-
+# ==========================================
 # Dependencies
-node_modules/
+# ==========================================
+/node_modules
 /.pnp
-.pnp.*
+.pnp.js
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
+!.yarn/sdks
 !.yarn/versions
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-.npm
-.yarn-integrity
 
-# Build Outputs
+# NOTE: Lock files (package-lock.json, yarn.lock, pnpm-lock.yaml) should usually be committed.
+# However, if you want to ignore them, uncomment the following:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ==========================================
+# Next.js & Build Output
+# ==========================================
 /.next/
 /out/
 /build
 /dist
 /.cache
-.next
-out
-build
-dist
 
-# Testing
+# ==========================================
+# Environment Variables
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+.envrc
+
+# ==========================================
+# Testing & Coverage
+# ==========================================
 /coverage
 /coverage.lcov
 /.nyc_output
@@ -50,11 +51,23 @@ dist
 *.test.js.snap
 __snapshots__/
 .jest/
+junit.xml
 
-# Logs
-logs/
-!app/settings/logs/
-!app/settings/logs/**
+# Ignore all test files
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
+*.spec.ts
+*.spec.tsx
+*.spec.js
+*.spec.jsx
+
+# ==========================================
+# Debug & Logs
+# ==========================================
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -62,14 +75,21 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 .pnpm-debug.log*
-*.log.*
+logs/
+!app/settings/logs/
+firebase-debug.log
+firestore-debug.log
 
+# ==========================================
 # TypeScript
+# ==========================================
 *.tsbuildinfo
 next-env.d.ts
 tsconfig.tsbuildinfo
 
-# IDEs and Editors
+# ==========================================
+# IDEs & Editors
+# ==========================================
 .vscode/
 .idea/
 *.swp
@@ -85,7 +105,9 @@ tsconfig.tsbuildinfo
 .fleet/
 .zed/
 
-# OS Files
+# ==========================================
+# OS Generated Files
+# ==========================================
 .DS_Store
 .DS_Store?
 ._*
@@ -94,47 +116,47 @@ tsconfig.tsbuildinfo
 ehthumbs.db
 Thumbs.db
 desktop.ini
-*.tmp
-*.temp
 
-# Deployment
+# ==========================================
+# Deployment & Hosting
+# ==========================================
 .vercel
 .vercel.json
 .netlify
 .netlify.toml
 .firebase
 .firebaserc
-firebase-debug.log
-firestore-debug.log
 .functions/
 .now
-*.pem
+.wrangler/
+.wrangler.toml
 
-# Runtime Data
+# ==========================================
+# Runtime Data & Temp Files
+# ==========================================
 pids/
 *.pid
 *.seed
 *.pid.lock
-
-# Coverage and Reports
-coverage/
-.nyc_output/
-*.lcov
-test-results/
-playwright-report/
-junit.xml
-
-# Temporary Files
 tmp/
 temp/
 *.tmp
 *.temp
-*.swp
-*.swo
-*~
 .cache/
 
-# Storybook (if used)
+# ==========================================
+# Misc Tools
+# ==========================================
+.eslintcache
+.stylelintcache
+.stylelintignore
+*.local
+.turbo/
+.sentryclirc
+.next/analyze/
+.analyze/
+
+# Storybook
 storybook-static/
 storybook-build/
 
@@ -146,40 +168,9 @@ storybook-build/
 **/public/workbox-*.js.map
 **/public/worker-*.js.map
 
-# Misc
-.eslintcache
-.stylelintcache
-.stylelintignore
-*.local
-.cache/
-.turbo/
-.wrangler/
-.wrangler.toml
-
-# Sentry (if used)
-.sentryclirc
-
-# Bundle Analyzer
-.next/analyze/
-.analyze/
-
-# Optional: Uncomment if using these tools
-# # Turborepo
-# .turbo/
-# 
-# # Turbopack
-# .turbopack/
-# 
-# # Remix (if migrating from Remix)
-# /.remix/
-# 
-# # Parcel
-# .parcel-cache/
-# 
-# # Webpack
-# .webpack/
-
+# ==========================================
 # Local Development
+# ==========================================
 .local/
-.local.*
-
+secrets/
+*.pem
