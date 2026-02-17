@@ -1,5 +1,5 @@
 # ==========================================
-# Python Core
+# Python Core & Build Artifacts
 # ==========================================
 __pycache__/
 *.py[cod]
@@ -36,9 +36,10 @@ venv.bak/
 virtualenv/
 .virtualenv/
 .python-version
+pip-wheel-metadata/
 
 # ==========================================
-# Environment Variables
+# Environment Variables & Secrets
 # ==========================================
 .env
 .env.local
@@ -46,9 +47,16 @@ virtualenv/
 .env.production
 .env.development
 *.env
+.envrc
+secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
 
 # ==========================================
-# Database
+# Database Files
 # ==========================================
 *.db
 *.sqlite
@@ -61,6 +69,8 @@ test_data_2.db
 *.db-wal
 *.db-shm
 dump.rdb
+# MongoDB
+.dbshell
 
 # ==========================================
 # Testing & Quality Assurance
@@ -79,50 +89,75 @@ nosetests.xml
 coverage.xml
 *.mo
 *.pot
+unit.xml
+.mutmut-cache
+.vsts/
 
-# Type Checking
+# ==========================================
+# Type Checking & Analysis
+# ==========================================
 .mypy_cache/
 .dmypy.json
 dmypy.json
 .pyre/
 .pytype/
 cython_debug/
+.ruff_cache/
 
 # ==========================================
 # IDEs and Editors
 # ==========================================
+# VS Code
 .vscode/
+# JetBrains
 .idea/
-*.swp
-*.swo
-*~
-.DS_Store
-.DS_Store?
-._*
+*.iml
+# Sublime Text
 *.sublime-project
 *.sublime-workspace
+# Eclipse
 .project
 .pydevproject
 .settings/
+.metadata/
+# Spyder
 .spyderproject
 .spyproject
+# Rope
 .ropeproject
+# Vim
+*.swp
+*.swo
+*~
+# Emacs
+*~
+\#*\#
+.\#*
 
 # ==========================================
-# OS Specific
+# OS Specific Files
 # ==========================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
 .Spotlight-V100
 .Trashes
+# Windows
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+$RECYCLE.BIN/
+*.lnk
 
 # ==========================================
 # Frameworks & Libraries
 # ==========================================
-# Jupyter
+# Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb
+profile_default/
+ipython_config.py
 
 # Celery
 celerybeat-schedule
@@ -133,18 +168,24 @@ celerybeat.pid
 instance/
 .webassets-cache
 
+# Django (Common patterns)
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
 # Scrapy
 .scrapy
 
-# Sphinx
+# Sphinx Documentation
 docs/_build/
+target/
 
 # PyBuilder
 .pybuilder/
-target/
 
 # Dependency Management
-# Pipfile.lock and poetry.lock are often tracked, but excluding if requested
+# Pipfile.lock and poetry.lock are often tracked, but excluding just in case explicitly requested
 # Pipfile.lock
 # poetry.lock
 __pypackages__/
@@ -160,13 +201,18 @@ reports/
 backups/
 logs/
 log/
-media/
 static/collected/
+# Helper scripts (if you want to ignore them)
+# scripts/
 
-# Generated Reports/Files
+# Generated Reports & Data
 *.pdf
 *.xlsx
 *.csv
+*.json
+!package.json
+!tsconfig.json
+!pyrightconfig.json
 
 # Temporary Files
 *.tmp
@@ -176,10 +222,8 @@ static/collected/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Security
-secrets/
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
+# ==========================================
+# Docker
+# ==========================================
+# Good practice to ignore local overrides
+docker-compose.override.yml
