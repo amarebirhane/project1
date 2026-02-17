@@ -1,24 +1,6 @@
-# Environment Variables
-.env
-.env.local
-.env.*.local
-.env.production
-.env.development
-*.env
-
-# Database Files
-*.db
-*.sqlite
-*.sqlite3
-app.db
-test.db
-test_data.db
-test_data_2.db
-*.db-journal
-*.db-wal
-*.db-shm
-
-# Python
+# ==========================================
+# Python Core
+# ==========================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -42,7 +24,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# ==========================================
 # Virtual Environments
+# ==========================================
 venv/
 env/
 ENV/
@@ -51,8 +35,36 @@ venv.bak/
 .venv/
 virtualenv/
 .virtualenv/
+.python-version
 
-# Testing
+# ==========================================
+# Environment Variables
+# ==========================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.env
+
+# ==========================================
+# Database
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+app.db
+test.db
+test_data.db
+test_data_2.db
+*.db-journal
+*.db-wal
+*.db-shm
+dump.rdb
+
+# ==========================================
+# Testing & Quality Assurance
+# ==========================================
 .pytest_cache/
 .coverage
 .coverage.*
@@ -68,29 +80,47 @@ coverage.xml
 *.mo
 *.pot
 
-# Project-specific Directories (created at runtime)
-uploads/
-reports/
-backups/
-logs/
-*.log
-log/
+# Type Checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
 
+# ==========================================
 # IDEs and Editors
+# ==========================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
+.DS_Store?
+._*
 *.sublime-project
 *.sublime-workspace
 .project
 .pydevproject
 .settings/
-*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
 
-# Jupyter Notebook
+# ==========================================
+# OS Specific
+# ==========================================
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Frameworks & Libraries
+# ==========================================
+# Jupyter
 .ipynb_checkpoints
 *.ipynb
 
@@ -99,137 +129,52 @@ celerybeat-schedule
 celerybeat.pid
 *.pid
 
-# Redis
-dump.rdb
-
-# MyPy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# Distribution / packaging
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.nyc_output
-.coverage
-.coverage.*
-
-# Translations
-*.mo
-*.pot
-
-# Flask stuff:
+# Flask
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy
 .scrapy
 
-# Sphinx documentation
+# Sphinx
 docs/_build/
 
 # PyBuilder
 .pybuilder/
 target/
 
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# poetry
-poetry.lock
-
-# PEP 582
+# Dependency Management
+# Pipfile.lock and poetry.lock are often tracked, but excluding if requested
+# Pipfile.lock
+# poetry.lock
 __pypackages__/
 
-# Celery beat schedule file
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
+# SageMath
 *.sage.py
 
-# Environments
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# ==========================================
+# Project Specific
+# ==========================================
+uploads/
+reports/
+backups/
+logs/
+log/
+media/
+static/collected/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Generated Reports/Files
+*.pdf
+*.xlsx
+*.csv
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# Backup files
-*.bak
-*.backup
-*.tmp
-
-# OS-specific
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-
-# Temporary files
+# Temporary Files
 *.tmp
 *.temp
-*.swp
-*.swo
-*~
-
-# Compiled files
-*.pyc
-*.pyo
-*.pyd
-
-# Package files
-*.whl
-*.tar.gz
-
-# Local configuration
-config.local.py
-settings.local.py
+*.bak
+*.backup
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Security
 secrets/
@@ -238,20 +183,3 @@ secrets/
 *.crt
 *.p12
 *.pfx
-
-# Documentation builds
-docs/_build/
-site/
-
-# FastAPI specific
-.pytest_cache/
-.hypothesis/
-
-# Report files (if generated)
-*.pdf
-*.xlsx
-*.csv
-
-# Uploaded files
-media/
-static/collected/
