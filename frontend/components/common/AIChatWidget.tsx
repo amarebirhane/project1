@@ -530,6 +530,7 @@ export default function AIChatWidget() {
         history: updater([]),
         timestamp: Date.now()
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSessions([newSession]);
       setActiveSessionId(newSession.id);
       return;

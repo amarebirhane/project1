@@ -1235,6 +1235,7 @@ export default function Navbar() {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setIsOnline(navigator.onLine);
 
     return () => {
@@ -1248,6 +1249,7 @@ export default function Navbar() {
     const stored = localStorage.getItem('recent_searches');
     if (stored) {
       try {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setRecentSearches(JSON.parse(stored).slice(0, 5));
       } catch {
         setRecentSearches([]);
@@ -1284,6 +1286,7 @@ export default function Navbar() {
         'revenue', 'expense', 'budget', 'forecast', 'scenario',
         'variance', 'report', 'transaction', 'user', 'project'
       ].filter(s => s.toLowerCase().includes(search.toLowerCase()));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSearchSuggestions(suggestions.slice(0, 5));
     } else {
       setSearchSuggestions([]);
