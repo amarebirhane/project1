@@ -227,3 +227,4 @@ pip-delete-this-directory.txt
 # ==========================================
 # Good practice to ignore local overrides
 docker-compose.override.yml
+RECOMMENDATION.md
