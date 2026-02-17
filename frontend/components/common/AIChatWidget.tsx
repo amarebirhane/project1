@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, ImageIcon, History, Plus, Mic, MicOff } from "lucide-react";
+import { Send, X, Bot, Sparkles, User, Loader2, Trash2, RotateCcw, Paperclip, History, Plus, Mic, MicOff } from "lucide-react";
 import { apiClient, ChatMessage } from "@/lib/api";
 import { useAuth } from "@/lib/rbac/auth-context";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // --- Types ---
@@ -437,13 +436,16 @@ export default function AIChatWidget() {
   const [retryStatus, setRetryStatus] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Computed state
   const activeSession = sessions.find(s => s.id === activeSessionId) || null;
-  const history = activeSession?.history || [];
+  // useMemo to stabilize history reference
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const history = useMemo(() => activeSession?.history || [], [activeSession?.history]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -452,6 +454,7 @@ export default function AIChatWidget() {
   // --- Voice Logic ---
   useEffect(() => {
     // Check for browser support
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognition) {
@@ -469,6 +472,7 @@ export default function AIChatWidget() {
         setMessage(transcript);
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognitionRef.current.onerror = (event: any) => {
         console.error("Speech recognition error", event.error);
         setIsRecording(false);
@@ -799,6 +803,7 @@ export default function AIChatWidget() {
                 {selectedImage && (
                   <ImagePreview>
                     <PreviewThumbnail>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={selectedImage} alt="Preview" />
                     </PreviewThumbnail>
                     <div style={{ flex: 1, fontSize: '0.85rem', color: '#6b7280' }}>Image attached</div>
