@@ -510,10 +510,13 @@ export default function AIChatWidget() {
     if (savedSessions) {
       try {
         const parsed = JSON.parse(savedSessions);
-        setSessions(parsed);
-        if (parsed.length > 0) {
-          setActiveSessionId(parsed[0].id);
-        }
+        // Fix: Avoid calling setState synchronously within an effect
+        setTimeout(() => {
+          setSessions(parsed);
+          if (parsed.length > 0) {
+            setActiveSessionId(parsed[0].id);
+          }
+        }, 0);
       } catch (e) {
         console.error("Failed to load sessions:", e);
       }
