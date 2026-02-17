@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
@@ -521,7 +521,7 @@ export default function AIChatWidget() {
   }, []);
 
   // Sync active session history to main sessions state
-  const setHistory = (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+  const setHistory = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
     if (!activeSessionId) {
       // Create a default session if none exists
       const newSession: ChatSession = {
@@ -530,7 +530,6 @@ export default function AIChatWidget() {
         history: updater([]),
         timestamp: Date.now()
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       setSessions([newSession]);
       setActiveSessionId(newSession.id);
       return;
@@ -548,7 +547,7 @@ export default function AIChatWidget() {
       }
       return s;
     }));
-  };
+  }, [activeSessionId]);
 
   // Persist sessions
   useEffect(() => {
