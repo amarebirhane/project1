@@ -1149,7 +1149,7 @@ export default function Navbar() {
   const lastNotificationIdsRef = useRef<Set<number>>(new Set());
   const isInitialLoadRef = useRef(true);
   const { user, logout, isAuthenticated } = useAuth();
-  const { user: storeUser } = useUserStore();
+  const storeUser = useUserStore((state) => state.user);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

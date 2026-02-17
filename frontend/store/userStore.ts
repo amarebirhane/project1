@@ -169,7 +169,9 @@ export const useUserStore = create<UserState>()(
           if (!response.data || !response.data.user) {
             throw new Error('Invalid login response: missing user data');
           }
+
           const mappedUser = mapToStoreUser(response.data.user);
+
           set({
             user: mappedUser,
             isAuthenticated: true,
