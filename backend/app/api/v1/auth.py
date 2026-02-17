@@ -486,7 +486,13 @@ def login_json(
             "username": user.username,
             "full_name": user.full_name,
             "role": user.role.value,
-            "is_2fa_enabled": user.is_2fa_enabled
+            "is_2fa_enabled": user.is_2fa_enabled,
+            "profile_image_url": user.profile_image_url,
+            "phone": user.phone,
+            "department": user.department,
+            "is_active": user.is_active,
+            "manager_id": user.manager_id,
+            "created_at": user.created_at.isoformat() if user.created_at else None
         }
     }
 
