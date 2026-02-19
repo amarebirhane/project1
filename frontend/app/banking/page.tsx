@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Plus, TrendingUp, Upload, DollarSign } from "lucide-react";
+import { Plus, TrendingUp, Upload, DollarSign, Send } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import { useTheme } from "styled-components";
 import { toast } from "sonner";
@@ -521,6 +521,7 @@ export default function BankingPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [txLoading, setTxLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
