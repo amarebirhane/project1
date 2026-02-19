@@ -11,6 +11,7 @@ import { useThemeStore } from '@/store/useThemeStore';
 import ThemeSync from '@/components/common/ThemeSync';
 import FeedbackWidget from '@/components/common/FeedbackWidget';
 import AIChatWidget from '@/components/common/AIChatWidget';
+import WebSocketInitializer from '@/components/common/WebSocketInitializer';
 import { useAuth } from '@/lib/rbac/auth-context';
 
 // Use system fonts instead of Google Fonts to avoid download warnings
@@ -88,6 +89,7 @@ export default function RootLayout({
               </LayoutContainer>
               <Toaster position="top-right" />
               <WidgetWrapper />
+              <WebSocketInitializer />
             </AuthProvider>
           </ThemeProvider>
         </StyledComponentsRegistry>
