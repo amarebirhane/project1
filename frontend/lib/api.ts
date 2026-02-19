@@ -2043,6 +2043,10 @@ class ApiClient {
     return this.get<any[]>('/banking/accounts');
   }
 
+  async getBanks() {
+    return this.get<any[]>('/banking/banks');
+  }
+
   async createBankAccount(data: any) {
     return this.post<any>('/banking/accounts', data);
   }

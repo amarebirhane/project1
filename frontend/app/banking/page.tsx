@@ -18,6 +18,7 @@ import {
 import { ComponentGate } from '@/lib/rbac';
 import Layout from "@/components/layout";
 import { X, Search, Filter, ArrowDown, ArrowUp, Loader2, Info } from "lucide-react";
+import { BankLinkModal } from "@/components/banking/BankLinkModal";
 
 // Styled Components
 
@@ -587,31 +588,15 @@ export default function BankingPage() {
     }
   };
 
-  const handleCreateAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setIsSubmitting(true);
-      await apiClient.createBankAccount(formData);
-      toast.success("Bank account connected successfully");
-      setIsModalOpen(false);
-      setFormData({
-        bank_name: "",
-        account_name: "",
-        account_number_last4: "",
-        currency_code: "USD"
-      });
-      loadData();
-    } catch (error) {
-      console.error("Failed to create bank account", error);
-      toast.error("Failed to connect bank account");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <Layout>
       <PageWrapper>
+        {isModalOpen && (
+          <BankLinkModal
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={loadData}
+          />
+        )}
         <ContentContainer>
           {/* Header */}
           <Header>
@@ -806,61 +791,6 @@ export default function BankingPage() {
             </ModalOverlay>
           )}
 
-          {/* Connect Account Modal */}
-          {isModalOpen && (
-            <ModalOverlay onClick={() => setIsModalOpen(false)}>
-              <ModalContent onClick={(e) => e.stopPropagation()}>
-                <ModalHeader>
-                  <ModalTitle>Connect Bank Account</ModalTitle>
-                  <CloseButton onClick={() => setIsModalOpen(false)}>
-                    <X size={24} />
-                  </CloseButton>
-                </ModalHeader>
-                <ModalForm onSubmit={handleCreateAccount}>
-                  <InputGroup>
-                    <InputLabel>Bank Name</InputLabel>
-                    <StyledInput
-                      placeholder="e.g. Chase, Bank of America"
-                      value={formData.bank_name}
-                      onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                      required
-                    />
-                  </InputGroup>
-                  <InputGroup>
-                    <InputLabel>Account Name</InputLabel>
-                    <StyledInput
-                      placeholder="e.g. Main Business Checking"
-                      value={formData.account_name}
-                      onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
-                      required
-                    />
-                  </InputGroup>
-                  <InputGroup>
-                    <InputLabel>Last 4 Digits of Account Number</InputLabel>
-                    <StyledInput
-                      placeholder="e.g. 1234"
-                      maxLength={4}
-                      value={formData.account_number_last4}
-                      onChange={(e) => setFormData({ ...formData, account_number_last4: e.target.value })}
-                      required
-                    />
-                  </InputGroup>
-                  <InputGroup>
-                    <InputLabel>Currency</InputLabel>
-                    <StyledInput
-                      placeholder="USD, EUR, GBP"
-                      value={formData.currency_code}
-                      onChange={(e) => setFormData({ ...formData, currency_code: e.target.value.toUpperCase() })}
-                      required
-                    />
-                  </InputGroup>
-                  <SubmitButton type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Connecting..." : "Connect Account"}
-                  </SubmitButton>
-                </ModalForm>
-              </ModalContent>
-            </ModalOverlay>
-          )}
         </ContentContainer>
       </PageWrapper>
     </Layout>
