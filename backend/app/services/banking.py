@@ -161,7 +161,4 @@ class BankingService:
             external_reference=new_tx.external_id
         )
 
-        except Exception as e:
-            return banking_schema.MoneyTransferResponse(status="error", message=f"Chapa transfer failed: {str(e)}")
-
 banking_service = BankingService()
