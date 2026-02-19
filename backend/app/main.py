@@ -19,7 +19,7 @@ from .api.v1 import (
     auth, users, revenue, expenses, dashboard,
     reports, approvals, notifications, admin,
     projects, departments, analytics, budgeting,
-    inventory, sales, contact, ip_management, accounting, documents, banking, fixed_assets, ai, payroll, warehouses, account_mappings, feedback, comments
+    inventory, sales, contact, ip_management, accounting, documents, banking, fixed_assets, ai, payroll, warehouses, account_mappings, feedback, comments, websocket
 )
 
 from .utils.audit import AuditLogger, AuditAction
@@ -570,6 +570,7 @@ app.include_router(warehouses.router, prefix=f"{api_prefix}/warehouses", tags=["
 app.include_router(account_mappings.router, prefix=f"{api_prefix}/account-mappings", tags=["Accounting Mapping"])
 app.include_router(feedback.router, prefix=f"{api_prefix}/feedback", tags=["Feedback"])
 app.include_router(comments.router, prefix=f"{api_prefix}/comments", tags=["Collaboration"])
+app.include_router(websocket.router, tags=["WebSockets"])
 
 
 # Health check endpoint

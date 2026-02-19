@@ -135,6 +135,43 @@ class NotificationService:
                         db_notification.is_email_sent = True
                         db.add(db_notification)
                         db.commit()
+            
+            # 4. Broadcast via WebSocket
+            try:
+                import asyncio
+                # Use a helper to avoid circular imports and handle async in sync context if needed
+                # However, NotificationService methods are mostly called in sync contexts or BackgroundTasks
+                # Actually, our WebSocket manager is async. 
+                # If we are in a background task (async), we can await.
+                # If we are in a sync context, we might need an event loop or another background task.
+                # Let's check how _execute_dispatch is called.
+                
+                notification_dict = {
+                    "id": db_notification.id,
+                    "title": db_notification.title,
+                    "message": db_notification.message,
+                    "type": db_notification.type.value if hasattr(db_notification.type, 'value') else db_notification.type,
+                    "priority": db_notification.priority.value if hasattr(db_notification.priority, 'value') else db_notification.priority,
+                    "action_url": db_notification.action_url,
+                    "created_at": db_notification.created_at.isoformat() if db_notification.created_at else datetime.utcnow().isoformat(),
+                    "is_read": False
+                }
+                
+                from ..core.websocket import manager
+                # Since _execute_dispatch might be called from a sync context (SessionLocal), 
+                # but we are in a FastAPI app which has an event loop.
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        loop.create_task(manager.send_personal_message(notification_dict, user_id))
+                    else:
+                        asyncio.run(manager.send_personal_message(notification_dict, user_id))
+                except RuntimeError:
+                    # No event loop
+                    asyncio.run(manager.send_personal_message(notification_dict, user_id))
+                    
+            except Exception as ws_err:
+                logger.error(f"Failed to broadcast via WebSocket: {str(ws_err)}")
                         
         except Exception as e:
             logger.error(f"Dispatch failed for user {user_id}: {str(e)}", exc_info=True)
