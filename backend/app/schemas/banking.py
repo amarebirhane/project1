@@ -24,6 +24,7 @@ class BankTransaction(BankTransactionBase):
     status: TransactionStatus
     journal_entry_id: Optional[int] = None
     created_at: datetime
+    created_by_id: Optional[int] = None
     
     class Config:
         from_attributes = True

@@ -35,7 +35,7 @@ class BankFeedSimulationService:
         )
 
     @classmethod
-    def simulate_polling_sync(cls, db: Session, bank_account_id: int, count: int = 5) -> List[BankTransaction]:
+    def simulate_polling_sync(cls, db: Session, bank_account_id: int, count: int = 5, user_id: int = None) -> List[BankTransaction]:
         """
         Simulates fetching a batch of transactions from a bank API
         """
@@ -58,7 +58,8 @@ class BankFeedSimulationService:
                 description=tx_data.description,
                 amount=tx_data.amount,
                 external_id=tx_data.external_id,
-                status=TransactionStatus.PENDING
+                status=TransactionStatus.PENDING,
+                created_by_id=user_id
             )
             db.add(tx)
             transactions.append(tx)
@@ -68,7 +69,7 @@ class BankFeedSimulationService:
         return transactions
 
     @classmethod
-    def process_mock_webhook(cls, db: Session, bank_account_id: int, payload: dict) -> Optional[BankTransaction]:
+    def process_mock_webhook(cls, db: Session, bank_account_id: int, payload: dict, user_id: int = None) -> Optional[BankTransaction]:
         """
         Simulates processing a webhook notification for a single transaction
         """
@@ -95,7 +96,8 @@ class BankFeedSimulationService:
             description=description,
             amount=amount,
             external_id=external_id,
-            status=TransactionStatus.PENDING
+            status=TransactionStatus.PENDING,
+            created_by_id=user_id
         )
         db.add(tx)
         db.commit()

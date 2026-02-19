@@ -62,7 +62,7 @@ class BankingService:
         return False
 
     @staticmethod
-    def process_csv_upload(db: Session, bank_account_id: int, file_content: bytes):
+    def process_csv_upload(db: Session, bank_account_id: int, file_content: bytes, user_id: int):
         """
         Parse CSV and create BankTransaction records
         Expected Format: Date, Description, Amount
@@ -90,7 +90,8 @@ class BankingService:
                         date=dt,
                         description=desc or "Imported Transaction",
                         amount=amount,
-                        status=TransactionStatus.PENDING
+                        status=TransactionStatus.PENDING,
+                        created_by_id=user_id
                     )
                     db.add(tx)
                     transactions.append(tx)
@@ -102,7 +103,7 @@ class BankingService:
         return transactions
 
     @staticmethod
-    def initiate_transfer(db: Session, transfer_in: banking_schema.MoneyTransferCreate) -> banking_schema.MoneyTransferResponse:
+    def initiate_transfer(db: Session, transfer_in: banking_schema.MoneyTransferCreate, user_id: int) -> banking_schema.MoneyTransferResponse:
         """
         Process a money transfer via Chapa and record the transaction.
         """
@@ -134,7 +135,8 @@ class BankingService:
                 description=f"Transfer to {transfer_in.beneficiary_name} - {transfer_in.reference or ''}",
                 amount=-abs(transfer_in.amount), # Negative for outflow
                 status=TransactionStatus.PENDING,
-                external_id=response.get("reference") or chapa_data["reference"]
+                external_id=response.get("reference") or chapa_data["reference"],
+                created_by_id=user_id
             )
             db.add(new_tx)
             db.commit()

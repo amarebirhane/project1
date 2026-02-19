@@ -68,7 +68,7 @@ async def upload_bank_statement(
         
     try:
         content = await file.read()
-        transactions = banking_service.process_csv_upload(db, bank_account_id, content)
+        transactions = banking_service.process_csv_upload(db, bank_account_id, content, current_user.id)
         return transactions
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to process CSV: {str(e)}")
@@ -100,7 +100,7 @@ def simulate_bank_fetch(
     """
     Manually trigger a simulated bank API fetch (polling simulation)
     """
-    return bank_feed_service.simulate_polling_sync(db, bank_account_id, count)
+    return bank_feed_service.simulate_polling_sync(db, bank_account_id, count, current_user.id)
 
 @router.post("/webhook/simulator")
 def simulate_bank_webhook(
@@ -112,7 +112,7 @@ def simulate_bank_webhook(
     """
     Simulate an incoming bank webhook
     """
-    tx = bank_feed_service.process_mock_webhook(db, bank_account_id, payload)
+    tx = bank_feed_service.process_mock_webhook(db, bank_account_id, payload, current_user.id)
     if not tx:
         raise HTTPException(status_code=400, detail="Failed to process simulated webhook")
     return tx
@@ -174,4 +174,4 @@ def initiate_money_transfer(
     """
     Initiate a money transfer via Chapa
     """
-    return banking_service.initiate_transfer(db, transfer_in)
+    return banking_service.initiate_transfer(db, transfer_in, current_user.id)
