@@ -450,6 +450,16 @@ export default function PayrollDashboard() {
         }
     };
 
+    const handleDisbursePayroll = async (id: number) => {
+        try {
+            await apiClient.disbursePayroll(id);
+            toast.success("Payroll disbursed via Chapa");
+            fetchData();
+        } catch (error) {
+            toast.error("Disbursement failed");
+        }
+    };
+
     const viewPayslips = async (period: PayrollPeriod) => {
         try {
             setSelectedPeriod(period);
@@ -576,9 +586,22 @@ export default function PayrollDashboard() {
                                                             </>
                                                         )}
                                                         {period.status === 'approved' && (
-                                                            <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-                                                                <CheckCircle2 size={20} /> Ready for Disbursement
-                                                            </div>
+                                                            <>
+                                                                <HeaderButton style={{ padding: '8px 16px', borderRadius: '10px' }} onClick={() => viewPayslips(period)}>
+                                                                    <Eye size={16} /> Review
+                                                                </HeaderButton>
+                                                                <HeaderButton
+                                                                    style={{
+                                                                        padding: '8px 16px',
+                                                                        borderRadius: '10px',
+                                                                        background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                                                                        boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+                                                                    }}
+                                                                    onClick={() => handleDisbursePayroll(period.id)}
+                                                                >
+                                                                    <CreditCard size={16} /> Disburse
+                                                                </HeaderButton>
+                                                            </>
                                                         )}
                                                     </td>
                                                 </tr>
