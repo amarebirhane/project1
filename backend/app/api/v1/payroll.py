@@ -98,6 +98,20 @@ def approve_payroll(
         raise HTTPException(status_code=400, detail="Could not approve payroll.")
     return period
 
+@router.post("/periods/{period_id}/disburse", response_model=schemas.PayrollPeriod)
+def disburse_payroll(
+    period_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.FINANCE_ADMIN))
+):
+    """
+    Initiate transfers for all approved payslips in a payroll period.
+    """
+    period = payroll_service.disburse_payroll(db, period_id)
+    if not period:
+        raise HTTPException(status_code=400, detail="Could not disburse payroll. Period might not be in APPROVED status.")
+    return period
+
 @router.get("/periods/{period_id}/payslips", response_model=List[schemas.Payslip])
 def list_payslips(
     period_id: int,
