@@ -378,6 +378,13 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
 
     const handleCreateGl = async () => {
         if (!newGlCode || !newGlName) return;
+
+        // Client-side uniqueness check
+        if (glAccounts.some(acc => acc.code.trim().toLowerCase() === newGlCode.trim().toLowerCase())) {
+            toast.error(`Accountant Number "${newGlCode}" already exists`);
+            return;
+        }
+
         try {
             setIsCreatingGlLoading(true);
             const res = await apiClient.createAccountingAccount({
@@ -392,8 +399,9 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
             setNewGlCode('');
             setNewGlName('');
             toast.success("GL Account created successfully");
-        } catch (err) {
-            toast.error("Failed to create GL account");
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.detail || "Failed to create GL account";
+            toast.error(errorMessage);
         } finally {
             setIsCreatingGlLoading(false);
         }

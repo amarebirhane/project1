@@ -659,6 +659,12 @@ export default function BankingPage() {
       return;
     }
 
+    // Client-side uniqueness check
+    if (glAccounts.some(acc => acc.code.trim().toLowerCase() === newGlData.code.trim().toLowerCase())) {
+      toast.error(`Accountant Number "${newGlData.code}" already exists`);
+      return;
+    }
+
     try {
       setGlLoading(true);
       await apiClient.createAccountingAccount({
@@ -671,8 +677,9 @@ export default function BankingPage() {
       setNewGlData({ name: "", code: "" });
       setShowQuickCreate(false);
       loadData();
-    } catch (error) {
-      toast.error("Failed to create Accountant Number");
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || "Failed to create Accountant Number";
+      toast.error(errorMessage);
     } finally {
       setGlLoading(false);
     }
