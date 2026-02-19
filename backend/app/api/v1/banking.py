@@ -102,6 +102,19 @@ def simulate_bank_fetch(
     """
     return bank_feed_service.simulate_polling_sync(db, bank_account_id, count)
 
+@router.post("/webhook/simulator")
+def simulate_bank_webhook(
+    bank_account_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Simulate an incoming bank webhook
+    """
+    tx = bank_feed_service.process_mock_webhook(db, bank_account_id, payload)
+    if not tx:
+        raise HTTPException(status_code=400, detail="Failed to process simulated webhook")
     return tx
 
 @router.post("/chapa/webhook")
