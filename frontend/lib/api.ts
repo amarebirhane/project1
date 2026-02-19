@@ -2168,6 +2168,17 @@ class ApiClient {
     return this.post<any>(`/payroll/periods/${periodId}/disburse`);
   }
 
+  async initiateMoneyTransfer(data: {
+    source_account_id: number;
+    amount: number;
+    bank_code: string;
+    account_number: string;
+    beneficiary_name: string;
+    reference?: string;
+  }) {
+    return this.post<any>('/banking/transfer', data);
+  }
+
   async getPayslips(periodId: number) {
     return this.get<any[]>(`/payroll/periods/${periodId}/payslips`);
   }
