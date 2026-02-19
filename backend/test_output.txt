@@ -1,5 +1,0 @@
---- Chapa Webhook Verification ---
-Sending mock webhook to http://localhost:8000/api/v1/banking/chapa/webhook...
-Response Status: 401
-Response Body: {"error":true,"message":"Invalid signature","status_code":401,"timestamp":"2026-02-19T07:35:30.799918"}
-FAILURE: Webhook processing failed.
