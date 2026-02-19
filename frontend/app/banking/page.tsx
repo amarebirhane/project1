@@ -688,7 +688,7 @@ export default function BankingPage() {
       await apiClient.createAccountingAccount({
         name: newGlData.name,
         code: newGlData.code,
-        account_type: "EXPENSE",
+        account_type: "expense",
         is_active: true
       });
       toast.success("Accountant Number created successfully");
@@ -696,7 +696,12 @@ export default function BankingPage() {
       setShowQuickCreate(false);
       loadData();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || "Failed to create Accountant Number";
+      const detail = error.response?.data?.detail;
+      const errorMessage = Array.isArray(detail)
+        ? detail.map((e: any) => e.msg || String(e)).join(', ')
+        : typeof detail === 'string'
+          ? detail
+          : "Failed to create Accountant Number";
       toast.error(errorMessage);
     } finally {
       setGlLoading(false);

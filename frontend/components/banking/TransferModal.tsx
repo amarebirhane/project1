@@ -390,7 +390,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
             const res = await apiClient.createAccountingAccount({
                 code: newGlCode,
                 name: newGlName,
-                type: 'ASSET',
+                account_type: 'asset',
                 is_active: true
             });
             setGlAccounts(prev => [...prev, res.data]);
@@ -400,7 +400,12 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
             setNewGlName('');
             toast.success("GL Account created successfully");
         } catch (err: any) {
-            const errorMessage = err.response?.data?.detail || "Failed to create GL account";
+            const detail = err.response?.data?.detail;
+            const errorMessage = Array.isArray(detail)
+                ? detail.map((e: any) => e.msg || String(e)).join(', ')
+                : typeof detail === 'string'
+                    ? detail
+                    : "Failed to create GL account";
             toast.error(errorMessage);
         } finally {
             setIsCreatingGlLoading(false);
