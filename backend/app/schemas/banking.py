@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 from ..models.banking import TransactionStatus
+from .user import UserOut
 
 # --- Bank Transaction Schemas ---
 
@@ -25,6 +26,7 @@ class BankTransaction(BankTransactionBase):
     journal_entry_id: Optional[int] = None
     created_at: datetime
     created_by_id: Optional[int] = None
+    creator: Optional[UserOut] = None
     
     class Config:
         from_attributes = True
