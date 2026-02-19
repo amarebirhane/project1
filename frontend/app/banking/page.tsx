@@ -798,6 +798,7 @@ export default function BankingPage() {
                           <TxTh>Description</TxTh>
                           <TxTh>Amount</TxTh>
                           <TxTh>Status</TxTh>
+                          <TxTh>User</TxTh>
                         </tr>
                       </Thead>
                       <tbody>
@@ -819,6 +820,11 @@ export default function BankingPage() {
                               }}>
                                 {tx.status}
                               </StatusBadge>
+                            </TxTd>
+                            <TxTd>
+                              <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>
+                                {tx.creator?.full_name || tx.creator?.username || (tx.created_by_id ? `User #${tx.created_by_id}` : 'System')}
+                              </div>
                             </TxTd>
                           </TxTr>
                         ))}
