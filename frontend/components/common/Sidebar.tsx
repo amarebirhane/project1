@@ -645,14 +645,16 @@ const Sidebar: React.FC = () => {
                                             </NavIcon>
                                             {!collapsed && 'Mappings'}
                                         </NavItem>
-                                        <NavItem href="/banking" $active={pathname === '/banking'} $collapsed={collapsed}>
-                                            <NavIcon $active={pathname === '/banking'} $collapsed={collapsed} $iconType="banking">
-                                                <Landmark />
-                                            </NavIcon>
-                                            {!collapsed && 'Banking'}
-                                        </NavItem>
                                     </>
                                 )}
+                                <ComponentGate componentId={ComponentId.SIDEBAR_BANKING}>
+                                    <NavItem href="/banking" $active={pathname === '/banking'} $collapsed={collapsed}>
+                                        <NavIcon $active={pathname === '/banking'} $collapsed={collapsed} $iconType="banking">
+                                            <Landmark />
+                                        </NavIcon>
+                                        {!collapsed && 'Banking'}
+                                    </NavItem>
+                                </ComponentGate>
                             </SubMenu>
                         )}
                     </>

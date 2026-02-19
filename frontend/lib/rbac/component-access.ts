@@ -136,6 +136,12 @@ export enum ComponentId {
     SIDEBAR_EMPLOYEES = 'sidebar.employees',
     SIDEBAR_AUDIT_LOGS = 'sidebar.audit_logs',
     SIDEBAR_FEEDBACK = 'sidebar.feedback',
+    SIDEBAR_BANKING = 'sidebar.banking',
+
+    // Banking components
+    BANKING_VIEW = 'banking.view',
+    BANKING_CONNECT = 'banking.connect',
+    BANKING_TRANSFER = 'banking.transfer',
 
     // Inventory Sales components
     INVENTORY_SALES = 'inventory.sales',
@@ -238,6 +244,10 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_EMPLOYEES,
         ComponentId.SIDEBAR_AUDIT_LOGS,
         ComponentId.SIDEBAR_FEEDBACK,
+        ComponentId.SIDEBAR_BANKING,
+        ComponentId.BANKING_VIEW,
+        ComponentId.BANKING_CONNECT,
+        ComponentId.BANKING_TRANSFER,
         ComponentId.INVENTORY_SALES,
     ],
 
@@ -323,6 +333,10 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_EMPLOYEES,
         ComponentId.SIDEBAR_AUDIT_LOGS,
         ComponentId.SIDEBAR_FEEDBACK,
+        ComponentId.SIDEBAR_BANKING,
+        ComponentId.BANKING_VIEW,
+        ComponentId.BANKING_CONNECT,
+        ComponentId.BANKING_TRANSFER,
         ComponentId.INVENTORY_SALES,
     ],
 
@@ -357,6 +371,9 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_SALES,
         ComponentId.INVENTORY_SALES,
         ComponentId.SIDEBAR_FEEDBACK,
+        ComponentId.SIDEBAR_BANKING,
+        ComponentId.BANKING_VIEW,
+        ComponentId.BANKING_TRANSFER,
         ComponentId.SIDEBAR_SETTINGS,
         ComponentId.SETTINGS_VIEW,
         ComponentId.SETTINGS_EDIT,
@@ -382,6 +399,8 @@ export const USER_TYPE_COMPONENT_MAP: Record<UserType, ComponentId[]> = {
         ComponentId.SIDEBAR_FORECAST,
         ComponentId.INVENTORY_SALES,
         ComponentId.SIDEBAR_FEEDBACK,
+        ComponentId.SIDEBAR_BANKING,
+        ComponentId.BANKING_VIEW,
         ComponentId.SIDEBAR_SETTINGS,
         ComponentId.SETTINGS_VIEW,
         ComponentId.SETTINGS_EDIT,
