@@ -25,12 +25,17 @@ async def websocket_endpoint(
     try:
         # 1. Authenticate user via token
         payload = verify_token(token)
-        user_email = payload.get("sub")
-        if not user_email:
+        user_id_str = payload.get("sub")
+        if not user_id_str:
             await websocket.close(code=1008) # Policy Violation
             return
 
-        user = user_crud.get_by_email(db, email=user_email)
+        try:
+            user = user_crud.get(db, id=int(user_id_str))
+        except (ValueError, TypeError):
+            await websocket.close(code=1008)
+            return
+
         if not user or not user.is_active:
             await websocket.close(code=1008)
             return

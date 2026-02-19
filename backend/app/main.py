@@ -570,7 +570,7 @@ app.include_router(warehouses.router, prefix=f"{api_prefix}/warehouses", tags=["
 app.include_router(account_mappings.router, prefix=f"{api_prefix}/account-mappings", tags=["Accounting Mapping"])
 app.include_router(feedback.router, prefix=f"{api_prefix}/feedback", tags=["Feedback"])
 app.include_router(comments.router, prefix=f"{api_prefix}/comments", tags=["Collaboration"])
-app.include_router(websocket.router, tags=["WebSockets"])
+app.include_router(websocket.router, prefix="/api/v1", tags=["WebSockets"])
 
 
 # Health check endpoint
