@@ -165,6 +165,20 @@ const StyledInput = styled.input`
   }
 `;
 
+const StyledSelect = styled.select`
+  padding: 12px 16px;
+  border-radius: ${props => props.theme.borderRadius.lg};
+  border: 1px solid ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.inputBg};
+  color: ${props => props.theme.colors.text};
+  font-size: 1rem;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+  }
+`;
+
 const Footer = styled.div`
   padding: 24px;
   border-top: 1px solid ${props => props.theme.colors.border};
@@ -207,20 +221,26 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
     const [selectedBank, setSelectedBank] = useState<any>(null);
     const [accountNumber, setAccountNumber] = useState('');
     const [accountName, setAccountName] = useState('');
+    const [glAccounts, setGlAccounts] = useState<any[]>([]);
+    const [selectedGlAccountId, setSelectedGlAccountId] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        const fetchBanks = async () => {
+        const fetchData = async () => {
             try {
-                const res = await apiClient.getBanks();
-                if (res.data) setBanks(res.data);
+                const [banksRes, glAccountsRes] = await Promise.all([
+                    apiClient.getBanks(),
+                    apiClient.getAccountingAccounts()
+                ]);
+                if (banksRes.data) setBanks(banksRes.data);
+                if (glAccountsRes.data) setGlAccounts(glAccountsRes.data);
             } catch (err) {
-                toast.error("Failed to load bank list");
+                toast.error("Failed to load setup data");
             } finally {
                 setLoading(false);
             }
         };
-        fetchBanks();
+        fetchData();
     }, []);
 
     const filteredBanks = banks.filter(b =>
@@ -239,6 +259,7 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                 account_name: accountName || "Main Account",
                 account_number_last4: accountNumber.slice(-4),
                 currency_code: "ETB",
+                gl_account_id: selectedGlAccountId ? parseInt(selectedGlAccountId) : undefined
             });
 
             toast.success("Bank linked successfully via Chapa");
@@ -342,6 +363,21 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                                     value={accountNumber}
                                     onChange={e => setAccountNumber(e.target.value)}
                                 />
+                            </InputGroup>
+
+                            <InputGroup>
+                                <Label>GL Account (Accountant Number)</Label>
+                                <StyledSelect
+                                    value={selectedGlAccountId}
+                                    onChange={e => setSelectedGlAccountId(e.target.value)}
+                                >
+                                    <option value="">Select accounting account...</option>
+                                    {glAccounts.map((acc: any) => (
+                                        <option key={acc.id} value={acc.id}>
+                                            {acc.code} - {acc.name}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
                             </InputGroup>
 
                             <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, display: 'flex', gap: '8px', alignItems: 'center' }}>
