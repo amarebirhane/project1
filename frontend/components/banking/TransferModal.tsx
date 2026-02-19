@@ -501,6 +501,26 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                     {step === 1 && (
                         <>
                             <Section>
+                                <SectionLabel>Transfer Type</SectionLabel>
+                                <ToggleContainer>
+                                    <ToggleOption
+                                        $active={transferType === 'bank'}
+                                        onClick={() => setTransferType('bank')}
+                                    >
+                                        <Landmark size={14} style={{ marginRight: '6px' }} />
+                                        External Bank
+                                    </ToggleOption>
+                                    <ToggleOption
+                                        $active={transferType === 'accountant'}
+                                        onClick={() => setTransferType('accountant')}
+                                    >
+                                        <User size={14} style={{ marginRight: '6px' }} />
+                                        Individual Accountant
+                                    </ToggleOption>
+                                </ToggleContainer>
+                            </Section>
+
+                            <Section>
                                 <SectionLabel>From Account</SectionLabel>
                                 <InputGroup>
                                     <StyledSelect
@@ -530,18 +550,32 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                             </Section>
 
                             <Section>
-                                <SectionLabel>To Account (Internal or External Bank)</SectionLabel>
+                                <SectionLabel>{transferType === 'bank' ? 'To Account (External Bank)' : 'To Accountant (Internal)'}</SectionLabel>
                                 <InputGroup>
-                                    <StyledSelect
-                                        name="bank_code"
-                                        value={formData.bank_code}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="">Select destination bank</option>
-                                        {banks.map(bank => (
-                                            <option key={bank.id} value={bank.id}>{bank.name}</option>
-                                        ))}
-                                    </StyledSelect>
+                                    {transferType === 'bank' ? (
+                                        <StyledSelect
+                                            name="bank_code"
+                                            value={formData.bank_code}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select destination bank</option>
+                                            {banks.map(bank => (
+                                                <option key={bank.id} value={bank.id}>{bank.name}</option>
+                                            ))}
+                                        </StyledSelect>
+                                    ) : (
+                                        <StyledSelect
+                                            value={selectedAccountantId}
+                                            onChange={(e) => setSelectedAccountantId(e.target.value)}
+                                        >
+                                            <option value="">Select accountant/employee</option>
+                                            {users.map(u => (
+                                                <option key={u.id} value={u.id}>
+                                                    {u.full_name || u.username} ({u.role})
+                                                </option>
+                                            ))}
+                                        </StyledSelect>
+                                    )}
                                 </InputGroup>
                             </Section>
 
@@ -571,27 +605,79 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                     {step === 2 && (
                         <>
                             <Section>
-                                <SectionLabel>Recipient Details</SectionLabel>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <SectionLabel>{transferType === 'bank' ? 'Recipient Details' : 'Accountant Settings'}</SectionLabel>
+                                {transferType === 'bank' ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                        <InputGroup>
+                                            <Label>Account Number</Label>
+                                            <StyledInput
+                                                name="account_number"
+                                                placeholder="Enter recipient account"
+                                                value={formData.account_number}
+                                                onChange={handleChange}
+                                            />
+                                        </InputGroup>
+                                        <InputGroup>
+                                            <Label>Recipient Name</Label>
+                                            <StyledInput
+                                                name="beneficiary_name"
+                                                placeholder="Enter full name"
+                                                value={formData.beneficiary_name}
+                                                onChange={handleChange}
+                                            />
+                                        </InputGroup>
+                                    </div>
+                                ) : (
                                     <InputGroup>
-                                        <Label>Account Number</Label>
-                                        <StyledInput
-                                            name="account_number"
-                                            placeholder="Enter recipient account"
-                                            value={formData.account_number}
-                                            onChange={handleChange}
-                                        />
+                                        <Label>Accountant Number (GL Account)</Label>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <StyledSelect
+                                                value={selectedGlAccountId}
+                                                onChange={(e) => setSelectedGlAccountId(e.target.value)}
+                                                style={{ flex: 1 }}
+                                            >
+                                                <option value="">Select GL Account</option>
+                                                {glAccounts.map(acc => (
+                                                    <option key={acc.id} value={acc.id}>{acc.code} - {acc.name}</option>
+                                                ))}
+                                            </StyledSelect>
+                                            <Button
+                                                onClick={() => setIsCreatingGl(!isCreatingGl)}
+                                                style={{ flex: '0 0 auto', width: 'auto', padding: '0 16px' }}
+                                            >
+                                                {isCreatingGl ? 'Cancel' : 'Create New'}
+                                            </Button>
+                                        </div>
+
+                                        {isCreatingGl && (
+                                            <GlCreationCard>
+                                                <GlCreationHeader>
+                                                    <GlCreationTitle>Quick Create Accountant Number</GlCreationTitle>
+                                                </GlCreationHeader>
+                                                <GlCreationGrid>
+                                                    <StyledInput
+                                                        placeholder="Code"
+                                                        value={newGlCode}
+                                                        onChange={(e) => setNewGlCode(e.target.value)}
+                                                    />
+                                                    <StyledInput
+                                                        placeholder="Account Name (e.g. Salary Account - John)"
+                                                        value={newGlName}
+                                                        onChange={(e) => setNewGlName(e.target.value)}
+                                                    />
+                                                </GlCreationGrid>
+                                                <Button
+                                                    $primary
+                                                    onClick={handleCreateGl}
+                                                    disabled={isCreatingGlLoading || !newGlCode || !newGlName}
+                                                    style={{ width: '100%', padding: '10px' }}
+                                                >
+                                                    {isCreatingGlLoading ? <Loader2 className="animate-spin" size={16} /> : "Create & Select"}
+                                                </Button>
+                                            </GlCreationCard>
+                                        )}
                                     </InputGroup>
-                                    <InputGroup>
-                                        <Label>Recipient Name</Label>
-                                        <StyledInput
-                                            name="beneficiary_name"
-                                            placeholder="Enter full name"
-                                            value={formData.beneficiary_name}
-                                            onChange={handleChange}
-                                        />
-                                    </InputGroup>
-                                </div>
+                                )}
                             </Section>
 
                             <Section>
