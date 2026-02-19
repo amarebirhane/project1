@@ -17,6 +17,7 @@ export interface Theme {
     warning: string;
     primaryForeground: string;
     inputBg: string;
+    backgroundTertiary: string;
   };
   borderRadius: {
     sm: string;
@@ -112,6 +113,7 @@ export const lightTheme: Theme = {
     warning: "var(--warning, #f59e0b)",
     primaryForeground: "var(--primary-foreground, #fff)",
     inputBg: "var(--input-bg, #fff)",
+    backgroundTertiary: "var(--background-tertiary, #f0f2f5)",
   },
   shadows: {
     sm: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1))",
@@ -137,6 +139,7 @@ export const darkTheme: Theme = {
     warning: "var(--warning, #fbbf24)",
     primaryForeground: "var(--primary-foreground, #fff)",
     inputBg: "var(--input-bg, #1e293b)",
+    backgroundTertiary: "var(--background-tertiary, #2d3748)",
   },
   shadows: {
     sm: "var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.3))",

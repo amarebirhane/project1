@@ -44,6 +44,7 @@ export default function ThemeSync() {
                 html.style.setProperty('--card', '#1e293b');
                 html.style.setProperty('--muted', '#1e293b');
                 html.style.setProperty('--muted-foreground', '#94a3b8');
+                html.style.setProperty('--background-tertiary', '#2d3748');
                 html.style.setProperty('--shadow-sm', '0 1px 3px rgba(0,0,0,0.3)');
                 html.style.setProperty('--shadow-md', '0 4px 8px rgba(0,0,0,0.4)');
             } else {
@@ -58,6 +59,7 @@ export default function ThemeSync() {
                 html.style.setProperty('--card', '#ffffff');
                 html.style.setProperty('--muted', '#f3f4f6');
                 html.style.setProperty('--muted-foreground', '#6b7280');
+                html.style.setProperty('--background-tertiary', '#f0f2f5');
                 html.style.setProperty('--shadow-sm', '0 1px 3px rgba(0,0,0,0.1)');
                 html.style.setProperty('--shadow-md', '0 4px 8px rgba(0,0,0,0.1)');
             }

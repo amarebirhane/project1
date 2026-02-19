@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { Plus, TrendingUp, Upload, DollarSign } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import { useTheme } from "styled-components";
 import { toast } from "sonner";
 import {
   LineChart,
@@ -25,8 +26,8 @@ import { BankLinkModal } from "@/components/banking/BankLinkModal";
 const PageWrapper = styled.div`
   min-height: 100vh;
   background-color: ${props => props.theme.colors.backgroundSecondary};
-  background-image: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
-                    radial-gradient(at 50% 0%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+  background-image: radial-gradient(at 0% 0%, ${props => props.theme.colors.primary}0d 0px, transparent 50%),
+                    radial-gradient(at 50% 0%, ${props => props.theme.colors.primary}08 0px, transparent 50%);
   padding: ${props => props.theme.spacing.lg};
 `;
 
@@ -59,20 +60,20 @@ const Subtitle = styled.p`
 `;
 
 const ConnectButton = styled.button`
-  background-color: #2563eb; /* blue-600 */
+  background-color: ${props => props.theme.colors.primary};
   &:hover {
-    background-color: #1d4ed8; /* blue-700 */
+    filter: brightness(0.9);
   }
-  color: white;
+  color: ${props => props.theme.colors.primaryForeground};
   padding: 0.5rem 1rem;
-  border-radius: ${props => props.theme.borderRadius.md}; /* rounded-lg */
+  border-radius: ${props => props.theme.borderRadius.md};
   display: flex;
   align-items: center;
   gap: 0.5rem;
   border: none;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 `;
 
 const ChartCard = styled.div`
@@ -113,12 +114,12 @@ const GridContainer = styled.div`
 `;
 
 const AccountCard = styled.div`
-  background: rgba(255, 255, 255, 0.7);
+  background: ${props => props.theme.mode === 'dark' ? `${props.theme.colors.backgroundTertiary || props.theme.colors.card}b3` : 'rgba(255, 255, 255, 0.7)'};
   backdrop-filter: blur(10px);
   padding: ${props => props.theme.spacing.lg};
   border-radius: ${props => props.theme.borderRadius.lg};
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: ${props => props.theme.shadows.sm};
+  border: 1px solid ${props => props.theme.colors.border};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
@@ -127,8 +128,8 @@ const AccountCard = styled.div`
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border-color: #3b82f6;
+    box-shadow: ${props => props.theme.shadows.md};
+    border-color: ${props => props.theme.colors.primary};
   }
 
   &::before {
@@ -138,7 +139,7 @@ const AccountCard = styled.div`
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(to right, #2563eb, #8b5cf6);
+    background: linear-gradient(to right, ${props => props.theme.colors.primary}, ${props => props.theme.colors.backgroundSecondary});
     opacity: 0;
     transition: opacity 0.3s;
   }
@@ -157,16 +158,17 @@ const AccountHeader = styled.div`
 
 const IconWrapper = styled.div`
   padding: 0.75rem;
-  background-color: #eff6ff; /* blue-50 */
+  background-color: ${props => props.theme.colors.muted};
   border-radius: ${props => props.theme.borderRadius.md};
-  color: #2563eb; /* blue-600 */
+  color: ${props => props.theme.colors.primary};
 `;
 
 const StatusBadge = styled.span`
   font-size: 0.875rem; /* sm */
   padding: 0.25rem 0.5rem;
-  background-color: #dcfce7; /* green-100 */
-  color: #15803d; /* green-700 */
+  background-color: ${props => props.theme.colors.muted};
+  color: ${props => props.theme.colors.primary};
+  border: 1px solid ${props => `${props.theme.colors.primary}33`};
   border-radius: 9999px; /* rounded-full */
   font-weight: 500;
 `;
@@ -191,17 +193,17 @@ const ActionGroup = styled.div`
 const UploadLabel = styled.label`
   flex: 1;
   cursor: pointer;
-  background-color: #f3f4f6; /* gray-100 */
+  background-color: ${props => props.theme.colors.muted};
   &:hover {
-    background-color: #e5e7eb; /* gray-200 */
+    background-color: ${props => props.theme.colors.border};
   }
-  color: #374151; /* gray-700 */
+  color: ${props => props.theme.colors.text};
   padding: 0.5rem 1rem;
   border-radius: ${props => props.theme.borderRadius.md};
   font-size: 0.875rem; /* sm */
   font-weight: 500;
   text-align: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -231,32 +233,32 @@ const SimulateGroup = styled.div`
 
 const SimulateSyncButton = styled.button`
   flex: 1;
-  background-color: #eff6ff; /* blue-50 */
+  background-color: ${props => props.theme.colors.muted};
   &:hover {
-    background-color: #dbeafe; /* blue-100 */
+    background-color: ${props => `${props.theme.colors.primary}1a`};
   }
-  color: #1d4ed8; /* blue-700 */
+  color: ${props => props.theme.colors.primary};
   padding: 0.5rem 1rem;
   border-radius: ${props => props.theme.borderRadius.md};
   font-size: 0.875rem; /* sm */
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   border: none;
   cursor: pointer;
 `;
 
 const WebhookButton = styled.button`
   flex: 1;
-  background-color: #faf5ff; /* purple-50 */
+  background-color: ${props => props.theme.colors.muted};
   &:hover {
-    background-color: #f3e8ff; /* purple-100 */
+    background-color: ${props => `${props.theme.colors.primary}1a`};
   }
-  color: #7e22ce; /* purple-700 */
+  color: ${props => props.theme.colors.textSecondary};
   padding: 0.5rem 1rem;
   border-radius: ${props => props.theme.borderRadius.md};
   font-size: 0.875rem; /* sm */
   font-weight: 500;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   border: none;
   cursor: pointer;
 `;
@@ -276,8 +278,8 @@ const AddAccountButton = styled.button`
   min-height: 200px; /* approximates the height of other cards */
 
   &:hover {
-    color: #2563eb; /* blue-600 */
-    border-color: #3b82f6; /* blue-500 */
+    color: ${props => props.theme.colors.primary};
+    border-color: ${props => props.theme.colors.primary};
   }
 `;
 
@@ -377,24 +379,24 @@ const InputLabel = styled.label`
 const StyledInput = styled.input`
   width: 100%;
   padding: 12px 16px;
-  background: ${props => props.theme.colors.background};
+  background: ${props => props.theme.colors.inputBg};
   border: 1px solid ${props => props.theme.colors.border};
   border-radius: ${props => props.theme.borderRadius.lg};
-  color: ${props => props.theme.colors.textDark};
+  color: ${props => props.theme.colors.text};
   font-size: 1rem;
   transition: all 0.2s;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 4px ${props => `${props.theme.colors.primary}1a`};
   }
 `;
 
 const SubmitButton = styled.button`
   margin-top: 8px;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  color: white;
+  background: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.primaryForeground};
   padding: 14px;
   border-radius: ${props => props.theme.borderRadius.lg};
   font-size: 1rem;
@@ -405,7 +407,7 @@ const SubmitButton = styled.button`
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 12px ${props => `${props.theme.colors.primary}4d`};
   }
 
   &:active:not(:disabled) {
@@ -468,7 +470,8 @@ const TxTd = styled.td`
 
 const SkeletonCard = styled.div`
   height: 250px;
-  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background: ${props => props.theme.colors.muted};
+  background: linear-gradient(90deg, ${props => props.theme.colors.muted} 25%, ${props => props.theme.colors.border} 50%, ${props => props.theme.colors.muted} 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: ${props => props.theme.borderRadius.lg};
@@ -493,6 +496,7 @@ const EmptyState = styled.div`
 `;
 
 export default function BankingPage() {
+  const theme = useTheme();
   const [accounts, setAccounts] = useState<any[]>([]);
   const [forecast, setForecast] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -612,47 +616,51 @@ export default function BankingPage() {
           {/* Cash Flow Forecast Chart */}
           <ChartCard>
             <ChartHeader>
-              <TrendingUp className="text-green-500" /> 30-Day Cash Flow Forecast
+              <TrendingUp style={{ color: theme.colors.primary }} /> 30-Day Cash Flow Forecast
             </ChartHeader>
             <ChartContainerWrapper>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={forecast}>
                   <defs>
                     <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor={theme.colors.primary} stopOpacity={0.1} />
+                      <stop offset="95%" stopColor={theme.colors.primary} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.colors.border} />
                   <XAxis
                     dataKey="date"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
                     dy={10}
                     tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
                     tickFormatter={(val) => `$${val}`}
                   />
                   <Tooltip
                     contentStyle={{
+                      backgroundColor: theme.colors.card,
                       borderRadius: '12px',
-                      border: 'none',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                      padding: '12px'
+                      border: `1px solid ${theme.colors.border}`,
+                      boxShadow: theme.shadows.md,
+                      padding: '12px',
+                      color: theme.colors.text
                     }}
+                    itemStyle={{ color: theme.colors.text }}
+                    labelStyle={{ color: theme.colors.textDark, fontWeight: 700 }}
                   />
                   <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
                   <Line
                     type="monotone"
                     dataKey="predicted_amount"
-                    stroke="#10b981"
+                    stroke={theme.colors.primary}
                     strokeWidth={4}
-                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4, stroke: '#fff' }}
+                    dot={{ fill: theme.colors.primary, strokeWidth: 2, r: 4, stroke: theme.colors.card }}
                     activeDot={{ r: 6, strokeWidth: 0 }}
                     name="AI Predicted Net Cash Flow"
                     animationDuration={2000}
@@ -735,7 +743,7 @@ export default function BankingPage() {
                 <ModalHeader>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <IconWrapper style={{ padding: '8px' }}>
-                      <TrendingUp size={20} />
+                      <TrendingUp size={20} color={theme.colors.primary} />
                     </IconWrapper>
                     <ModalTitle>Transactions: {selectedAccount?.account_name}</ModalTitle>
                   </div>
@@ -746,7 +754,7 @@ export default function BankingPage() {
                 <TxListContainer>
                   {txLoading ? (
                     <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}>
-                      <Loader2 className="animate-spin" size={32} color="#2563eb" />
+                      <Loader2 className="animate-spin" size={32} color={theme.colors.primary} />
                     </div>
                   ) : transactions.length === 0 ? (
                     <EmptyState style={{ margin: '24px', border: 'none' }}>
@@ -768,15 +776,16 @@ export default function BankingPage() {
                             <TxTd>{new Date(tx.date).toLocaleDateString()}</TxTd>
                             <TxTd style={{ fontWeight: 500 }}>{tx.description}</TxTd>
                             <TxTd>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: tx.amount < 0 ? '#ef4444' : '#10b981', fontWeight: 600 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: tx.amount < 0 ? theme.colors.error : theme.colors.primary, fontWeight: 600 }}>
                                 {tx.amount < 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
                                 {new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedAccount?.currency_code || 'USD' }).format(Math.abs(tx.amount))}
                               </div>
                             </TxTd>
                             <TxTd>
                               <StatusBadge style={{
-                                backgroundColor: tx.status === 'MATCHED' ? '#dcfce7' : '#f3f4f6',
-                                color: tx.status === 'MATCHED' ? '#15803d' : '#6b7280'
+                                backgroundColor: tx.status === 'MATCHED' ? `${theme.colors.primary}1a` : theme.colors.muted,
+                                color: tx.status === 'MATCHED' ? theme.colors.primary : theme.colors.textSecondary,
+                                border: 'none'
                               }}>
                                 {tx.status}
                               </StatusBadge>
