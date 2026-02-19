@@ -152,6 +152,60 @@ const Label = styled.label`
   color: ${props => props.theme.colors.textSecondary};
 `;
 
+const ToggleContainer = styled.div`
+  display: flex;
+  background: ${props => props.theme.colors.muted}4d;
+  padding: 4px;
+  border-radius: ${props => props.theme.borderRadius.md};
+  margin-bottom: 8px;
+`;
+
+const ToggleOption = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 8px;
+  border-radius: ${props => props.theme.borderRadius.sm};
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${props => props.$active ? props.theme.colors.card : 'transparent'};
+  color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.textSecondary};
+  box-shadow: ${props => props.$active ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'};
+
+  &:hover {
+    color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.text};
+  }
+`;
+
+const GlCreationCard = styled.div`
+  background: ${props => props.theme.colors.muted}1a;
+  border: 1px dashed ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.md};
+  padding: 16px;
+  margin-top: 8px;
+`;
+
+const GlCreationHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+`;
+
+const GlCreationTitle = styled.h4`
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.text};
+`;
+
+const GlCreationGrid = styled.div`
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
 const StyledInput = styled.input`
   padding: 14px 16px;
   border-radius: ${props => props.theme.borderRadius.lg};
@@ -258,8 +312,21 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
     const [step, setStep] = useState<1 | 2 | 3 | 'success'>(1);
     const [banks, setBanks] = useState<any[]>([]);
     const [accounts, setAccounts] = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Accountant transfer states
+    const [transferType, setTransferType] = useState<'bank' | 'accountant'>('bank');
+    const [selectedAccountantId, setSelectedAccountantId] = useState<string>('');
+    const [glAccounts, setGlAccounts] = useState<any[]>([]);
+    const [selectedGlAccountId, setSelectedGlAccountId] = useState<string>('');
+
+    // GL Account creation states
+    const [isCreatingGl, setIsCreatingGl] = useState(false);
+    const [newGlCode, setNewGlCode] = useState('');
+    const [newGlName, setNewGlName] = useState('');
+    const [isCreatingGlLoading, setIsCreatingGlLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         source_account_id: '',
@@ -275,12 +342,22 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [banksRes, accountsRes] = await Promise.all([
+                const [banksRes, accountsRes, usersRes, glAccountsRes] = await Promise.all([
                     apiClient.getBanks(),
-                    apiClient.getBankAccounts()
+                    apiClient.getBankAccounts(),
+                    apiClient.getUsers(),
+                    apiClient.getAccountingAccounts()
                 ]);
                 if (banksRes.data) setBanks(banksRes.data);
                 if (accountsRes.data) setAccounts(accountsRes.data);
+                if (usersRes.data) {
+                    // Filter for accountants or employees
+                    const team = usersRes.data.filter((u: any) =>
+                        u.role === 'accountant' || u.role === 'employee' || u.role === 'finance_manager'
+                    );
+                    setUsers(team);
+                }
+                if (glAccountsRes.data) setGlAccounts(glAccountsRes.data);
             } catch (err) {
                 toast.error("Failed to load transfer data");
             } finally {
@@ -297,19 +374,52 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
 
     const selectedSource = accounts.find(acc => acc.id.toString() === formData.source_account_id);
     const selectedBank = banks.find(b => b.id === formData.bank_code);
+    const selectedAccountant = users.find(u => u.id.toString() === selectedAccountantId);
+
+    const handleCreateGl = async () => {
+        if (!newGlCode || !newGlName) return;
+        try {
+            setIsCreatingGlLoading(true);
+            const res = await apiClient.createAccountingAccount({
+                code: newGlCode,
+                name: newGlName,
+                type: 'ASSET',
+                is_active: true
+            });
+            setGlAccounts(prev => [...prev, res.data]);
+            setSelectedGlAccountId(res.data.id.toString());
+            setIsCreatingGl(false);
+            setNewGlCode('');
+            setNewGlName('');
+            toast.success("GL Account created successfully");
+        } catch (err) {
+            toast.error("Failed to create GL account");
+        } finally {
+            setIsCreatingGlLoading(false);
+        }
+    };
 
     const nextStep = () => {
         if (step === 1) {
-            if (!formData.source_account_id || !formData.bank_code || !formData.amount) {
-                toast.error("Please select accounts and enter an amount");
+            if (!formData.source_account_id || !formData.amount) {
+                toast.error("Please select a source account and enter an amount");
+                return;
+            }
+            if (transferType === 'bank' && !formData.bank_code) {
+                toast.error("Please select a destination bank");
+                return;
+            }
+            if (transferType === 'accountant' && !selectedAccountantId) {
+                toast.error("Please select an accountant");
                 return;
             }
             setStep(2);
         } else if (step === 2) {
-            if (!formData.account_number || !formData.beneficiary_name) {
+            if (transferType === 'bank' && (!formData.account_number || !formData.beneficiary_name)) {
                 toast.error("Please enter recipient details");
                 return;
             }
+            // For accountant, we might not need as many fields or they can be auto-filled
             setStep(3);
         }
     };
@@ -322,14 +432,27 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
     const handleFinalSubmit = async () => {
         try {
             setIsSubmitting(true);
-            const res = await apiClient.initiateMoneyTransfer({
+            const payload: any = {
                 source_account_id: parseInt(formData.source_account_id),
                 amount: parseFloat(formData.amount),
-                bank_code: formData.bank_code,
-                account_number: formData.account_number,
-                beneficiary_name: formData.beneficiary_name,
-                reference: formData.reference || undefined
-            });
+                reference: formData.reference || undefined,
+                transfer_type: transferType
+            };
+
+            if (transferType === 'bank') {
+                payload.bank_code = formData.bank_code;
+                payload.account_number = formData.account_number;
+                payload.beneficiary_name = formData.beneficiary_name;
+            } else {
+                payload.recipient_user_id = parseInt(selectedAccountantId);
+                payload.gl_account_id = selectedGlAccountId ? parseInt(selectedGlAccountId) : undefined;
+                payload.beneficiary_name = selectedAccountant?.full_name || selectedAccountant?.username;
+                // Add a default or system bank code for internal transfers if backend requires it
+                payload.bank_code = 'INTERNAL';
+                payload.account_number = `USER-${selectedAccountantId}`;
+            }
+
+            const res = await apiClient.initiateMoneyTransfer(payload);
 
             if (res.data?.status === 'success') {
                 toast.success("Transfer initiated successfully");
