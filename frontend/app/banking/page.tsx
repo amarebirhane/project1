@@ -515,15 +515,16 @@ const EmptyState = styled.div`
 `;
 
 const AccountantNumberSection = styled.div`
-  margin-top: 48px;
+  margin-top: 32px;
   background: ${props => props.theme.colors.card};
   border-radius: ${props => props.theme.borderRadius.lg};
   border: 1px solid ${props => props.theme.colors.border};
   overflow: hidden;
+  box-shadow: ${props => props.theme.shadows.sm};
 `;
 
 const SectionHeader = styled.div`
-  padding: 24px;
+  padding: 16px 24px;
   border-bottom: 1px solid ${props => props.theme.colors.border};
   display: flex;
   justify-content: space-between;
@@ -531,65 +532,75 @@ const SectionHeader = styled.div`
 `;
 
 const SectionTitleSmall = styled.h3`
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: ${props => props.theme.colors.textDark};
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 2px;
 `;
 
 const GlGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
   padding: 24px;
+  width: 100%;
 `;
 
 const GlCard = styled.div`
   background: ${props => props.theme.colors.backgroundSecondary};
-  padding: 20px;
+  padding: 16px;
   border-radius: ${props => props.theme.borderRadius.md};
   border: 1px solid ${props => props.theme.colors.border};
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; /* Critical for ellipsis on children */
 
   &:hover {
     border-color: ${props => props.theme.colors.primary};
     transform: translateY(-2px);
-    box-shadow: ${props => props.theme.shadows.sm};
+    box-shadow: ${props => props.theme.shadows.md};
+    background: ${props => props.theme.colors.card};
   }
 `;
 
 const GlCode = styled.div`
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: ${props => props.theme.colors.primary};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 `;
 
 const GlName = styled.div`
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: ${props => props.theme.colors.textDark};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const QuickCreateForm = styled.div`
-  padding: 24px;
-  background: ${props => props.theme.colors.muted}1a;
-  border-top: 1px solid ${props => props.theme.colors.border};
+  padding: 20px;
+  background: ${props => props.theme.colors.muted}08;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 `;
 
 const InlineFormFields = styled.div`
-  display: grid;
-  grid-template-columns: 120px 1fr auto;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-  align-items: flex-end;
+  width: 100%;
+  max-width: 400px; /* Constrain width for better readability on desktop */
 `;
 
 export default function BankingPage() {
