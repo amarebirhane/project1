@@ -67,6 +67,9 @@ class MoneyTransferCreate(BaseModel):
     account_number: str
     beneficiary_name: str
     reference: Optional[str] = None
+    transfer_type: Optional[str] = "bank"  # "bank" or "accountant"
+    recipient_user_id: Optional[int] = None
+    gl_account_id: Optional[int] = None
 
 class MoneyTransferResponse(BaseModel):
     status: str

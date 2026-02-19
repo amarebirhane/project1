@@ -722,11 +722,21 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                                 </ReviewRow>
                                 <ReviewRow>
                                     <ReviewLabel>To</ReviewLabel>
-                                    <ReviewValue>{formData.beneficiary_name} ({selectedBank?.name})</ReviewValue>
+                                    <ReviewValue>
+                                        {transferType === 'bank'
+                                            ? `${formData.beneficiary_name} (${selectedBank?.name})`
+                                            : `${selectedAccountant?.full_name || selectedAccountant?.username} (Internal Accountant)`
+                                        }
+                                    </ReviewValue>
                                 </ReviewRow>
                                 <ReviewRow>
-                                    <ReviewLabel>Account Number</ReviewLabel>
-                                    <ReviewValue>{formData.account_number}</ReviewValue>
+                                    <ReviewLabel>{transferType === 'bank' ? 'Account Number' : 'Accountant Number'}</ReviewLabel>
+                                    <ReviewValue>
+                                        {transferType === 'bank'
+                                            ? formData.account_number
+                                            : glAccounts.find((g: any) => g.id.toString() === selectedGlAccountId)?.code || 'Internal Transfer'
+                                        }
+                                    </ReviewValue>
                                 </ReviewRow>
                                 <ReviewRow>
                                     <ReviewLabel>Amount</ReviewLabel>
