@@ -17,6 +17,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { ComponentGate } from '@/lib/rbac';
+import { ComponentId } from '@/lib/rbac/component-access';
 import Layout from "@/components/layout";
 import { X, Search, Filter, ArrowDown, ArrowUp, Loader2, Info } from "lucide-react";
 import { BankLinkModal } from "@/components/banking/BankLinkModal";
@@ -627,215 +628,224 @@ export default function BankingPage() {
           />
         )}
         <ContentContainer>
-          {/* Header */}
-          <Header>
-            <HeaderText>
-              <Title>Banking & Cash Flow</Title>
-              <Subtitle>Manage bank feeds and view AI-powered cash forecasts</Subtitle>
-            </HeaderText>
-            <HeaderButtonGroup>
-              <TransferButton onClick={() => setIsTransferModalOpen(true)}>
-                <Send size={18} /> Transfer
-              </TransferButton>
-              <ConnectButton onClick={() => setIsModalOpen(true)}>
-                <Plus size={20} /> Connect Account
-              </ConnectButton>
-            </HeaderButtonGroup>
-          </Header>
+          <ComponentGate componentId={ComponentId.BANKING_VIEW}>
+            <>
+              {/* Header */}
+              <Header>
+                <HeaderText>
+                  <Title>Banking & Cash Flow</Title>
+                  <Subtitle>Manage bank feeds and view AI-powered cash forecasts</Subtitle>
+                </HeaderText>
+                <HeaderButtonGroup>
+                  <ComponentGate componentId={ComponentId.BANKING_TRANSFER}>
+                    <TransferButton onClick={() => setIsTransferModalOpen(true)}>
+                      <Send size={18} /> Transfer
+                    </TransferButton>
+                  </ComponentGate>
+                  <ComponentGate componentId={ComponentId.BANKING_CONNECT}>
+                    <ConnectButton onClick={() => setIsModalOpen(true)}>
+                      <Plus size={20} /> Connect Account
+                    </ConnectButton>
+                  </ComponentGate>
+                </HeaderButtonGroup>
+              </Header>
 
-          {/* Cash Flow Forecast Chart */}
-          <ChartCard>
-            <ChartHeader>
-              <TrendingUp style={{ color: theme.colors.primary }} /> 30-Day Cash Flow Forecast
-            </ChartHeader>
-            <ChartContainerWrapper>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={forecast}>
-                  <defs>
-                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={theme.colors.primary} stopOpacity={0.1} />
-                      <stop offset="95%" stopColor={theme.colors.primary} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.colors.border} />
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
-                    dy={10}
-                    tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
-                    tickFormatter={(val) => `$${val}`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: theme.colors.card,
-                      borderRadius: '12px',
-                      border: `1px solid ${theme.colors.border}`,
-                      boxShadow: theme.shadows.md,
-                      padding: '12px',
-                      color: theme.colors.text
-                    }}
-                    itemStyle={{ color: theme.colors.text }}
-                    labelStyle={{ color: theme.colors.textDark, fontWeight: 700 }}
-                  />
-                  <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
-                  <Line
-                    type="monotone"
-                    dataKey="predicted_amount"
-                    stroke={theme.colors.primary}
-                    strokeWidth={4}
-                    dot={{ fill: theme.colors.primary, strokeWidth: 2, r: 4, stroke: theme.colors.card }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                    name="AI Predicted Net Cash Flow"
-                    animationDuration={2000}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </ChartContainerWrapper>
-          </ChartCard>
-
-          {/* Bank Accounts Grid */}
-          <GridContainer>
-            {loading ? (
-              Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)
-            ) : accounts.length === 0 ? (
-              <div style={{ gridColumn: '1 / -1' }}>
-                <EmptyState>
-                  <Info size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                  <h3>No Bank Accounts Connected</h3>
-                  <p>Connect your first business account to start tracking cash flow.</p>
-                </EmptyState>
-              </div>
-            ) : (
-              accounts.map(account => (
-                <AccountCard key={account.id}>
-                  <AccountHeader>
-                    <IconWrapper>
-                      <DollarSign />
-                    </IconWrapper>
-                    <StatusBadge>Active</StatusBadge>
-                  </AccountHeader>
-
-                  <AccountName>{account.account_name}</AccountName>
-                  <AccountDetails>{account.bank_name} •••• {account.account_number_last4}</AccountDetails>
-
-                  <ActionGroup>
-                    <UploadLabel>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept=".csv"
-                        onChange={(e) => e.target.files?.[0] && handleUpload(account.id, e.target.files[0])}
+              {/* Cash Flow Forecast Chart */}
+              <ChartCard style={{ marginTop: '24px' }}>
+                <ChartHeader>
+                  <TrendingUp style={{ color: theme.colors.primary }} /> 30-Day Cash Flow Forecast
+                </ChartHeader>
+                <ChartContainerWrapper>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={forecast}>
+                      <defs>
+                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={theme.colors.primary} stopOpacity={0.1} />
+                          <stop offset="95%" stopColor={theme.colors.primary} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.colors.border} />
+                      <XAxis
+                        dataKey="date"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
+                        dy={10}
+                        tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       />
-                      <Upload size={16} /> Upload CSV
-                    </UploadLabel>
-                    <SecondaryButton onClick={() => handleFetchTransactions(account)}>
-                      View Txns
-                    </SecondaryButton>
-                  </ActionGroup>
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: theme.colors.textSecondary }}
+                        tickFormatter={(val) => `$${val}`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: theme.colors.card,
+                          borderRadius: '12px',
+                          border: `1px solid ${theme.colors.border}`,
+                          boxShadow: theme.shadows.md,
+                          padding: '12px',
+                          color: theme.colors.text
+                        }}
+                        itemStyle={{ color: theme.colors.text }}
+                        labelStyle={{ color: theme.colors.textDark, fontWeight: 700 }}
+                      />
+                      <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
+                      <Line
+                        type="monotone"
+                        dataKey="predicted_amount"
+                        stroke={theme.colors.primary}
+                        strokeWidth={4}
+                        dot={{ fill: theme.colors.primary, strokeWidth: 2, r: 4, stroke: theme.colors.card }}
+                        activeDot={{ r: 6, strokeWidth: 0 }}
+                        name="AI Predicted Net Cash Flow"
+                        animationDuration={2000}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainerWrapper>
+              </ChartCard>
 
-                  <SimulateGroup>
-                    <SimulateSyncButton
-                      onClick={() => handleSimulateFetch(account.id)}
-                      disabled={syncingId === account.id}
-                    >
-                      {syncingId === account.id ? <Loader2 className="animate-spin" size={16} /> : "Simulate Sync"}
-                    </SimulateSyncButton>
-                    <WebhookButton
-                      onClick={() => handleSimulateWebhook(account.id)}
-                      disabled={syncingId === account.id}
-                    >
-                      {syncingId === account.id ? <Loader2 className="animate-spin" size={16} /> : "Webhook (Mock)"}
-                    </WebhookButton>
-                  </SimulateGroup>
-                </AccountCard>
-              ))
-            )}
-
-            {!loading && (
-              <AddAccountButton onClick={() => setIsModalOpen(true)}>
-                <Plus size={40} style={{ marginBottom: '0.5rem' }} />
-                <AddAccountText>Connect New Bank</AddAccountText>
-              </AddAccountButton>
-            )}
-          </GridContainer>
-
-          {/* Transactions Modal */}
-          {isTxModalOpen && (
-            <ModalOverlay onClick={() => setIsTxModalOpen(false)}>
-              <TxModalContent onClick={(e) => e.stopPropagation()}>
-                <ModalHeader>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <IconWrapper style={{ padding: '8px' }}>
-                      <TrendingUp size={20} color={theme.colors.primary} />
-                    </IconWrapper>
-                    <ModalTitle>Transactions: {selectedAccount?.account_name}</ModalTitle>
-                  </div>
-                  <CloseButton onClick={() => setIsTxModalOpen(false)}>
-                    <X size={24} />
-                  </CloseButton>
-                </ModalHeader>
-                <TxListContainer>
-                  {txLoading ? (
-                    <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}>
-                      <Loader2 className="animate-spin" size={32} color={theme.colors.primary} />
-                    </div>
-                  ) : transactions.length === 0 ? (
-                    <EmptyState style={{ margin: '24px', border: 'none' }}>
-                      <p>No transactions found for this account.</p>
+              {/* Bank Accounts Grid */}
+              <GridContainer style={{ marginTop: '24px' }}>
+                {loading ? (
+                  Array(3).fill(0).map((_, i) => <SkeletonCard key={i} />)
+                ) : accounts.length === 0 ? (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <EmptyState>
+                      <Info size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                      <h3>No Bank Accounts Connected</h3>
+                      <p>Connect your first business account to start tracking cash flow.</p>
                     </EmptyState>
-                  ) : (
-                    <TxTable>
-                      <Thead>
-                        <tr>
-                          <TxTh>Date</TxTh>
-                          <TxTh>Description</TxTh>
-                          <TxTh>Amount</TxTh>
-                          <TxTh>Status</TxTh>
-                          <TxTh>User</TxTh>
-                        </tr>
-                      </Thead>
-                      <tbody>
-                        {transactions.map((tx) => (
-                          <TxTr key={tx.id}>
-                            <TxTd>{new Date(tx.date).toLocaleDateString()}</TxTd>
-                            <TxTd style={{ fontWeight: 500 }}>{tx.description}</TxTd>
-                            <TxTd>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: tx.amount < 0 ? theme.colors.error : theme.colors.primary, fontWeight: 600 }}>
-                                {tx.amount < 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
-                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedAccount?.currency_code || 'USD' }).format(Math.abs(tx.amount))}
-                              </div>
-                            </TxTd>
-                            <TxTd>
-                              <StatusBadge style={{
-                                backgroundColor: tx.status === 'MATCHED' ? `${theme.colors.primary}1a` : theme.colors.muted,
-                                color: tx.status === 'MATCHED' ? theme.colors.primary : theme.colors.textSecondary,
-                                border: 'none'
-                              }}>
-                                {tx.status}
-                              </StatusBadge>
-                            </TxTd>
-                            <TxTd>
-                              <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>
-                                {tx.creator?.full_name || tx.creator?.username || (tx.created_by_id ? `User #${tx.created_by_id}` : 'System')}
-                              </div>
-                            </TxTd>
-                          </TxTr>
-                        ))}
-                      </tbody>
-                    </TxTable>
-                  )}
-                </TxListContainer>
-              </TxModalContent>
-            </ModalOverlay>
-          )}
+                  </div>
+                ) : (
+                  accounts.map(account => (
+                    <AccountCard key={account.id}>
+                      <AccountHeader>
+                        <IconWrapper>
+                          <DollarSign />
+                        </IconWrapper>
+                        <StatusBadge>Active</StatusBadge>
+                      </AccountHeader>
 
+                      <AccountName>{account.account_name}</AccountName>
+                      <AccountDetails>{account.bank_name} •••• {account.account_number_last4}</AccountDetails>
+
+                      <ActionGroup>
+                        <UploadLabel>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept=".csv"
+                            onChange={(e) => e.target.files?.[0] && handleUpload(account.id, e.target.files[0])}
+                          />
+                          <Upload size={16} /> Upload CSV
+                        </UploadLabel>
+                        <SecondaryButton onClick={() => handleFetchTransactions(account)}>
+                          View Txns
+                        </SecondaryButton>
+                      </ActionGroup>
+
+                      <SimulateGroup>
+                        <SimulateSyncButton
+                          onClick={() => handleSimulateFetch(account.id)}
+                          disabled={syncingId === account.id}
+                        >
+                          {syncingId === account.id ? <Loader2 className="animate-spin" size={16} /> : "Simulate Sync"}
+                        </SimulateSyncButton>
+                        <WebhookButton
+                          onClick={() => handleSimulateWebhook(account.id)}
+                          disabled={syncingId === account.id}
+                        >
+                          {syncingId === account.id ? <Loader2 className="animate-spin" size={16} /> : "Webhook (Mock)"}
+                        </WebhookButton>
+                      </SimulateGroup>
+                    </AccountCard>
+                  ))
+                )}
+
+                {!loading && (
+                  <ComponentGate componentId={ComponentId.BANKING_CONNECT}>
+                    <AddAccountButton onClick={() => setIsModalOpen(true)}>
+                      <Plus size={40} style={{ marginBottom: '0.5rem' }} />
+                      <AddAccountText>Connect New Bank</AddAccountText>
+                    </AddAccountButton>
+                  </ComponentGate>
+                )}
+              </GridContainer>
+
+              {/* Transactions Modal */}
+              {isTxModalOpen && (
+                <ModalOverlay onClick={() => setIsTxModalOpen(false)}>
+                  <TxModalContent onClick={(e) => e.stopPropagation()}>
+                    <ModalHeader>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <IconWrapper style={{ padding: '8px' }}>
+                          <TrendingUp size={20} color={theme.colors.primary} />
+                        </IconWrapper>
+                        <ModalTitle>Transactions: {selectedAccount?.account_name}</ModalTitle>
+                      </div>
+                      <CloseButton onClick={() => setIsTxModalOpen(false)}>
+                        <X size={24} />
+                      </CloseButton>
+                    </ModalHeader>
+                    <TxListContainer>
+                      {txLoading ? (
+                        <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}>
+                          <Loader2 className="animate-spin" size={32} color={theme.colors.primary} />
+                        </div>
+                      ) : transactions.length === 0 ? (
+                        <EmptyState style={{ margin: '24px', border: 'none' }}>
+                          <p>No transactions found for this account.</p>
+                        </EmptyState>
+                      ) : (
+                        <TxTable>
+                          <Thead>
+                            <tr>
+                              <TxTh>Date</TxTh>
+                              <TxTh>Description</TxTh>
+                              <TxTh>Amount</TxTh>
+                              <TxTh>Status</TxTh>
+                              <TxTh>User</TxTh>
+                            </tr>
+                          </Thead>
+                          <tbody>
+                            {transactions.map((tx) => (
+                              <TxTr key={tx.id}>
+                                <TxTd>{new Date(tx.date).toLocaleDateString()}</TxTd>
+                                <TxTd style={{ fontWeight: 500 }}>{tx.description}</TxTd>
+                                <TxTd>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: tx.amount < 0 ? theme.colors.error : theme.colors.primary, fontWeight: 600 }}>
+                                    {tx.amount < 0 ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+                                    {new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedAccount?.currency_code || 'USD' }).format(Math.abs(tx.amount))}
+                                  </div>
+                                </TxTd>
+                                <TxTd>
+                                  <StatusBadge style={{
+                                    backgroundColor: tx.status === 'MATCHED' ? `${theme.colors.primary}1a` : theme.colors.muted,
+                                    color: tx.status === 'MATCHED' ? theme.colors.primary : theme.colors.textSecondary,
+                                    border: 'none'
+                                  }}>
+                                    {tx.status}
+                                  </StatusBadge>
+                                </TxTd>
+                                <TxTd>
+                                  <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>
+                                    {tx.creator?.full_name || tx.creator?.username || (tx.created_by_id ? `User #${tx.created_by_id}` : 'System')}
+                                  </div>
+                                </TxTd>
+                              </TxTr>
+                            ))}
+                          </tbody>
+                        </TxTable>
+                      )}
+                    </TxListContainer>
+                  </TxModalContent>
+                </ModalOverlay>
+              )}
+            </>
+          </ComponentGate>
         </ContentContainer>
       </PageWrapper>
     </Layout>
