@@ -102,4 +102,69 @@ class BankFeedSimulationService:
         db.refresh(tx)
         return tx
 
+    @classmethod
+    def process_chapa_webhook(cls, db: Session, payload: dict) -> Optional[BankTransaction]:
+        """
+        Process a real webhook from Chapa.
+        Maps Chapa fields to BankTransaction model.
+        """
+        # Chapa common fields
+        external_id = payload.get("reference") or payload.get("tx_ref")
+        amount = float(payload.get("amount", 0))
+        # Determine if it's credit or debit based on type if available
+        # Defaulting to credit for now as most webhooks are for inward payments
+        
+        description = payload.get("description") or f"Chapa Payment: {payload.get('first_name', '')} {payload.get('last_name', '')}"
+        
+        # We need to find the correct BankAccount. 
+        # Usually, this is stores in custom metadata during initialization.
+        metadata = payload.get("meta") or {}
+        if isinstance(metadata, str):
+            import json
+            try:
+                metadata = json.loads(metadata)
+            except:
+                metadata = {}
+        
+        bank_account_id = metadata.get("bank_account_id")
+        
+        if not bank_account_id:
+            logger.error("Chapa webhook missing bank_account_id in metadata")
+            return None
+
+        # Check for duplicates
+        existing = db.query(BankTransaction).filter(BankTransaction.external_id == external_id).first()
+        if existing:
+            return existing
+
+        tx = BankTransaction(
+            bank_account_id=bank_account_id,
+            date=datetime.now(),
+            description=description,
+            amount=amount,
+            external_id=external_id,
+            status=TransactionStatus.COMPLETED # Real hits are usually completed
+        )
+        db.add(tx)
+        
+        # Notify via WebSocket if possible
+        try:
+            from .notification_service import notification_service
+            # This is a bit of a shortcut, ideally we have a dedicated service for this
+            # but let's use the notification service to alert the user
+            notification_service.create_notification(
+                db=db,
+                user_id=tx.bank_account.created_by_id, # Alert the owner
+                title="Real-Time Bank Update",
+                message=f"New transaction of {amount} Br from Chapa: {description}",
+                type="transaction",
+                priority="medium"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send notification for bank update: {str(e)}")
+
+        db.commit()
+        db.refresh(tx)
+        return tx
+
 bank_feed_service = BankFeedSimulationService()

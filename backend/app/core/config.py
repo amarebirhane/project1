@@ -85,4 +85,8 @@ class Settings(BaseSettings):
     # AI Configuration
     GEMINI_API_KEY: Optional[str] = None  # Set via GEMINI_API_KEY environment variable
 
+    # Chapa Configuration
+    CHAPA_SECRET_KEY: Optional[str] = None
+    CHAPA_WEBHOOK_HASH: Optional[str] = None
+
 settings = Settings()

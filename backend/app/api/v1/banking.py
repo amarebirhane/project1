@@ -1,5 +1,6 @@
 from typing import List
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Request
+import logging
 from sqlalchemy.orm import Session
 
 from ...core.database import get_db
@@ -10,8 +11,10 @@ from ...schemas import banking as banking_schema
 from ...services.banking import banking_service
 from ...services.forecasting import forecasting_service
 from ...services.bank_feed_service import bank_feed_service
+from ...services.chapa_service import chapa_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # ------------------------------------------------------------------
 # Bank Accounts
@@ -22,8 +25,15 @@ def get_bank_accounts(
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
 ):
-    """List all connected bank accounts"""
+    """List all connected bank accounts status"""
     return db.query(BankAccount).all()
+
+@router.get("/banks", response_model=List[dict])
+def get_supported_banks(
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """List supported Ethiopian banks from Chapa"""
+    return chapa_service.get_banks()
 
 @router.post("/accounts", response_model=banking_schema.BankAccount)
 def create_bank_account(
@@ -92,21 +102,37 @@ def simulate_bank_fetch(
     """
     return bank_feed_service.simulate_polling_sync(db, bank_account_id, count)
 
-@router.post("/webhook/simulator", response_model=banking_schema.BankTransaction)
-def simulate_bank_webhook(
-    bank_account_id: int,
-    payload: dict,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    return tx
+
+@router.post("/chapa/webhook")
+async def chapa_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
 ):
     """
-    Simulate an incoming webhook from a bank provider
-    Example Payload: {"id": "evt_123", "amount": -45.50, "description": "Client Dinner", "date": "2024-01-20T10:00:00"}
+    Handle incoming webhooks from Chapa.
+    Verifies authenticity and processes transaction updates.
     """
-    tx = bank_feed_service.process_mock_webhook(db, bank_account_id, payload)
-    if not tx:
-        raise HTTPException(status_code=400, detail="Failed to process simulated webhook")
-    return tx
+    payload_bytes = await request.body()
+    payload_str = payload_bytes.decode('utf-8')
+    signature = request.headers.get("x-chapa-signature")
+    
+    if not signature:
+        raise HTTPException(status_code=401, detail="Missing Chapa signature")
+        
+    if not chapa_service.verify_webhook(payload_str, signature):
+        logger.warning(f"Invalid Chapa webhook signature: {signature}")
+        raise HTTPException(status_code=401, detail="Invalid signature")
+    
+    import json
+    try:
+        data = json.loads(payload_str)
+        # Delegate processing to bank_feed_service
+        tx = bank_feed_service.process_chapa_webhook(db, data)
+        return {"status": "success", "transaction_id": tx.id if tx else None}
+    except Exception as e:
+        logger.error(f"Error processing Chapa webhook: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 # ------------------------------------------------------------------
 # Cash Flow Forecasting
