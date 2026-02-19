@@ -1,4 +1,5 @@
 import logging
+import httpx
 from typing import Optional, List, Dict, Any
 from chapa import Chapa
 from ..core.config import settings
@@ -17,17 +18,24 @@ class ChapaService:
             self.client = Chapa(self.secret_key)
 
     def get_banks(self) -> List[Dict[str, Any]]:
-        """Fetch list of supported banks from Chapa."""
-        if not self.client:
+        """Fetch list of supported banks from Chapa using httpx directly."""
+        if not self.secret_key:
             return []
         
         try:
-            # The chapa-python SDK might have a method for this, 
-            # otherwise it might be a direct API call.
-            # Based on the documentation, there is an endpoint for this.
-            response = self.client.get_banks()
-            if response.get("status") == "success":
-                return response.get("data", [])
+            # Bypass the library method which has httpx incompatibility issues
+            # direct call to Chapa's banks endpoint
+            headers = {
+                "Authorization": f"Bearer {self.secret_key}"
+            }
+            with httpx.Client() as client:
+                response = client.get("https://api.chapa.co/v1/banks", headers=headers)
+                data = response.json()
+                
+            if data.get("status") == "success":
+                return data.get("data", [])
+            
+            logger.error(f"Failed to fetch banks from Chapa: {data.get('message')}")
             return []
         except Exception as e:
             logger.error(f"Error fetching banks from Chapa: {str(e)}")
