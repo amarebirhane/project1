@@ -300,14 +300,14 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
 
     const nextStep = () => {
         if (step === 1) {
-            if (!formData.source_account_id || !formData.bank_code) {
-                toast.error("Please select both source and destination accounts");
+            if (!formData.source_account_id || !formData.bank_code || !formData.amount) {
+                toast.error("Please select accounts and enter an amount");
                 return;
             }
             setStep(2);
         } else if (step === 2) {
-            if (!formData.amount || !formData.account_number || !formData.beneficiary_name) {
-                toast.error("Please fill in all transaction details");
+            if (!formData.account_number || !formData.beneficiary_name) {
+                toast.error("Please enter recipient details");
                 return;
             }
             setStep(3);
@@ -421,13 +421,34 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                                     </StyledSelect>
                                 </InputGroup>
                             </Section>
+
+                            <Section>
+                                <SectionLabel>How much would you like to send?</SectionLabel>
+                                <InputGroup>
+                                    <Label>Amount (ETB)</Label>
+                                    <div style={{ position: 'relative' }}>
+                                        <DollarSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: theme.colors.textSecondary }} />
+                                        <StyledInput
+                                            type="number"
+                                            name="amount"
+                                            placeholder="0.00"
+                                            value={formData.amount}
+                                            onChange={handleChange}
+                                            style={{ paddingLeft: '44px', width: '100%', fontSize: '1.25rem', fontWeight: 700 }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>
+                                        Enter the specific amount you wish to transfer.
+                                    </div>
+                                </InputGroup>
+                            </Section>
                         </>
                     )}
 
                     {step === 2 && (
                         <>
                             <Section>
-                                <SectionLabel>Transaction Details</SectionLabel>
+                                <SectionLabel>Recipient Details</SectionLabel>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                     <InputGroup>
                                         <Label>Account Number</Label>
@@ -448,20 +469,6 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                                         />
                                     </InputGroup>
                                 </div>
-                                <InputGroup>
-                                    <Label>Amount (ETB)</Label>
-                                    <div style={{ position: 'relative' }}>
-                                        <DollarSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: theme.colors.textSecondary }} />
-                                        <StyledInput
-                                            type="number"
-                                            name="amount"
-                                            placeholder="0.00"
-                                            value={formData.amount}
-                                            onChange={handleChange}
-                                            style={{ paddingLeft: '44px', width: '100%', fontSize: '1.25rem', fontWeight: 700 }}
-                                        />
-                                    </div>
-                                </InputGroup>
                             </Section>
 
                             <Section>
@@ -574,6 +581,6 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                     </Footer>
                 )}
             </ModalContent>
-        </ModalOverlay>
+        </ModalOverlay >
     );
 };
