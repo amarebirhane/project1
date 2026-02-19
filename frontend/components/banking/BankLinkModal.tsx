@@ -235,11 +235,10 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
             // In a real app, you'd send this to Chapa for verification
             // For now, we'll create the record in our DB
             await apiClient.createBankAccount({
-                bank_name: selectedBank.name,
+                bank_name: selectedBank.id || selectedBank.name,
                 account_name: accountName || "Main Account",
                 account_number_last4: accountNumber.slice(-4),
                 currency_code: "ETB",
-                // Chapa specific info could be stored in a 'provider_metadata' field if it existed
             });
 
             toast.success("Bank linked successfully via Chapa");
