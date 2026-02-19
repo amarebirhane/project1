@@ -203,6 +203,24 @@ const AccountDetails = styled.p`
   color: ${props => props.theme.colors.textSecondary};
 `;
 
+const BalanceLabel = styled.div`
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${props => props.theme.colors.textSecondary};
+  margin-top: 12px;
+  margin-bottom: 4px;
+`;
+
+const BalanceAmount = styled.div`
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: ${props => props.theme.colors.primary};
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+`;
+
 const ActionGroup = styled.div`
   margin-top: ${props => props.theme.spacing.lg};
   display: flex;
@@ -864,6 +882,14 @@ export default function BankingPage() {
                       <AccountName>{account.account_name}</AccountName>
                       <AccountDetails>{account.bank_name} •••• {account.account_number_last4}</AccountDetails>
 
+                      <BalanceLabel>Available Balance</BalanceLabel>
+                      <BalanceAmount>
+                        {new Intl.NumberFormat('en-US', {
+                          style: 'currency',
+                          currency: account.currency_code || 'USD',
+                          minimumFractionDigits: 2
+                        }).format(account.balance ?? 0)}
+                      </BalanceAmount>
                       <ActionGroup>
                         <UploadLabel>
                           <input

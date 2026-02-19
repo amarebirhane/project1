@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Form, Request
 import logging
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from ...core.database import get_db
 from ...api import deps
@@ -26,15 +27,36 @@ def get_bank_accounts(
     db: Session = Depends(get_db),
     current_user: User = Depends(deps.get_current_active_user)
 ):
-    """List connected bank accounts with hierarchy-based filtering"""
+    """List connected bank accounts with hierarchy-based filtering and balance computed from transactions"""
     if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
-        return db.query(BankAccount).all()
-        
-    # Get hierarchy for the current user
-    subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
-    allowed_ids = subordinate_ids + [current_user.id]
-    
-    return db.query(BankAccount).filter(BankAccount.created_by_id.in_(allowed_ids)).all()
+        accounts = db.query(BankAccount).all()
+    else:
+        # Get hierarchy for the current user
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        accounts = db.query(BankAccount).filter(BankAccount.created_by_id.in_(allowed_ids)).all()
+
+    # Attach computed balance to each account
+    result = []
+    for acc in accounts:
+        balance = db.query(func.coalesce(func.sum(BankTransaction.amount), 0.0)).filter(
+            BankTransaction.bank_account_id == acc.id
+        ).scalar() or 0.0
+        acc_dict = {
+            "id": acc.id,
+            "bank_name": acc.bank_name,
+            "account_number_last4": acc.account_number_last4,
+            "account_name": acc.account_name,
+            "currency_code": acc.currency_code,
+            "gl_account_id": acc.gl_account_id,
+            "is_active": acc.is_active,
+            "last_synced_at": acc.last_synced_at,
+            "created_at": acc.created_at,
+            "created_by_id": acc.created_by_id,
+            "balance": round(float(balance), 2)
+        }
+        result.append(banking_schema.BankAccount(**acc_dict))
+    return result
 
 @router.get("/banks", response_model=List[dict])
 def get_supported_banks(
