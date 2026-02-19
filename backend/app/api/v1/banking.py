@@ -12,6 +12,7 @@ from ...services.banking import banking_service
 from ...services.forecasting import forecasting_service
 from ...services.bank_feed_service import bank_feed_service
 from ...services.chapa_service import chapa_service
+from ...crud.user import user as user_crud # Added for hierarchy check
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -23,14 +24,21 @@ logger = logging.getLogger(__name__)
 @router.get("/accounts", response_model=List[banking_schema.BankAccount])
 def get_bank_accounts(
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
-    """List all connected bank accounts status"""
-    return db.query(BankAccount).all()
+    """List connected bank accounts with hierarchy-based filtering"""
+    if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        return db.query(BankAccount).all()
+        
+    # Get hierarchy for the current user
+    subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+    allowed_ids = subordinate_ids + [current_user.id]
+    
+    return db.query(BankAccount).filter(BankAccount.created_by_id.in_(allowed_ids)).all()
 
 @router.get("/banks", response_model=List[dict])
 def get_supported_banks(
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """List supported Ethiopian banks from Chapa"""
     return chapa_service.get_banks()
@@ -79,9 +87,21 @@ def get_transactions(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
-    """Get bank transactions"""
+    """Get bank transactions with access control"""
+    # Verify access to the bank account
+    account = db.query(BankAccount).filter(BankAccount.id == bank_account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Bank account not found")
+        
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+            
     return db.query(BankTransaction).filter(
         BankTransaction.bank_account_id == bank_account_id
     ).offset(skip).limit(limit).all()
