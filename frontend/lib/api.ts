@@ -2164,6 +2164,10 @@ class ApiClient {
     return this.post<any>(`/payroll/periods/${periodId}/approve`);
   }
 
+  async disbursePayroll(periodId: number) {
+    return this.post<any>(`/payroll/periods/${periodId}/disburse`);
+  }
+
   async getPayslips(periodId: number) {
     return this.get<any[]>(`/payroll/periods/${periodId}/payslips`);
   }
