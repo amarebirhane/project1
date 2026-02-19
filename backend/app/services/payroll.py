@@ -127,4 +127,60 @@ class PayrollService:
         db.commit()
         return period
 
+    @staticmethod
+    def disburse_payroll(db: Session, period_id: int):
+        """
+        Initiates Chapa transfers for all approved payslips in a period.
+        """
+        period = db.query(PayrollPeriod).filter(PayrollPeriod.id == period_id).first()
+        if not period or period.status != PayrollStatus.APPROVED:
+            return None
+        
+        from .chapa_service import chapa_service
+        
+        payslips = db.query(Payslip).filter(
+            Payslip.period_id == period_id,
+        ).all()
+        
+        if not payslips:
+            return None
+            
+        success_count = 0
+        total_payslips = len(payslips)
+        
+        for payslip in payslips:
+            # Only disburse if in approved status (not already paid)
+            if payslip.status != PayrollStatus.APPROVED:
+                if payslip.status == PayrollStatus.PAID:
+                    success_count += 1
+                continue
+                
+            emp = payslip.employee
+            if not emp.bank_account_number or not emp.bank_name:
+                continue
+                
+            transfer_data = {
+                "account_number": emp.bank_account_number,
+                "account_name": emp.user.full_name,
+                "bank_code": emp.bank_name, # Expected to be the bank code from Chapa
+                "amount": payslip.net_pay,
+                "currency": "ETB", 
+                "reference": f"PAY-{period.id}-{payslip.id}"
+            }
+            
+            response = chapa_service.create_transfer(transfer_data)
+            if response.get("status") == "success":
+                payslip.status = PayrollStatus.PAID
+                success_count += 1
+            else:
+                # Log error or handle failure
+                logger.error(f"Failed to disburse payslip {payslip.id}: {response.get('message')}")
+                
+        if success_count == total_payslips:
+            period.status = PayrollStatus.PAID
+            period.payment_date = date.today()
+            
+        db.commit()
+        return period
+
 payroll_service = PayrollService()
