@@ -226,6 +226,17 @@ def initiate_money_transfer(
     current_user: User = Depends(deps.get_current_active_user)
 ):
     """
-    Initiate a money transfer via Chapa
+    Initiate a money transfer via Chapa with access control
     """
+    # Verify access to the source bank account
+    account = db.query(BankAccount).filter(BankAccount.id == transfer_in.source_account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Source bank account not found")
+        
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to the source bank account")
+            
     return banking_service.initiate_transfer(db, transfer_in, current_user.id)
