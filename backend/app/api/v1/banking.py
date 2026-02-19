@@ -47,9 +47,10 @@ def get_supported_banks(
 def create_bank_account(
     account_in: banking_schema.BankAccountCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.FINANCE_ADMIN))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """Connect a new bank account"""
+    # Any active user can connect a bank account; they will be the owner/creator.
     db_account = BankAccount(
         **account_in.dict(),
         created_by_id=current_user.id
@@ -75,9 +76,22 @@ async def upload_bank_statement(
         raise HTTPException(status_code=400, detail="Only CSV files are supported")
         
     try:
+        # Verify access to the bank account
+        account = db.query(BankAccount).filter(BankAccount.id == bank_account_id).first()
+        if not account:
+            raise HTTPException(status_code=404, detail="Bank account not found")
+            
+        if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+            subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+            allowed_ids = subordinate_ids + [current_user.id]
+            if account.created_by_id not in allowed_ids:
+                raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+
         content = await file.read()
         transactions = banking_service.process_csv_upload(db, bank_account_id, content, current_user.id)
         return transactions
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to process CSV: {str(e)}")
 
@@ -115,11 +129,21 @@ def simulate_bank_fetch(
     bank_account_id: int,
     count: int = 5,
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """
-    Manually trigger a simulated bank API fetch (polling simulation)
+    Manually trigger a simulated bank API fetch (polling simulation) with access control
     """
+    account = db.query(BankAccount).filter(BankAccount.id == bank_account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Bank account not found")
+        
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+            
     return bank_feed_service.simulate_polling_sync(db, bank_account_id, count, current_user.id)
 
 @router.post("/webhook/simulator")
@@ -127,11 +151,21 @@ def simulate_bank_webhook(
     bank_account_id: int,
     payload: dict,
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """
-    Simulate an incoming bank webhook
+    Simulate an incoming bank webhook with access control
     """
+    account = db.query(BankAccount).filter(BankAccount.id == bank_account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Bank account not found")
+        
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+            
     tx = bank_feed_service.process_mock_webhook(db, bank_account_id, payload, current_user.id)
     if not tx:
         raise HTTPException(status_code=400, detail="Failed to process simulated webhook")
@@ -175,7 +209,7 @@ async def chapa_webhook(
 def get_cash_flow_forecast(
     days: int = 30,
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.MANAGER))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """
     Get cash flow forecast using ML (Linear Regression on historical data)
@@ -189,7 +223,7 @@ def get_cash_flow_forecast(
 def initiate_money_transfer(
     transfer_in: banking_schema.MoneyTransferCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     """
     Initiate a money transfer via Chapa
