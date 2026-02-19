@@ -8,6 +8,7 @@ from typing import List
 from ..models.banking import BankAccount, BankTransaction, TransactionStatus
 from ..models.journal_entry import AccountingJournalEntry, JournalEntryLine, JournalEntryStatus
 from ..models.account import Account
+from ..schemas import banking as banking_schema
 
 class BankingService:
     @staticmethod
