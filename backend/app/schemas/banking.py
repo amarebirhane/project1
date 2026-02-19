@@ -55,6 +55,7 @@ class BankAccount(BankAccountBase):
     last_synced_at: Optional[datetime] = None
     created_at: datetime
     created_by_id: int
+    balance: Optional[float] = 0.0  # Computed from transactions
     
     class Config:
         from_attributes = True
