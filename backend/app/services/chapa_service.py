@@ -55,6 +55,22 @@ class ChapaService:
             logger.error(f"Error initializing transaction: {str(e)}")
             return {"status": "error", "message": str(e)}
 
+    def create_transfer(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Initiate a money transfer (disbursement).
+        Expected data keys: account_number, account_name, bank_code, amount, currency, reference
+        """
+        if not self.client:
+            return {"status": "error", "message": "Chapa client not initialized"}
+        
+        try:
+            # Note: The chapa-python SDK version might vary, but 'transfer' 
+            # is the standard method for disbursements in most Chapa wrappers.
+            return self.client.transfer(**data)
+        except Exception as e:
+            logger.error(f"Error creating transfer: {str(e)}")
+            return {"status": "error", "message": str(e)}
+
     def verify_webhook(self, payload: str, signature: str) -> bool:
         """Verify that the webhook request is authentic."""
         if not self.webhook_hash:
