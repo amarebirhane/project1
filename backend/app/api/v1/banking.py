@@ -40,8 +40,23 @@ def get_bank_accounts(
 def get_supported_banks(
     current_user: User = Depends(deps.get_current_active_user)
 ):
-    """List supported Ethiopian banks from Chapa"""
-    return chapa_service.get_banks()
+    """List supported Ethiopian banks from Chapa, with fallback"""
+    banks = chapa_service.get_banks()
+    if not banks:
+        # Fallback to common Ethiopian banks if Chapa service is inactive/empty
+        return [
+            {"id": "cbe", "name": "Commercial Bank of Ethiopia", "code": "CBE"},
+            {"id": "awash", "name": "Awash Bank", "code": "AWASH"},
+            {"id": "dashen", "name": "Dashen Bank", "code": "DASHEN"},
+            {"id": "abyssinia", "name": "Bank of Abyssinia", "code": "BOA"},
+            {"id": "hibret", "name": "Hibret Bank", "code": "HIBRET"},
+            {"id": "coop", "name": "Cooperative Bank of Oromia", "code": "COOP"},
+            {"id": "zemen", "name": "Zemen Bank", "code": "ZEMEN"},
+            {"id": "nib", "name": "Nib International Bank", "code": "NIB"},
+            {"id": "wegagen", "name": "Wegagen Bank", "code": "WEGAGEN"},
+            {"id": "berhan", "name": "Berhan Bank", "code": "BERHAN"}
+        ]
+    return banks
 
 @router.post("/accounts", response_model=banking_schema.BankAccount)
 def create_bank_account(

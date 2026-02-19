@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styled, { useTheme } from 'styled-components';
-import { X, Landmark, Loader2, CheckCircle2, ChevronRight, Search } from 'lucide-react';
+import { X, Landmark, Loader2, CheckCircle2, ChevronRight, Search, Plus, AlertCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
 
@@ -225,6 +225,16 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
     const [selectedGlAccountId, setSelectedGlAccountId] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Manual entry states
+    const [isManualEntry, setIsManualEntry] = useState(false);
+    const [manualBankName, setManualBankName] = useState('');
+
+    // GL Account creation states
+    const [isCreatingGl, setIsCreatingGl] = useState(false);
+    const [newGlCode, setNewGlCode] = useState('');
+    const [newGlName, setNewGlName] = useState('');
+    const [isCreatingGlLoading, setIsCreatingGlLoading] = useState(false);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -247,22 +257,43 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
         b.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    const handleCreateGl = async () => {
+        if (!newGlCode || !newGlName) return;
+        try {
+            setIsCreatingGlLoading(true);
+            const res = await apiClient.createAccountingAccount({
+                code: newGlCode,
+                name: newGlName,
+                type: 'ASSET', // Banking accounts are typically assets
+                is_active: true
+            });
+            setGlAccounts(prev => [...prev, res.data]);
+            setSelectedGlAccountId(res.data.id.toString());
+            setIsCreatingGl(false);
+            setNewGlCode('');
+            setNewGlName('');
+            toast.success("GL Account created successfully");
+        } catch (err) {
+            toast.error("Failed to create GL account");
+        } finally {
+            setIsCreatingGlLoading(false);
+        }
+    };
+
     const handleSubmit = async () => {
-        if (!selectedBank || !accountNumber) return;
+        if ((!selectedBank && !manualBankName) || !accountNumber) return;
 
         try {
             setIsSubmitting(true);
-            // In a real app, you'd send this to Chapa for verification
-            // For now, we'll create the record in our DB
             await apiClient.createBankAccount({
-                bank_name: selectedBank.id || selectedBank.name,
+                bank_name: isManualEntry ? manualBankName : (selectedBank?.name || selectedBank?.id),
                 account_name: accountName || "Main Account",
                 account_number_last4: accountNumber.slice(-4),
                 currency_code: "ETB",
                 gl_account_id: selectedGlAccountId ? parseInt(selectedGlAccountId) : undefined
             });
 
-            toast.success("Bank linked successfully via Chapa");
+            toast.success("Bank linked successfully");
             setStep('success');
         } catch (err) {
             toast.error("Failed to link bank account");
@@ -316,13 +347,43 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                                     </BankItem>
                                 ))
                             )}
+
+                            <div style={{ padding: '8px 12px' }}>
+                                <BankItem
+                                    $selected={isManualEntry}
+                                    onClick={() => {
+                                        setIsManualEntry(true);
+                                        setSelectedBank(null);
+                                    }}
+                                >
+                                    <BankInfo>
+                                        <Plus size={20} color={isManualEntry ? theme.colors.primary : theme.colors.textSecondary} />
+                                        <BankName>Manual Entry / Other Bank</BankName>
+                                    </BankInfo>
+                                    <ChevronRight size={18} color={theme.colors.border} />
+                                </BankItem>
+                            </div>
                         </BankList>
+
+                        {isManualEntry && (
+                            <div style={{ padding: '0 24px 16px' }}>
+                                <InputGroup>
+                                    <Label>Bank Name</Label>
+                                    <StyledInput
+                                        placeholder="Enter bank name manually"
+                                        value={manualBankName}
+                                        onChange={e => setManualBankName(e.target.value)}
+                                        autoFocus
+                                    />
+                                </InputGroup>
+                            </div>
+                        )}
 
                         <Footer>
                             <Button onClick={onClose}>Cancel</Button>
                             <Button
                                 $primary
-                                disabled={!selectedBank}
+                                disabled={!selectedBank && !manualBankName}
                                 onClick={() => setStep('details')}
                             >
                                 Continue
@@ -344,7 +405,7 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                                 border: `1px solid ${theme.colors.border}`
                             }}>
                                 <Landmark size={20} color={theme.colors.primary} />
-                                <div style={{ fontWeight: 600, color: theme.colors.textDark }}>{selectedBank?.name}</div>
+                                <div style={{ fontWeight: 600, color: theme.colors.textDark }}>{isManualEntry ? manualBankName : selectedBank?.name}</div>
                             </div>
 
                             <InputGroup>
@@ -366,18 +427,72 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                             </InputGroup>
 
                             <InputGroup>
-                                <Label>GL Account (Accountant Number)</Label>
-                                <StyledSelect
-                                    value={selectedGlAccountId}
-                                    onChange={e => setSelectedGlAccountId(e.target.value)}
-                                >
-                                    <option value="">Select accounting account...</option>
-                                    {glAccounts.map((acc: any) => (
-                                        <option key={acc.id} value={acc.id}>
-                                            {acc.code} - {acc.name}
-                                        </option>
-                                    ))}
-                                </StyledSelect>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Label>GL Account (Accountant Number)</Label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCreatingGl(!isCreatingGl)}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: theme.colors.primary,
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}
+                                    >
+                                        <Plus size={12} />
+                                        {isCreatingGl ? "Cancel" : "Create New"}
+                                    </button>
+                                </div>
+
+                                {isCreatingGl ? (
+                                    <div style={{
+                                        padding: '12px',
+                                        background: `${theme.colors.primary}08`,
+                                        borderRadius: '8px',
+                                        border: `1px dashed ${theme.colors.primary}33`,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '12px'
+                                    }}>
+                                        <StyledInput
+                                            placeholder="Account Code (e.g. 1010)"
+                                            value={newGlCode}
+                                            onChange={e => setNewGlCode(e.target.value)}
+                                            style={{ fontSize: '0.875rem', padding: '8px 12px' }}
+                                        />
+                                        <StyledInput
+                                            placeholder="Account Name (e.g. Bank Savings)"
+                                            value={newGlName}
+                                            onChange={e => setNewGlName(e.target.value)}
+                                            style={{ fontSize: '0.875rem', padding: '8px 12px' }}
+                                        />
+                                        <Button
+                                            $primary
+                                            style={{ padding: '8px', fontSize: '0.875rem' }}
+                                            onClick={handleCreateGl}
+                                            disabled={!newGlCode || !newGlName || isCreatingGlLoading}
+                                        >
+                                            {isCreatingGlLoading ? <Loader2 className="animate-spin" size={16} /> : "Create & Select"}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <StyledSelect
+                                        value={selectedGlAccountId}
+                                        onChange={e => setSelectedGlAccountId(e.target.value)}
+                                    >
+                                        <option value="">Select accounting account...</option>
+                                        {glAccounts.map((acc: any) => (
+                                            <option key={acc.id} value={acc.id}>
+                                                {acc.code} - {acc.name}
+                                            </option>
+                                        ))}
+                                    </StyledSelect>
+                                )}
                             </InputGroup>
 
                             <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, display: 'flex', gap: '8px', alignItems: 'center' }}>
