@@ -152,3 +152,13 @@ def get_cash_flow_forecast(
         "days_ahead": days,
         "forecast": forecast
     }
+@router.post("/transfer", response_model=banking_schema.MoneyTransferResponse)
+def initiate_money_transfer(
+    transfer_in: banking_schema.MoneyTransferCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.require_min_role(UserRole.ACCOUNTANT))
+):
+    """
+    Initiate a money transfer via Chapa
+    """
+    return banking_service.initiate_transfer(db, transfer_in)

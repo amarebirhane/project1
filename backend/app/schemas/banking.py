@@ -55,3 +55,18 @@ class BankAccount(BankAccountBase):
     
     class Config:
         from_attributes = True
+# --- Money Transfer Schemas ---
+
+class MoneyTransferCreate(BaseModel):
+    source_account_id: int
+    amount: float
+    bank_code: str
+    account_number: str
+    beneficiary_name: str
+    reference: Optional[str] = None
+
+class MoneyTransferResponse(BaseModel):
+    status: str
+    message: str
+    transaction_id: Optional[int] = None
+    external_reference: Optional[str] = None

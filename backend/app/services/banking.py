@@ -100,4 +100,53 @@ class BankingService:
         db.commit()
         return transactions
 
+    @staticmethod
+    def initiate_transfer(db: Session, transfer_in: banking_schema.MoneyTransferCreate) -> banking_schema.MoneyTransferResponse:
+        """
+        Process a money transfer via Chapa and record the transaction.
+        """
+        from .chapa_service import chapa_service
+        
+        # 1. Get source account
+        account = db.query(BankAccount).filter(BankAccount.id == transfer_in.source_account_id).first()
+        if not account:
+            return banking_schema.MoneyTransferResponse(status="error", message="Source account not found")
+
+        # 2. Prepare Chapa transfer data
+        chapa_data = {
+            "account_number": transfer_in.account_number,
+            "bank_code": transfer_in.bank_code,
+            "beneficiary_name": transfer_in.beneficiary_name,
+            "amount": transfer_in.amount,
+            "currency": account.currency_code,
+            "reference": transfer_in.reference or f"TX-{int(datetime.now().timestamp())}"
+        }
+
+        try:
+            # 3. Call Chapa API
+            response = chapa_service.create_transfer(chapa_data)
+            
+            # 4. Create internal bank transaction record (Outflow)
+            new_tx = BankTransaction(
+                bank_account_id=account.id,
+                date=datetime.now(),
+                description=f"Transfer to {transfer_in.beneficiary_name} - {transfer_in.reference or ''}",
+                amount=-abs(transfer_in.amount), # Negative for outflow
+                status=TransactionStatus.PENDING,
+                external_id=response.get("reference") or chapa_data["reference"]
+            )
+            db.add(new_tx)
+            db.commit()
+            db.refresh(new_tx)
+
+            return banking_schema.MoneyTransferResponse(
+                status="success",
+                message="Transfer initiated successfully",
+                transaction_id=new_tx.id,
+                external_reference=new_tx.external_id
+            )
+
+        except Exception as e:
+            return banking_schema.MoneyTransferResponse(status="error", message=f"Chapa transfer failed: {str(e)}")
+
 banking_service = BankingService()
