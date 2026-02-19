@@ -20,6 +20,7 @@ import { ComponentGate } from '@/lib/rbac';
 import Layout from "@/components/layout";
 import { X, Search, Filter, ArrowDown, ArrowUp, Loader2, Info } from "lucide-react";
 import { BankLinkModal } from "@/components/banking/BankLinkModal";
+import { TransferModal } from "@/components/banking/TransferModal";
 
 // Styled Components
 
@@ -74,6 +75,23 @@ const ConnectButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
+`;
+
+const HeaderButtonGroup = styled.div`
+  display: flex;
+  gap: 0.75rem;
+`;
+
+const TransferButton = styled(ConnectButton)`
+  background-color: ${props => props.theme.mode === 'dark' ? props.theme.colors.muted : '#fff'};
+  color: ${props => props.theme.colors.textDark};
+  border: 1px solid ${props => props.theme.colors.border};
+
+  &:hover {
+    background-color: ${props => props.theme.colors.muted};
+    border-color: ${props => props.theme.colors.primary};
+    color: ${props => props.theme.colors.primary};
+  }
 `;
 
 const ChartCard = styled.div`
@@ -501,8 +519,8 @@ export default function BankingPage() {
   const [forecast, setForecast] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [txLoading, setTxLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -601,6 +619,12 @@ export default function BankingPage() {
             onSuccess={loadData}
           />
         )}
+        {isTransferModalOpen && (
+          <TransferModal
+            onClose={() => setIsTransferModalOpen(false)}
+            onSuccess={loadData}
+          />
+        )}
         <ContentContainer>
           {/* Header */}
           <Header>
@@ -608,9 +632,14 @@ export default function BankingPage() {
               <Title>Banking & Cash Flow</Title>
               <Subtitle>Manage bank feeds and view AI-powered cash forecasts</Subtitle>
             </HeaderText>
-            <ConnectButton onClick={() => setIsModalOpen(true)}>
-              <Plus size={20} /> Connect Account
-            </ConnectButton>
+            <HeaderButtonGroup>
+              <TransferButton onClick={() => setIsTransferModalOpen(true)}>
+                <Send size={18} /> Transfer
+              </TransferButton>
+              <ConnectButton onClick={() => setIsModalOpen(true)}>
+                <Plus size={20} /> Connect Account
+              </ConnectButton>
+            </HeaderButtonGroup>
           </Header>
 
           {/* Cash Flow Forecast Chart */}
