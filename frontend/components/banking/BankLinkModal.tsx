@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { X, Landmark, Loader2, CheckCircle2, ChevronRight, Search } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
@@ -40,7 +40,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(to right, #f8fafc, #ffffff);
+  background: ${props => props.theme.colors.backgroundSecondary};
 `;
 
 const Title = styled.h2`
@@ -62,8 +62,8 @@ const CloseButton = styled.button`
   transition: all 0.2s;
 
   &:hover {
-    background: #f1f5f9;
-    color: #ef4444;
+    background: ${props => props.theme.colors.muted};
+    color: ${props => props.theme.colors.error};
   }
 `;
 
@@ -77,13 +77,14 @@ const SearchInput = styled.input`
   padding: 10px 16px 10px 40px;
   border-radius: ${props => props.theme.borderRadius.lg};
   border: 1px solid ${props => props.theme.colors.border};
-  background: #f8fafc;
+  background: ${props => props.theme.colors.inputBg};
+  color: ${props => props.theme.colors.text};
   font-size: 0.875rem;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: ${props => props.theme.colors.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.colors.primary}1a;
   }
 `;
 
@@ -96,7 +97,7 @@ const BankList = styled.div`
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
+    background: ${props => props.theme.colors.border};
     border-radius: 3px;
   }
 `;
@@ -107,15 +108,15 @@ const BankItem = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid ${props => props.$selected ? '#3b82f6' : 'transparent'};
-  background: ${props => props.$selected ? '#eff6ff' : 'transparent'};
+  border: 1px solid ${props => props.$selected ? props.theme.colors.primary : 'transparent'};
+  background: ${props => props.$selected ? `${props.theme.colors.primary}1a` : 'transparent'};
   border-radius: ${props => props.theme.borderRadius.lg};
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 4px;
 
   &:hover {
-    background: ${props => props.$selected ? '#eff6ff' : '#f8fafc'};
+    background: ${props => props.$selected ? `${props.theme.colors.primary}26` : props.theme.colors.muted};
   }
 `;
 
@@ -154,11 +155,13 @@ const StyledInput = styled.input`
   padding: 12px 16px;
   border-radius: ${props => props.theme.borderRadius.lg};
   border: 1px solid ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.inputBg};
+  color: ${props => props.theme.colors.text};
   font-size: 1rem;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${props => props.theme.colors.primary};
   }
 `;
 
@@ -179,14 +182,14 @@ const Button = styled.button<{ $primary?: boolean }>`
   border: none;
   
   ${props => props.$primary ? `
-    background: #2563eb;
-    color: white;
-    &:hover { background: #1d4ed8; }
+    background: ${props.theme.colors.primary};
+    color: ${props.theme.colors.primaryForeground};
+    &:hover { filter: brightness(0.9); }
     &:disabled { opacity: 0.7; cursor: not-allowed; }
   ` : `
-    background: #f1f5f9;
-    color: #475569;
-    &:hover { background: #e2e8f0; }
+    background: ${props.theme.colors.muted};
+    color: ${props.theme.colors.textSecondary};
+    &:hover { background: ${props.theme.colors.border}; }
   `}
 `;
 
@@ -196,6 +199,7 @@ interface BankLinkModalProps {
 }
 
 export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess }) => {
+    const theme = useTheme();
     const [step, setStep] = useState<'select' | 'details' | 'success'>('select');
     const [banks, setBanks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -252,7 +256,7 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
             <ModalContent onClick={e => e.stopPropagation()}>
                 <Header>
                     <Title>
-                        <Landmark size={24} color="#2563eb" />
+                        <Landmark size={24} color={theme.colors.primary} />
                         {step === 'select' ? 'Select Your Bank' : step === 'details' ? 'Account Details' : 'Success!'}
                     </Title>
                     <CloseButton onClick={onClose}>
@@ -263,7 +267,7 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                 {step === 'select' && (
                     <>
                         <SearchContainer>
-                            <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '40px', top: '27px' }} />
+                            <Search size={18} color={theme.colors.textSecondary} style={{ position: 'absolute', left: '40px', top: '27px' }} />
                             <SearchInput
                                 placeholder="Search Ethiopian banks..."
                                 value={search}
@@ -274,8 +278,8 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                         <BankList>
                             {loading ? (
                                 <div style={{ padding: '40px', textAlign: 'center' }}>
-                                    <Loader2 className="animate-spin" size={32} color="#2563eb" />
-                                    <div style={{ marginTop: '12px', color: '#64748b' }}>Fetching banks...</div>
+                                    <Loader2 className="animate-spin" size={32} color={theme.colors.primary} />
+                                    <div style={{ marginTop: '12px', color: theme.colors.textSecondary }}>Fetching banks...</div>
                                 </div>
                             ) : (
                                 filteredBanks.map(bank => (
@@ -285,10 +289,10 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                                         onClick={() => setSelectedBank(bank)}
                                     >
                                         <BankInfo>
-                                            <Landmark size={20} color={selectedBank?.id === bank.id ? '#3b82f6' : '#94a3b8'} />
+                                            <Landmark size={20} color={selectedBank?.id === bank.id ? theme.colors.primary : theme.colors.textSecondary} />
                                             <BankName>{bank.name}</BankName>
                                         </BankInfo>
-                                        <ChevronRight size={18} color="#cbd5e1" />
+                                        <ChevronRight size={18} color={theme.colors.border} />
                                     </BankItem>
                                 ))
                             )}
@@ -310,9 +314,17 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                 {step === 'details' && (
                     <>
                         <StepContainer>
-                            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                <Landmark size={20} color="#2563eb" />
-                                <div style={{ fontWeight: 600 }}>{selectedBank?.name}</div>
+                            <div style={{
+                                padding: '16px',
+                                background: theme.colors.backgroundSecondary,
+                                borderRadius: '12px',
+                                display: 'flex',
+                                gap: '12px',
+                                alignItems: 'center',
+                                border: `1px solid ${theme.colors.border}`
+                            }}>
+                                <Landmark size={20} color={theme.colors.primary} />
+                                <div style={{ fontWeight: 600, color: theme.colors.textDark }}>{selectedBank?.name}</div>
                             </div>
 
                             <InputGroup>
@@ -333,8 +345,8 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
                                 />
                             </InputGroup>
 
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                <CheckCircle2 size={14} color="#10b981" />
+                            <div style={{ fontSize: '0.75rem', color: theme.colors.textSecondary, display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <CheckCircle2 size={14} color={theme.colors.primary} />
                                 Verified via Chapa Secure API
                             </div>
                         </StepContainer>
@@ -354,11 +366,22 @@ export const BankLinkModal: React.FC<BankLinkModalProps> = ({ onClose, onSuccess
 
                 {step === 'success' && (
                     <StepContainer style={{ alignItems: 'center', textAlign: 'center', padding: '48px 24px' }}>
-                        <div style={{ width: '80px', height: '80px', background: '#dcfce7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-                            <CheckCircle2 size={48} color="#10b981" />
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            background: `${theme.colors.primary}1a`,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '24px',
+                            border: `2px solid ${theme.colors.primary}33`
+                        }}>
+                            <CheckCircle2 size={48} color={theme.colors.primary} />
                         </div>
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '12px' }}>Account Linked!</h3>
-                        <p style={{ color: '#64748b', marginBottom: '32px' }}>
+                        <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '12px', color: theme.colors.textDark }}>Account Linked!</h3>
+                        <p style={{ color: theme.colors.textSecondary, marginBottom: '32px' }}>
                             Your {selectedBank?.name} account has been successfully connected.
                             Transactions will sync automatically.
                         </p>
