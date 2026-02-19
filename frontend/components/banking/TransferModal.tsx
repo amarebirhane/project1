@@ -460,7 +460,6 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                 payload.recipient_user_id = parseInt(selectedAccountantId);
                 payload.gl_account_id = selectedGlAccountId ? parseInt(selectedGlAccountId) : undefined;
                 payload.beneficiary_name = selectedAccountant?.full_name || selectedAccountant?.username;
-                // Add a default or system bank code for internal transfers if backend requires it
                 payload.bank_code = 'INTERNAL';
                 payload.account_number = `USER-${selectedAccountantId}`;
             }
@@ -468,13 +467,21 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
             const res = await apiClient.initiateMoneyTransfer(payload);
 
             if (res.data?.status === 'success') {
-                toast.success("Transfer initiated successfully");
+                toast.success(res.data.message || "Transfer completed successfully");
                 setStep('success');
+                onSuccess?.();
             } else {
+                // Backend returned status:"error" with a message (e.g. insufficient balance)
                 toast.error(res.data?.message || "Transfer failed");
             }
-        } catch (err) {
-            toast.error("Transfer failed. Please check your connection.");
+        } catch (err: any) {
+            const detail = err.response?.data?.detail;
+            const msg = Array.isArray(detail)
+                ? detail.map((e: any) => e.msg || String(e)).join(', ')
+                : typeof detail === 'string'
+                    ? detail
+                    : "Transfer failed. Please check your connection.";
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -556,7 +563,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ onClose, onSuccess
                                             <AccountDetails>{selectedSource.bank_name} •••• {selectedSource.account_number_last4}</AccountDetails>
                                         </AccountInfo>
                                         <AccountBalance>
-                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedSource.currency_code }).format(125000.50)}
+                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: selectedSource.currency_code || 'USD' }).format(selectedSource.balance ?? 0)}
                                         </AccountBalance>
                                     </AccountCard>
                                 )}
