@@ -514,6 +514,84 @@ const EmptyState = styled.div`
   border: 2px dashed ${props => props.theme.colors.border};
 `;
 
+const AccountantNumberSection = styled.div`
+  margin-top: 48px;
+  background: ${props => props.theme.colors.card};
+  border-radius: ${props => props.theme.borderRadius.lg};
+  border: 1px solid ${props => props.theme.colors.border};
+  overflow: hidden;
+`;
+
+const SectionHeader = styled.div`
+  padding: 24px;
+  border-bottom: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SectionTitleSmall = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: ${props => props.theme.colors.textDark};
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const GlGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 24px;
+`;
+
+const GlCard = styled.div`
+  background: ${props => props.theme.colors.backgroundSecondary};
+  padding: 20px;
+  border-radius: ${props => props.theme.borderRadius.md};
+  border: 1px solid ${props => props.theme.colors.border};
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: ${props => props.theme.colors.primary};
+    transform: translateY(-2px);
+    box-shadow: ${props => props.theme.shadows.sm};
+  }
+`;
+
+const GlCode = styled.div`
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: ${props => props.theme.colors.primary};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+`;
+
+const GlName = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.theme.colors.textDark};
+`;
+
+const QuickCreateForm = styled.div`
+  padding: 24px;
+  background: ${props => props.theme.colors.muted}1a;
+  border-top: 1px solid ${props => props.theme.colors.border};
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const InlineFormFields = styled.div`
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 16px;
+  align-items: flex-end;
+`;
+
 export default function BankingPage() {
   const theme = useTheme();
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -534,22 +612,58 @@ export default function BankingPage() {
     currency_code: "USD"
   });
 
+  // Accountant Number (GL) management
+  const [glAccounts, setGlAccounts] = useState<any[]>([]);
+  const [glLoading, setGlLoading] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [newGlData, setNewGlData] = useState({
+    name: "",
+    code: ""
+  });
+
   const loadData = async () => {
     try {
       setLoading(true);
-      const [accountsRes, forecastRes] = await Promise.all([
+      const [accountsRes, forecastRes, glRes] = await Promise.all([
         apiClient.getBankAccounts(),
-        apiClient.getCashFlowForecast(30)
+        apiClient.getCashFlowForecast(30),
+        apiClient.getAccountingAccounts()
       ]);
 
       if (accountsRes.data) setAccounts(accountsRes.data);
       if (forecastRes.data && forecastRes.data.forecast) setForecast(forecastRes.data.forecast);
+      if (glRes.data) setGlAccounts(glRes.data);
 
     } catch (error) {
       console.error("Failed to load banking data", error);
       toast.error("Failed to load banking dashboard");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateGl = async () => {
+    if (!newGlData.name || !newGlData.code) {
+      toast.error("Please fill in both name and code");
+      return;
+    }
+
+    try {
+      setGlLoading(true);
+      await apiClient.createAccountingAccount({
+        name: newGlData.name,
+        code: newGlData.code,
+        account_type: "EXPENSE",
+        is_active: true
+      });
+      toast.success("Accountant Number created successfully");
+      setNewGlData({ name: "", code: "" });
+      setShowQuickCreate(false);
+      loadData();
+    } catch (error) {
+      toast.error("Failed to create Accountant Number");
+    } finally {
+      setGlLoading(false);
     }
   };
 
@@ -774,6 +888,69 @@ export default function BankingPage() {
                   </ComponentGate>
                 )}
               </GridContainer>
+
+              {/* Accountant Number Management section */}
+              <AccountantNumberSection>
+                <SectionHeader>
+                  <SectionTitleSmall>
+                    <TrendingUp size={24} color={theme.colors.primary} />
+                    My Accountant Numbers
+                  </SectionTitleSmall>
+                  <ConnectButton onClick={() => setShowQuickCreate(!showQuickCreate)}>
+                    <Plus size={18} /> {showQuickCreate ? 'Cancel' : 'Create New'}
+                  </ConnectButton>
+                </SectionHeader>
+
+                {showQuickCreate && (
+                  <QuickCreateForm>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: theme.colors.textSecondary, marginBottom: '4px' }}>
+                      Register a new Accountant Number for your internal transfers
+                    </div>
+                    <InlineFormFields>
+                      <InputGroup>
+                        <InputLabel>Code (e.g. A101)</InputLabel>
+                        <StyledInput
+                          placeholder="Code"
+                          value={newGlData.code}
+                          onChange={(e) => setNewGlData({ ...newGlData, code: e.target.value })}
+                        />
+                      </InputGroup>
+                      <InputGroup>
+                        <InputLabel>Name (Recipient Identifier)</InputLabel>
+                        <StyledInput
+                          placeholder="Full Name or Department"
+                          value={newGlData.name}
+                          onChange={(e) => setNewGlData({ ...newGlData, name: e.target.value })}
+                        />
+                      </InputGroup>
+                      <SubmitButton
+                        onClick={handleCreateGl}
+                        disabled={glLoading}
+                        type="button"
+                        style={{ margin: 0, padding: '12px 24px' }}
+                      >
+                        {glLoading ? <Loader2 className="animate-spin" size={20} /> : 'Save Number'}
+                      </SubmitButton>
+                    </InlineFormFields>
+                  </QuickCreateForm>
+                )}
+
+                {glAccounts.length === 0 ? (
+                  <div style={{ padding: '48px', textAlign: 'center', color: theme.colors.textSecondary }}>
+                    <Info size={40} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                    <p>You haven't registered any Accountant Numbers yet.</p>
+                  </div>
+                ) : (
+                  <GlGrid>
+                    {glAccounts.map((account) => (
+                      <GlCard key={account.id}>
+                        <GlCode>{account.code}</GlCode>
+                        <GlName>{account.name}</GlName>
+                      </GlCard>
+                    ))}
+                  </GlGrid>
+                )}
+              </AccountantNumberSection>
 
               {/* Transactions Modal */}
               {isTxModalOpen && (
