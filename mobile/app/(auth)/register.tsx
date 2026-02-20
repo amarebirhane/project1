@@ -23,7 +23,7 @@ export default function RegisterScreen() {
                 role: 'USER' // Default role
             });
             router.replace('/login');
-        } catch (err) {
+        } catch {
             // Error handled in store
         }
     };

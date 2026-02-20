@@ -30,7 +30,7 @@ export default function LoginScreen() {
     const handleLogin = async () => {
         try {
             await login(email, password);
-        } catch (err) {
+        } catch {
             // Error handling in store
         }
     };
@@ -166,7 +166,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, showPassword, setSh
         </TouchableOpacity>
 
         <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>Don&apos;t have an account? </Text>
             <Link href="/register" asChild>
                 <TouchableOpacity>
                     <Text style={styles.linkText}>Sign Up</Text>
