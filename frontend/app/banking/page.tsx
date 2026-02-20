@@ -19,7 +19,7 @@ import {
 import { ComponentGate } from '@/lib/rbac';
 import { ComponentId } from '@/lib/rbac/component-access';
 import Layout from "@/components/layout";
-import { X, Search, Filter, ArrowDown, ArrowUp, Loader2, Info } from "lucide-react";
+import { X, Search, Filter, ArrowDown, ArrowUp, Loader2, Info, Edit2, Trash2 } from "lucide-react";
 import { BankLinkModal } from "@/components/banking/BankLinkModal";
 import { TransferModal } from "@/components/banking/TransferModal";
 
@@ -641,6 +641,11 @@ export default function BankingPage() {
     currency_code: "USD"
   });
 
+  // Edit Account state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [accountToEdit, setAccountToEdit] = useState<any>(null);
+  const [editName, setEditName] = useState("");
+
   // Accountant Number (GL) management
   const [glAccounts, setGlAccounts] = useState<any[]>([]);
   const [glLoading, setGlLoading] = useState(false);
@@ -723,6 +728,39 @@ export default function BankingPage() {
       toast.error("Failed to fetch transactions");
     } finally {
       setTxLoading(false);
+    }
+  };
+
+  const handleEditClick = (account: any) => {
+    setAccountToEdit(account);
+    setEditName(account.account_name);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateAccount = async () => {
+    try {
+      if (!accountToEdit) return;
+      setIsSubmitting(true);
+      await apiClient.updateBankAccount(accountToEdit.id, { account_name: editName });
+      toast.success("Account updated successfully");
+      setIsEditModalOpen(false);
+      loadData();
+    } catch (error) {
+      toast.error("Failed to update account");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async (id: number) => {
+    if (confirm("Are you sure you want to disconnect this account?")) {
+      try {
+        await apiClient.deleteBankAccount(id);
+        toast.success("Account successfully disconnected");
+        loadData();
+      } catch (error) {
+        toast.error("Failed to disconnect account");
+      }
     }
   };
 
@@ -878,10 +916,20 @@ export default function BankingPage() {
                   accounts.map(account => (
                     <AccountCard key={account.id}>
                       <AccountHeader>
-                        <IconWrapper>
-                          <DollarSign />
-                        </IconWrapper>
-                        <StatusBadge>Active</StatusBadge>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                          <IconWrapper>
+                            <DollarSign />
+                          </IconWrapper>
+                          <StatusBadge>Active</StatusBadge>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => handleEditClick(account)} title="Rename Account" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.colors.textSecondary }}>
+                            <Edit2 size={16} />
+                          </button>
+                          <button onClick={() => handleDeleteAccount(account.id)} title="Disconnect Account" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: theme.colors.error }}>
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </AccountHeader>
 
                       <AccountName>{account.account_name}</AccountName>
@@ -1068,6 +1116,37 @@ export default function BankingPage() {
                       )}
                     </TxListContainer>
                   </TxModalContent>
+                </ModalOverlay>
+              )}
+
+              {/* Edit Account Modal */}
+              {isEditModalOpen && (
+                <ModalOverlay onClick={() => setIsEditModalOpen(false)}>
+                  <ModalContent onClick={(e) => e.stopPropagation()}>
+                    <ModalHeader>
+                      <ModalTitle>Edit Account</ModalTitle>
+                      <CloseButton onClick={() => setIsEditModalOpen(false)}>
+                        <X size={24} />
+                      </CloseButton>
+                    </ModalHeader>
+                    <ModalForm>
+                      <InputGroup>
+                        <InputLabel>Account Name</InputLabel>
+                        <StyledInput
+                          placeholder="e.g. Primary Checkings"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                        />
+                      </InputGroup>
+                      <SubmitButton
+                        onClick={handleUpdateAccount}
+                        type="button"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : 'Save Changes'}
+                      </SubmitButton>
+                    </ModalForm>
+                  </ModalContent>
                 </ModalOverlay>
               )}
             </>
