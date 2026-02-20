@@ -137,7 +137,7 @@ const SearchInput = styled.input`
   outline: none;
 
   &:focus {
-    box-shadow: 0 0 0 2px ${props => `${props.theme.colors.primary}80`};
+    box-shadow: 0 0 0 2px color-mix(in srgb, ${props => props.theme.colors.primary}, transparent 50%);
     border-color: ${props => props.theme.colors.primary};
   }
 
@@ -207,7 +207,7 @@ const ActionButton = styled.button`
 
   &:hover {
     color: ${props => props.theme.colors.error};
-    background-color: ${props => `${props.theme.colors.error}1a`};
+    background-color: color-mix(in srgb, ${props => props.theme.colors.error}, transparent 90%);
   }
 `;
 
@@ -377,19 +377,37 @@ const Badge = styled.span<{ $colorClass?: string }>`
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
   
   ${props => {
     const isDark = props.theme.mode === 'dark';
     if (props.$colorClass === 'revenue') {
-      return `color: ${isDark ? '#34d399' : '#10b981'}; background-color: ${isDark ? '#064e3b' : '#f0fdf4'}; border: 1px solid ${isDark ? '#047857' : '#dcfce7'};`;
+      return `
+        color: ${isDark ? '#34d399' : '#10b981'}; 
+        background-color: ${isDark ? 'rgba(52, 211, 153, 0.1)' : 'rgba(16, 185, 129, 0.1)'}; 
+        border: 1px solid ${isDark ? 'rgba(52, 211, 153, 0.2)' : 'rgba(16, 185, 129, 0.2)'};
+      `;
     }
     if (props.$colorClass === 'expense') {
-      return `color: ${isDark ? '#fb7185' : '#f43f5e'}; background-color: ${isDark ? '#4c0519' : '#fff1f2'}; border: 1px solid ${isDark ? '#be123c' : '#fee2e2'};`;
+      return `
+        color: ${isDark ? '#fb7185' : '#f43f5e'}; 
+        background-color: ${isDark ? 'rgba(251, 113, 133, 0.1)' : 'rgba(244, 63, 94, 0.1)'}; 
+        border: 1px solid ${isDark ? 'rgba(251, 113, 133, 0.2)' : 'rgba(244, 63, 94, 0.2)'};
+      `;
     }
     if (props.$colorClass === 'banking') {
-      return `color: ${isDark ? '#60a5fa' : '#3b82f6'}; background-color: ${isDark ? '#1e3a8a' : '#eff6ff'}; border: 1px solid ${isDark ? '#1d4ed8' : '#dbeafe'};`;
+      return `
+        color: ${isDark ? '#60a5fa' : '#3b82f6'}; 
+        background-color: ${isDark ? 'rgba(96, 165, 250, 0.1)' : 'rgba(59, 130, 246, 0.1)'}; 
+        border: 1px solid ${isDark ? 'rgba(96, 165, 250, 0.2)' : 'rgba(59, 130, 246, 0.2)'};
+      `;
     }
-    return `color: ${props.theme.colors.textSecondary}; background-color: ${props.theme.colors.muted}; border: 1px solid ${props.theme.colors.border};`;
+    return `
+      color: ${props.theme.colors.textSecondary}; 
+      background-color: ${props.theme.colors.muted}; 
+      border: 1px solid ${props.theme.colors.border};
+    `;
   }}
 `;
 
@@ -419,11 +437,12 @@ const StatCard = styled.div<{ $color: string }>`
     width: 52px;
     height: 52px;
     border-radius: 14px;
-    background: ${props => props.$color}15;
+    background: color-mix(in srgb, ${props => props.$color}, transparent 90%);
     color: ${props => props.$color};
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid color-mix(in srgb, ${props => props.$color}, transparent 80%);
   }
 
   .content {
@@ -449,7 +468,7 @@ const EmptyState = styled.div`
   gap: 20px;
   color: ${props => props.theme.colors.textSecondary};
 
-  svg { color: #cbd5e1; }
+  svg { color: ${props => props.theme.colors.border}; }
   h3 { font-size: 1.25rem; font-weight: 700; color: ${props => props.theme.colors.textDark}; }
 `;
 
