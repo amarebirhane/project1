@@ -2051,6 +2051,14 @@ class ApiClient {
     return this.post<any>('/banking/accounts', data);
   }
 
+  async updateBankAccount(bankAccountId: number, data: any) {
+    return this.put<any>(`/banking/accounts/${bankAccountId}`, data);
+  }
+
+  async deleteBankAccount(bankAccountId: number) {
+    return this.delete<any>(`/banking/accounts/${bankAccountId}`);
+  }
+
   async uploadBankStatement(bankAccountId: number, file: File) {
     const formData = new FormData();
     formData.append('bank_account_id', bankAccountId.toString());
