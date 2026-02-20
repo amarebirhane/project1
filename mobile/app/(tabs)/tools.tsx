@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useRouter } from 'expo-router';
-import client from '@/api/client';
+// client removed as it was unused
 import { Camera, FileText, Cpu, Sparkles, ChevronRight, CheckCircle2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
