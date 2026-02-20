@@ -583,7 +583,7 @@ export default function AuditLogsPage() {
 
     // Filters
     const [filters, setFilters] = useState<AuditLogFilters>({
-        limit: 50,
+        limit: 10,
         skip: 0
     });
 

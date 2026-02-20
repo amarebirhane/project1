@@ -18,7 +18,7 @@ from ...core.security import verify_password
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ApprovalOut])
+@router.get("", response_model=List[ApprovalOut])
 def read_approvals(
     skip: int = 0,
     limit: int = 100,
@@ -95,7 +95,7 @@ def read_approval(
     return approval
 
 
-@router.post("/", response_model=ApprovalOut)
+@router.post("", response_model=ApprovalOut)
 def create_approval(
     approval_data: ApprovalCreate,
     current_user: User = Depends(get_current_active_user),
