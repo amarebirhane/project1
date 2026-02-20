@@ -97,6 +97,55 @@ def create_bank_account(
     db.refresh(db_account)
     return db_account
 
+@router.put("/accounts/{account_id}", response_model=banking_schema.BankAccount)
+def update_bank_account(
+    account_id: int,
+    account_update: banking_schema.BankAccountUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Update bank account details (Rename, set active/inactive)"""
+    account = db.query(BankAccount).filter(BankAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Bank account not found")
+
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+
+    update_data = account_update.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(account, field, value)
+
+    db.commit()
+    db.refresh(account)
+    return account
+
+@router.delete("/accounts/{account_id}")
+def delete_bank_account(
+    account_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Soft-delete/disconnect a bank account"""
+    account = db.query(BankAccount).filter(BankAccount.id == account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Bank account not found")
+
+    if current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
+        subordinate_ids = [sub.id for sub in user_crud.get_hierarchy(db, current_user.id)]
+        allowed_ids = subordinate_ids + [current_user.id]
+        if account.created_by_id not in allowed_ids:
+            raise HTTPException(status_code=403, detail="You do not have access to this bank account")
+
+    # Soft delete
+    account.is_active = False
+    db.commit()
+    return {"message": "Bank account successfully disconnected"}
+
+
 # ------------------------------------------------------------------
 # CSV Upload & Feed
 # ------------------------------------------------------------------
