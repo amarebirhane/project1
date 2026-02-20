@@ -25,7 +25,7 @@ import { theme } from '@/components/common/theme';
 const LayoutContainer = styled.div`
   display: flex;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const MainContent = styled.main`
@@ -33,14 +33,15 @@ const MainContent = styled.main`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  /* Ensure main content takes remaining width after global sidebar */
   width: 100%;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 const ContentArea = styled.div`
   flex: 1;
   padding: 0;
   overflow-x: hidden;
+  background-color: ${props => props.theme.colors.background};
 `;
 
 // Container for the Settings Sub-layout (Sidebar + Content)
