@@ -46,16 +46,18 @@ const ContentArea = styled.div`
 
 // Container for the Settings Sub-layout (Sidebar + Content)
 const SettingsLayoutWrapper = styled.div`
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: ${theme.spacing.lg};
+  padding: ${props => props.theme.spacing.lg};
   display: flex;
-  gap: ${theme.spacing.xl};
+  gap: ${props => props.theme.spacing.xl};
   position: relative;
+  background-color: ${props => props.theme.colors.background};
 
   @media (max-width: 1024px) {
     flex-direction: column;
-    gap: ${theme.spacing.md};
+    gap: ${props => props.theme.spacing.md};
+    padding: ${props => props.theme.spacing.md};
   }
 `;
 
@@ -88,9 +90,9 @@ const MobileNavToggle = styled.button`
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  background: ${props => props.theme.colors.background};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.borderRadius.md};
+  background: ${props => props.theme.colors.card};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.md};
   margin-bottom: ${theme.spacing.md};
   font-weight: 600;
   color: ${theme.colors.primary};
@@ -131,17 +133,20 @@ const NavLink = styled(Link) <{ $active: boolean }>`
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border-radius: ${theme.borderRadius.md};
-  color: ${props => props.$active ? theme.colors.primary : '#4b5563'};
-  background: ${props => props.$active ? 'rgba(0, 170, 0, 0.08)' : 'transparent'};
+  border-radius: ${props => props.theme.borderRadius.md};
+  color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.textSecondary};
+  background: ${props => props.$active ? `color-mix(in srgb, ${props.theme.colors.primary}, transparent 92%)` : 'transparent'};
   font-weight: ${props => props.$active ? '600' : '500'};
   font-size: 14px;
   transition: all 0.2s ease;
   text-decoration: none;
 
   &:hover {
-    background: ${props => props.$active ? 'rgba(0, 170, 0, 0.12)' : 'rgba(0, 0, 0, 0.04)'};
-    color: ${theme.colors.primary};
+    background: ${props => props.$active
+    ? `color-mix(in srgb, ${props.theme.colors.primary}, transparent 88%)`
+    : `color-mix(in srgb, ${props.theme.colors.textSecondary}, transparent 94%)`
+  };
+    color: ${props => props.theme.colors.primary};
     transform: translateX(4px);
   }
 
