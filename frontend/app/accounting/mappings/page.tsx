@@ -597,8 +597,8 @@ export default function AccountMappingsPage() {
                     {loading ? (
                       <tr>
                         <Td colSpan={4} style={{ textAlign: 'center', padding: '100px' }}>
-                          <Loader2 className="animate-spin" size={32} style={{ color: 'var(--primary)', margin: '0 auto' }} />
-                          <div style={{ marginTop: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Syncing Mappings...</div>
+                          <Loader2 className="animate-spin" size={32} style={{ color: props => props.theme?.colors?.primary || '#6366f1', margin: '0 auto' }} />
+                          <div style={{ marginTop: '12px', color: props => props.theme?.colors?.textSecondary || '#64748b', fontWeight: 600 }}>Syncing Mappings...</div>
                         </Td>
                       </tr>
                     ) : filteredMappings.length === 0 ? (
@@ -623,22 +623,22 @@ export default function AccountMappingsPage() {
                                 </Badge>
                               </Td>
                               <Td>
-                                <div style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{m.category}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Technical Key</div>
+                                <div style={{ fontWeight: 700, color: 'inherit' }}>{m.category}</div>
+                                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Technical Key</div>
                               </Td>
                               <Td>
                                 {account ? (
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', background: 'var(--muted)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                                    <div style={{ width: '40px', height: '40px', background: 'rgba(128, 128, 128, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, opacity: 0.8, fontSize: '0.875rem' }}>
                                       {account.code.substring(0, 2)}
                                     </div>
                                     <div>
-                                      <div style={{ fontWeight: 800, color: 'var(--text-dark)' }}>{account.name}</div>
-                                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{account.code}</div>
+                                      <div style={{ fontWeight: 800 }}>{account.name}</div>
+                                      <div style={{ fontSize: '0.75rem', opacity: 0.7, fontFamily: 'monospace' }}>{account.code}</div>
                                     </div>
                                   </div>
                                 ) : (
-                                  <span style={{ color: 'var(--error)', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
+                                  <span style={{ color: '#ef4444', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
                                 )}
                               </Td>
                               <Td style={{ textAlign: 'right' }}>
@@ -667,8 +667,8 @@ export default function AccountMappingsPage() {
                     $isVisible={true}
                   >
                     <PanelHeader>
-                      <div style={{ background: 'var(--primary-light)', padding: '10px', borderRadius: '12px' }}>
-                        <Settings2 size={20} style={{ color: 'var(--primary)' }} />
+                      <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                        <Settings2 size={20} color="#6366f1" />
                       </div>
                       <PanelTitle>Configure Rule</PanelTitle>
                     </PanelHeader>
@@ -724,20 +724,20 @@ export default function AccountMappingsPage() {
               {!isAdding && (
                 <InfoPanel>
                   <IconCircle>
-                    <LinkIcon style={{ color: 'var(--primary)' }} size={24} />
+                    <LinkIcon color="#6366f1" size={24} />
                   </IconCircle>
                   <InfoTitle>Smart Bridging</InfoTitle>
                   <InfoText>
                     Connect operational categories to specific ledger accounts to automate the "Gluing" logic across the platform.
                   </InfoText>
-                  <div style={{ padding: '20px', background: 'var(--background-secondary)', borderRadius: '16px', textAlign: 'left', border: '1px dashed var(--border)' }}>
+                  <div style={{ padding: '20px', background: 'rgba(128, 128, 128, 0.05)', borderRadius: '16px', textAlign: 'left', border: '1px dashed rgba(128, 128, 128, 0.2)' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }}></div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Automated Postings</span>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7 }}>Automated Postings</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Audit Trail Registry</span>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7 }}>Audit Trail Registry</span>
                     </div>
                   </div>
                 </InfoPanel>
