@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Styled Components Definitions
 
+
 const PageWrapper = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, ${props => props.theme.colors.background} 0%, ${props => props.theme.colors.muted} 100%);
@@ -127,7 +128,7 @@ const SearchInput = styled.input`
   width: 100%;
   background-color: ${props => props.theme.colors.inputBg};
   border: 1px solid ${props => props.theme.colors.border};
-  border-radius: ${props => props.theme.borderRadius.full};
+  border-radius: ${props => props.theme.borderRadius.md};
   padding: 1rem;
   padding-left: 3rem;
   padding-right: 1rem;
@@ -546,21 +547,21 @@ export default function AccountMappingsPage() {
 
           {/* Stats Section */}
           <StatsGrid>
-            <StatCard $color="#6366f1">
+            <StatCard $color="var(--primary)">
               <div className="icon"><Database size={24} /></div>
               <div className="content">
                 <div className="label">Active Rules</div>
                 <div className="value">{stats.total}</div>
               </div>
             </StatCard>
-            <StatCard $color="#10b981">
+            <StatCard $color="var(--success, #10b981)">
               <div className="icon"><Shield size={24} /></div>
               <div className="content">
                 <div className="label">Modules Covered</div>
                 <div className="value">{stats.modules}</div>
               </div>
             </StatCard>
-            <StatCard $color="#f59e0b">
+            <StatCard $color="var(--warning, #f59e0b)">
               <div className="icon"><Zap size={24} /></div>
               <div className="content">
                 <div className="label">Revenue Rules</div>
@@ -597,8 +598,8 @@ export default function AccountMappingsPage() {
                     {loading ? (
                       <tr>
                         <Td colSpan={4} style={{ textAlign: 'center', padding: '100px' }}>
-                          <Loader2 className="animate-spin" size={32} style={{ color: props => props.theme?.colors?.primary || '#6366f1', margin: '0 auto' }} />
-                          <div style={{ marginTop: '12px', color: props => props.theme?.colors?.textSecondary || '#64748b', fontWeight: 600 }}>Syncing Mappings...</div>
+                          <Loader2 className="animate-spin" size={32} style={{ color: 'var(--primary)', margin: '0 auto' }} />
+                          <div style={{ marginTop: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Syncing Mappings...</div>
                         </Td>
                       </tr>
                     ) : filteredMappings.length === 0 ? (
@@ -629,7 +630,7 @@ export default function AccountMappingsPage() {
                               <Td>
                                 {account ? (
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', background: 'rgba(128, 128, 128, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, opacity: 0.8, fontSize: '0.875rem' }}>
+                                    <div style={{ width: '40px', height: '40px', background: 'var(--muted)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                                       {account.code.substring(0, 2)}
                                     </div>
                                     <div>
@@ -638,7 +639,7 @@ export default function AccountMappingsPage() {
                                     </div>
                                   </div>
                                 ) : (
-                                  <span style={{ color: '#ef4444', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
+                                  <span style={{ color: 'var(--error)', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
                                 )}
                               </Td>
                               <Td style={{ textAlign: 'right' }}>
@@ -667,8 +668,8 @@ export default function AccountMappingsPage() {
                     $isVisible={true}
                   >
                     <PanelHeader>
-                      <div style={{ background: 'rgba(99, 102, 241, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                        <Settings2 size={20} color="#6366f1" />
+                      <div style={{ background: 'var(--background-secondary)', padding: '10px', borderRadius: '12px' }}>
+                        <Settings2 size={20} color="var(--primary)" />
                       </div>
                       <PanelTitle>Configure Rule</PanelTitle>
                     </PanelHeader>
@@ -724,19 +725,19 @@ export default function AccountMappingsPage() {
               {!isAdding && (
                 <InfoPanel>
                   <IconCircle>
-                    <LinkIcon color="#6366f1" size={24} />
+                    <LinkIcon color="var(--primary)" size={24} />
                   </IconCircle>
                   <InfoTitle>Smart Bridging</InfoTitle>
                   <InfoText>
                     Connect operational categories to specific ledger accounts to automate the "Gluing" logic across the platform.
                   </InfoText>
-                  <div style={{ padding: '20px', background: 'rgba(128, 128, 128, 0.05)', borderRadius: '16px', textAlign: 'left', border: '1px dashed rgba(128, 128, 128, 0.2)' }}>
+                  <div style={{ padding: '20px', background: 'var(--background-secondary)', borderRadius: '16px', textAlign: 'left', border: '1px dashed var(--border)' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }}></div>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }}></div>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7 }}>Automated Postings</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></div>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success, #10b981)' }}></div>
                       <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7 }}>Audit Trail Registry</span>
                     </div>
                   </div>
