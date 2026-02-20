@@ -60,25 +60,24 @@ const Title = styled.h1`
 `;
 
 const Subtitle = styled.p`
-  color: #6b7280; /* text-gray-500 */
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const NewMappingButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #4f46e5; /* indigo-600 */
-  color: white;
+  background-color: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.primaryForeground};
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem; /* rounded-xl */
-  font-weight: 500; /* font-medium */
+  border-radius: ${props => props.theme.borderRadius.md};
+  font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
   border: none;
   cursor: pointer;
 
   &:hover {
-    background-color: #6366f1; /* indigo-500 */
+    filter: brightness(1.1);
     transform: scale(1.05);
   }
 
@@ -111,7 +110,7 @@ const MainContent = styled.div`
 const SearchWrapper = styled.div`
   position: relative;
   &:focus-within svg {
-    color: #818cf8; /* indigo-400 */
+    color: ${props => props.theme.colors.primary};
   }
 `;
 
@@ -120,38 +119,37 @@ const StyledSearchIcon = styled(Search)`
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280; /* text-gray-500 */
+  color: ${props => props.theme.colors.textSecondary};
   transition: color 0.2s;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem; /* rounded-2xl */
+  background-color: ${props => props.theme.colors.inputBg};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.full};
   padding: 1rem;
   padding-left: 3rem;
   padding-right: 1rem;
-  color: inherit;
-  backdrop-filter: blur(24px); /* backdrop-blur-xl */
+  color: ${props => props.theme.colors.text};
   transition: all 0.2s;
   outline: none;
 
   &:focus {
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); /* ring-indigo-500/50 */
+    box-shadow: 0 0 0 2px ${props => `${props.theme.colors.primary}80`};
+    border-color: ${props => props.theme.colors.primary};
   }
 
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.colors.textSecondary};
   }
 `;
 
 const GlassPanel = styled.div`
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background: ${props => props.theme.colors.card};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.lg};
+  box-shadow: ${props => props.theme.shadows.sm};
   overflow: hidden;
 `;
 
@@ -162,29 +160,29 @@ const Table = styled.table`
 `;
 
 const Thead = styled.thead`
-  background-color: rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: ${props => props.theme.colors.backgroundSecondary};
+  border-bottom: 1px solid ${props => props.theme.colors.border};
 `;
 
 const Th = styled.th`
   padding: 1rem 1.5rem;
-  font-size: 0.75rem; /* xs */
-  font-weight: 600; /* font-semibold */
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em; /* tracking-wider */
-  color: #9ca3af; /* text-gray-400 */
+  letter-spacing: 0.05em;
+  color: ${props => props.theme.colors.textSecondary};
 `;
 
 const Tbody = styled.tbody`
   & > tr:not(:last-child) {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid ${props => props.theme.colors.border};
   }
 `;
 
 const Tr = styled.tr`
   transition: background-color 0.2s;
   &:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: ${props => props.theme.colors.backgroundSecondary};
   }
 `;
 
@@ -194,8 +192,8 @@ const Td = styled.td`
 
 const ActionButton = styled.button`
   padding: 0.5rem;
-  color: #6b7280; /* text-gray-500 */
-  border-radius: 0.5rem; /* rounded-lg */
+  color: ${props => props.theme.colors.textSecondary};
+  border-radius: 0.5rem;
   transition: all 0.2s;
   opacity: 0;
   border: none;
@@ -207,8 +205,8 @@ const ActionButton = styled.button`
   }
 
   &:hover {
-    color: #f43f5e; /* rose-500 */
-    background-color: rgba(244, 63, 94, 0.1); /* bg-rose-500/10 */
+    color: ${props => props.theme.colors.error};
+    background-color: ${props => `${props.theme.colors.error}1a`};
   }
 `;
 
@@ -216,18 +214,17 @@ const HeaderButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #4f46e5;
-  color: white;
+  background-color: ${props => props.theme.colors.primary};
+  color: ${props => props.theme.colors.primaryForeground};
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: ${props => props.theme.borderRadius.md};
   font-weight: 700;
   transition: all 0.2s;
-  box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
   border: none;
   cursor: pointer;
 
   &:hover {
-    background-color: #6366f1;
+    filter: brightness(0.9);
     transform: translateY(-2px);
   }
 
@@ -262,7 +259,7 @@ const PanelHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid ${props => props.theme.colors.border};
   padding-bottom: 1rem;
 `;
 
@@ -286,38 +283,38 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 0.75rem;
   font-weight: 600;
-  color: #9ca3af;
+  color: ${props => props.theme.colors.textSecondary};
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 const Select = styled.select`
   width: 100%;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
+  background-color: ${props => props.theme.colors.inputBg};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.md};
   padding: 0.75rem 1rem;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   outline: none;
   font-weight: 600;
   
   &:focus {
-    border-color: #6366f1;
+    border-color: ${props => props.theme.colors.primary};
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
+  background-color: ${props => props.theme.colors.inputBg};
+  border: 1px solid ${props => props.theme.colors.border};
+  border-radius: ${props => props.theme.borderRadius.md};
   padding: 0.75rem 1rem;
-  color: #1e293b;
+  color: ${props => props.theme.colors.text};
   outline: none;
   font-weight: 600;
 
   &:focus {
-    border-color: #6366f1;
+    border-color: ${props => props.theme.colors.primary};
   }
 `;
 
@@ -328,12 +325,17 @@ const SubmitButton = styled.button`
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem;
-  border-radius: 0.75rem;
+  border-radius: ${props => props.theme.borderRadius.md};
   font-weight: 700;
-  color: white;
+  color: ${props => props.theme.colors.primaryForeground};
+  background-color: ${props => props.theme.colors.primary};
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  
+  &:hover {
+    filter: brightness(0.9);
+  }
 `;
 
 const InfoPanel = styled(GlassPanel)`
@@ -347,7 +349,7 @@ const InfoPanel = styled(GlassPanel)`
 const IconCircle = styled.div`
   width: 4rem;
   height: 4rem;
-  background-color: #f1f5f9;
+  background-color: ${props => props.theme.colors.muted};
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -358,11 +360,12 @@ const IconCircle = styled.div`
 const InfoTitle = styled.h3`
   font-weight: 700;
   font-size: 1.125rem;
+  color: ${props => props.theme.colors.textDark};
 `;
 
 const InfoText = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${props => props.theme.colors.textSecondary};
   line-height: 1.625;
 `;
 
@@ -374,10 +377,19 @@ const Badge = styled.span<{ $colorClass?: string }>`
   text-transform: uppercase;
   letter-spacing: 0.05em;
   
-  ${props => props.$colorClass === 'revenue' && css`color: #10b981; background-color: #f0fdf4; border: 1px solid #dcfce7;`}
-  ${props => props.$colorClass === 'expense' && css`color: #f43f5e; background-color: #fff1f2; border: 1px solid #fee2e2;`}
-  ${props => props.$colorClass === 'banking' && css`color: #3b82f6; background-color: #eff6ff; border: 1px solid #dbeafe;`}
-  ${props => !props.$colorClass && css`color: #64748b; background-color: #f8fafc; border: 1px solid #f1f5f9;`}
+  ${props => {
+    const isDark = props.theme.mode === 'dark';
+    if (props.$colorClass === 'revenue') {
+      return `color: ${isDark ? '#34d399' : '#10b981'}; background-color: ${isDark ? '#064e3b' : '#f0fdf4'}; border: 1px solid ${isDark ? '#047857' : '#dcfce7'};`;
+    }
+    if (props.$colorClass === 'expense') {
+      return `color: ${isDark ? '#fb7185' : '#f43f5e'}; background-color: ${isDark ? '#4c0519' : '#fff1f2'}; border: 1px solid ${isDark ? '#be123c' : '#fee2e2'};`;
+    }
+    if (props.$colorClass === 'banking') {
+      return `color: ${isDark ? '#60a5fa' : '#3b82f6'}; background-color: ${isDark ? '#1e3a8a' : '#eff6ff'}; border: 1px solid ${isDark ? '#1d4ed8' : '#dbeafe'};`;
+    }
+    return `color: ${props.theme.colors.textSecondary}; background-color: ${props.theme.colors.muted}; border: 1px solid ${props.theme.colors.border};`;
+  }}
 `;
 
 const StatsGrid = styled.div`
@@ -567,14 +579,13 @@ export default function AccountMappingsPage() {
                     placeholder="Filter by module, category, or account..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ background: 'white', borderColor: '#e2e8f0', color: '#1e293b' }}
                   />
                 </SearchWrapper>
               </ControlBar>
 
               <TableWrapper layout>
                 <Table>
-                  <Thead style={{ background: '#f8fafc' }}>
+                  <Thead>
                     <tr>
                       <Th>Source Module</Th>
                       <Th>Category / Key</Th>
@@ -586,8 +597,8 @@ export default function AccountMappingsPage() {
                     {loading ? (
                       <tr>
                         <Td colSpan={4} style={{ textAlign: 'center', padding: '100px' }}>
-                          <Loader2 className="animate-spin" size={32} style={{ color: '#6366f1', margin: '0 auto' }} />
-                          <div style={{ marginTop: '12px', color: '#64748b', fontWeight: 600 }}>Syncing Mappings...</div>
+                          <Loader2 className="animate-spin" size={32} style={{ color: 'var(--primary)', margin: '0 auto' }} />
+                          <div style={{ marginTop: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Syncing Mappings...</div>
                         </Td>
                       </tr>
                     ) : filteredMappings.length === 0 ? (
@@ -612,26 +623,26 @@ export default function AccountMappingsPage() {
                                 </Badge>
                               </Td>
                               <Td>
-                                <div style={{ fontWeight: 700, color: '#1e293b' }}>{m.category}</div>
-                                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Technical Key</div>
+                                <div style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{m.category}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Technical Key</div>
                               </Td>
                               <Td>
                                 {account ? (
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', background: '#f1f5f9', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, color: '#64748b', fontSize: '0.875rem' }}>
+                                    <div style={{ width: '40px', height: '40px', background: 'var(--muted)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', fontWeight: 800, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                                       {account.code.substring(0, 2)}
                                     </div>
                                     <div>
-                                      <div style={{ fontWeight: 800, color: '#1e293b' }}>{account.name}</div>
-                                      <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>{account.code}</div>
+                                      <div style={{ fontWeight: 800, color: 'var(--text-dark)' }}>{account.name}</div>
+                                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{account.code}</div>
                                     </div>
                                   </div>
                                 ) : (
-                                  <span style={{ color: '#ef4444', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
+                                  <span style={{ color: 'var(--error)', fontWeight: 700 }}>Orphaned ID: {m.account_id}</span>
                                 )}
                               </Td>
                               <Td style={{ textAlign: 'right' }}>
-                                <ActionButton onClick={() => handleDelete(m.id)} style={{ color: '#ef4444' }}>
+                                <ActionButton onClick={() => handleDelete(m.id)}>
                                   <Trash2 size={18} />
                                 </ActionButton>
                               </Td>
@@ -654,22 +665,20 @@ export default function AccountMappingsPage() {
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: 50, opacity: 0 }}
                     $isVisible={true}
-                    style={{ position: 'relative', background: 'white', borderColor: '#e2e8f0', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
                   >
-                    <PanelHeader style={{ borderColor: '#f1f5f9' }}>
-                      <div style={{ background: '#e0e7ff', padding: '10px', borderRadius: '12px' }}>
-                        <Settings2 size={20} style={{ color: '#6366f1' }} />
+                    <PanelHeader>
+                      <div style={{ background: 'var(--primary-light)', padding: '10px', borderRadius: '12px' }}>
+                        <Settings2 size={20} style={{ color: 'var(--primary)' }} />
                       </div>
-                      <PanelTitle style={{ color: '#1e293b' }}>Configure Rule</PanelTitle>
+                      <PanelTitle>Configure Rule</PanelTitle>
                     </PanelHeader>
 
                     <Form onSubmit={handleSubmit}>
                       <FormGroup>
-                        <Label style={{ color: '#94a3b8' }}>Business Module</Label>
+                        <Label>Business Module</Label>
                         <Select
                           value={formData.module}
                           onChange={(e) => setFormData({ ...formData, module: e.target.value })}
-                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
                         >
                           <option value="revenue">Revenue Recognition</option>
                           <option value="expense">Expense Categorization</option>
@@ -680,24 +689,22 @@ export default function AccountMappingsPage() {
                       </FormGroup>
 
                       <FormGroup>
-                        <Label style={{ color: '#94a3b8' }}>Category / Unique Key</Label>
+                        <Label>Category / Unique Key</Label>
                         <Input
                           type="text"
                           placeholder="e.g. software_subs, tax_withholding"
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                           required
-                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
                         />
                       </FormGroup>
 
                       <FormGroup>
-                        <Label style={{ color: '#94a3b8' }}>Target GL Account</Label>
+                        <Label>Target GL Account</Label>
                         <Select
                           value={formData.account_id}
                           onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
                           required
-                          style={{ background: '#f8fafc', borderColor: '#e2e8f0', color: '#1e293b' }}
                         >
                           <option value="">Select Account...</option>
                           {accounts.map(acc => (
@@ -706,7 +713,7 @@ export default function AccountMappingsPage() {
                         </Select>
                       </FormGroup>
 
-                      <SubmitButton type="submit" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)', height: '56px', borderRadius: '16px' }}>
+                      <SubmitButton type="submit">
                         <Save size={18} /> Commit Configuration
                       </SubmitButton>
                     </Form>
@@ -715,22 +722,22 @@ export default function AccountMappingsPage() {
               </AnimatePresence>
 
               {!isAdding && (
-                <InfoPanel style={{ background: 'white', borderColor: '#e2e8f0' }}>
-                  <IconCircle style={{ background: '#f1f5f9' }}>
-                    <LinkIcon style={{ color: '#6366f1' }} size={24} />
+                <InfoPanel>
+                  <IconCircle>
+                    <LinkIcon style={{ color: 'var(--primary)' }} size={24} />
                   </IconCircle>
-                  <InfoTitle style={{ color: '#1e293b' }}>Smart Bridging</InfoTitle>
+                  <InfoTitle>Smart Bridging</InfoTitle>
                   <InfoText>
                     Connect operational categories to specific ledger accounts to automate the "Gluing" logic across the platform.
                   </InfoText>
-                  <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '16px', textAlign: 'left', border: '1px dashed #e2e8f0' }}>
+                  <div style={{ padding: '20px', background: 'var(--background-secondary)', borderRadius: '16px', textAlign: 'left', border: '1px dashed var(--border)' }}>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }}></div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>Automated Postings</span>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Automated Postings</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569' }}>Audit Trail Registry</span>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Audit Trail Registry</span>
                     </div>
                   </div>
                 </InfoPanel>
