@@ -6,7 +6,7 @@
   },
   "new_data_counts": {
     "expense": 4,
-    "revenue": 3,
+    "revenue": 4,
     "inventory": 1
   },
   "training_history": [
@@ -71,5 +71,5 @@
       "old_rmse": 49.910638587873244
     }
   ],
-  "last_updated": "2026-01-24T18:30:18.245004+00:00"
+  "last_updated": "2026-02-20T07:51:28.482654+00:00"
 }

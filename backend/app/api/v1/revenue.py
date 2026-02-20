@@ -424,6 +424,7 @@ def delete_revenue_entry(
 @router.post("/{revenue_id}/approve")
 def approve_revenue_entry(
     revenue_id: int,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -544,6 +545,7 @@ class RejectRequest(BaseModel):
 def reject_revenue_entry(
     revenue_id: int,
     reject_request: RejectRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(require_min_role(UserRole.MANAGER)),
     db: Session = Depends(get_db)
 ):
