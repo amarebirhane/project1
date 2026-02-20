@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { TrendingUp, Shield, Zap, ArrowRight, BarChart3, PieChart, Users, FileText } from 'lucide-react-native';
+import { TrendingUp, Shield, Zap, ArrowRight, BarChart3 } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 

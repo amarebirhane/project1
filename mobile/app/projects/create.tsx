@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 import client from '@/api/client';
-import { Briefcase, FileText, DollarSign, Calendar } from 'lucide-react-native';
+import { Briefcase, DollarSign } from 'lucide-react-native';
 
 export default function CreateProjectScreen() {
     const { colors } = useTheme();
