@@ -1,0 +1,75 @@
+# ==========================================
+# IDEs and Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.idea/
+
+# ==========================================
+# OS Specific Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==========================================
+# Environment & Secrets
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+secrets/
+*.pem
+*.key
+*.crt
+
+# ==========================================
+# Local Caches & Temp Files
+# ==========================================
+.cache/
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ==========================================
+# Database & Logs
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# ==========================================
+# Node / Python / Native (Global patterns)
+# ==========================================
+node_modules/
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.expo/
+dist/
+build/
+out/
+.swc/
+.next/
+.expo/
+.turbo/
+.vercel/
+.netlify/
