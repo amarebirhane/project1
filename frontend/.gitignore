@@ -54,16 +54,16 @@ __snapshots__/
 junit.xml
 
 # Ignore all test files
-# tests/
-# __tests__/
-# *.test.ts
-# *.test.tsx
-# *.test.js
-# *.test.jsx
-# *.spec.ts
-# *.spec.tsx
-# *.spec.js
-# *.spec.jsx
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
+*.spec.ts
+*.spec.tsx
+*.spec.js
+*.spec.jsx
 
 # ==========================================
 # Debug & Logs
