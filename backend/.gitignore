@@ -75,6 +75,10 @@ dump.rdb
 # ==========================================
 # Testing & Quality Assurance
 # ==========================================
+tests/
+**/tests/
+test_*.py
+*_test.py
 .pytest_cache/
 .coverage
 .coverage.*
