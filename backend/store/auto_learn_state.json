@@ -5,9 +5,9 @@
     "revenue": "2026-01-23T06:33:21.022207+00:00"
   },
   "new_data_counts": {
-    "expense": 4,
-    "revenue": 4,
-    "inventory": 1
+    "expense": 6,
+    "revenue": 6,
+    "inventory": 4
   },
   "training_history": [
     {
@@ -71,5 +71,5 @@
       "old_rmse": 49.910638587873244
     }
   ],
-  "last_updated": "2026-02-20T07:51:28.482654+00:00"
+  "last_updated": "2026-02-22T17:13:06.180021+00:00"
 }
