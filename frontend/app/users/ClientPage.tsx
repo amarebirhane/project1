@@ -18,7 +18,6 @@ import {
   Shield,
   Calendar,
   ChevronDown,
-  ChevronRight,
   Loader2,
   AlertCircle,
   EyeOff,
@@ -599,6 +598,54 @@ const ErrorText = styled.p`
   margin: ${theme.spacing.xs} 0 0 0;
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${theme.spacing.md} 0;
+  margin-top: ${theme.spacing.md};
+  border-top: 1px solid ${theme.colors.border};
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  align-items: center;
+`;
+
+const PageInfo = styled.div`
+  color: ${TEXT_COLOR_MUTED};
+  font-size: ${theme.typography.fontSizes.sm};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${theme.borderRadius.sm};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR : theme.colors.border};
+  background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.background};
+  color: ${props => props.$active ? '#fff' : TEXT_COLOR_DARK};
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${props => props.$active ? 600 : 400};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.$active ? PRIMARY_COLOR : 'rgba(0, 170, 0, 0.05)'};
+    border-color: ${PRIMARY_COLOR};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const ModalActions = styled.div`
   display: flex;
   gap: 16px;
@@ -613,6 +660,10 @@ export default function UsersPage() {
   const [filterRole, setFilterRole] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: number; name: string } | null>(null);
   const [deletePassword, setDeletePassword] = useState('');
