@@ -693,6 +693,11 @@ export default function UsersPage() {
     }
   }, [isAuthenticated, user, fetchAllUsers]);
 
+  // Reset pagination when search terms or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole, filterStatus]);
+
   const toggleUserExpansion = (userId: string) => {
     setExpandedUsers(prev => {
       const newSet = new Set(prev);
@@ -1390,19 +1395,109 @@ export default function UsersPage() {
           </CardHeader>
 
           <UsersList>
-            {filteredUsers.length > 0 ? (
-              <>
-                {renderUserHierarchy(
-                  user.role === 'admin'
-                    ? filteredUsers.filter((u) => !getManagerId(u))
-                    : (() => {
-                      const currentUserId = user.id.toString();
-                      const directSubordinates = filteredUsers.filter((u) => getManagerId(u) === currentUserId);
-                      return directSubordinates.length > 0 ? directSubordinates : filteredUsers;
-                    })()
-                )}
-              </>
-            ) : (
+            {filteredUsers.length > 0 ? (() => {
+              const rootUsers = user.role === 'admin'
+                ? filteredUsers.filter((u) => !getManagerId(u))
+                : (() => {
+                  const currentUserId = user.id.toString();
+                  const directSubordinates = filteredUsers.filter((u) => getManagerId(u) === currentUserId);
+                  return directSubordinates.length > 0 ? directSubordinates : filteredUsers;
+                })();
+
+              const totalPages = Math.ceil(rootUsers.length / itemsPerPage);
+              const startIndex = (currentPage - 1) * itemsPerPage;
+              const paginatedRootUsers = rootUsers.slice(startIndex, startIndex + itemsPerPage);
+
+              if (paginatedRootUsers.length === 0 && rootUsers.length > 0) {
+                setCurrentPage(1);
+                return null;
+              }
+
+              return (
+                <>
+                  {renderUserHierarchy(paginatedRootUsers)}
+
+                  {rootUsers.length > itemsPerPage && (
+                    <PaginationContainer>
+                      <PageInfo>
+                        Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, rootUsers.length)} of {rootUsers.length} users
+                      </PageInfo>
+                      <PaginationActions>
+                        <PageButton
+                          onClick={() => {
+                            setCurrentPage(1);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          disabled={currentPage === 1}
+                          title="First Page"
+                        >
+                          <ChevronsLeft size={16} />
+                        </PageButton>
+                        <PageButton
+                          onClick={() => {
+                            setCurrentPage(prev => Math.max(prev - 1, 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          disabled={currentPage === 1}
+                          title="Previous Page"
+                        >
+                          <ChevronLeft size={16} />
+                        </PageButton>
+
+                        {[...Array(totalPages)].map((_, i) => {
+                          const pageNum = i + 1;
+                          if (
+                            pageNum === 1 ||
+                            pageNum === totalPages ||
+                            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                          ) {
+                            return (
+                              <PageButton
+                                key={pageNum}
+                                $active={currentPage === pageNum}
+                                onClick={() => {
+                                  setCurrentPage(pageNum);
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                              >
+                                {pageNum}
+                              </PageButton>
+                            );
+                          } else if (
+                            pageNum === currentPage - 2 ||
+                            pageNum === currentPage + 2
+                          ) {
+                            return <span key={pageNum} style={{ color: TEXT_COLOR_MUTED }}>...</span>;
+                          }
+                          return null;
+                        })}
+
+                        <PageButton
+                          onClick={() => {
+                            setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          disabled={currentPage === totalPages}
+                          title="Next Page"
+                        >
+                          <ChevronRight size={16} />
+                        </PageButton>
+                        <PageButton
+                          onClick={() => {
+                            setCurrentPage(totalPages);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          disabled={currentPage === totalPages}
+                          title="Last Page"
+                        >
+                          <ChevronsRight size={16} />
+                        </PageButton>
+                      </PaginationActions>
+                    </PaginationContainer>
+                  )}
+                </>
+              );
+            })() : (
               <EmptyState>
                 <Users size={48} />
                 <p>
