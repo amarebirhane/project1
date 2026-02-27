@@ -11,7 +11,8 @@ import apiClient from '@/lib/api';
 import Layout from '@/components/layout';
 import { theme } from '@/components/common/theme';
 import { useAuth } from '@/lib/rbac/auth-context';
-AlertCircle,
+import {
+  AlertCircle,
   UserPlus,
   Edit,
   Trash2,
