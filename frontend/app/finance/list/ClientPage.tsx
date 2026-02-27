@@ -11,7 +11,18 @@ import apiClient from '@/lib/api';
 import Layout from '@/components/layout';
 import { theme } from '@/components/common/theme';
 import { useAuth } from '@/lib/rbac/auth-context';
-import {
+AlertCircle,
+  UserPlus,
+  Edit,
+  Trash2,
+  Briefcase,
+  Search,
+  Loader2,
+  UserCheck,
+  Shield,
+  Eye,
+  EyeOff,
+  Lock,
   XCircle,
   ChevronLeft,
   ChevronRight
@@ -551,6 +562,22 @@ export default function FinanceListPage() {
   const [financeManagers, setFinanceManagers] = useState<FinanceManager[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [managerToDelete, setManagerToDelete] = useState<FinanceManager | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletePasswordError, setDeletePasswordError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [managerToActivate, setManagerToActivate] = useState<FinanceManager | null>(null);
+  const [managerToDeactivate, setManagerToDeactivate] = useState<FinanceManager | null>(null);
+  const [activatePassword, setActivatePassword] = useState('');
+  const [deactivatePassword, setDeactivatePassword] = useState('');
+  const [activatePasswordError, setActivatePasswordError] = useState<string | null>(null);
   const [deactivatePasswordError, setDeactivatePasswordError] = useState<string | null>(null);
 
   // Pagination state
