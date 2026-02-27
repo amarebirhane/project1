@@ -1268,393 +1268,394 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({
             <span style={{ fontSize: '14px' }}>Try adjusting your search or filters</span>
           </EmptyState>
         ) : (
-          <TableWrapper>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Name</div></TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>User Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedUsers.map(user => (
-                  <TableRow key={user.userId}>
-                    <TableCell style={{ fontWeight: 600 }}>
-                      {user.userName}
-                    </TableCell>
-                    <TableCell style={{ color: theme.colors.textSecondary }}>{user.email}</TableCell>
-                    <TableCell>
-                      <UserTypeBadge>
-                        {user.userType.replace(/_/g, ' ')}
-                      </UserTypeBadge>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge $active={user.isActive}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'right' }}>
-                      <Button
-                        size="sm"
-                        variant={selectedUser === user.userId ? "default" : "secondary"}
-                        onClick={() => setSelectedUser(user.userId)}
-                        style={{
-                          borderRadius: '6px',
-                          fontWeight: 600,
-                          backgroundColor: selectedUser === user.userId ? theme.colors.primary : theme.colors.backgroundSecondary,
-                          color: selectedUser === user.userId ? '#FFFFFF' : theme.colors.text,
-                          border: 'none'
-                        }}
-                      >
-                        {selectedUser === user.userId ? (
-                          'Editing'
-                        ) : (
-                          'Settings'
-                        )}
-                      </Button>
-                    </TableCell>
+          <>
+            <TableWrapper>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Name</div></TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>User Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableWrapper>
+                </TableHeader>
+                <TableBody>
+                  {paginatedUsers.map(user => (
+                    <TableRow key={user.userId}>
+                      <TableCell style={{ fontWeight: 600 }}>
+                        {user.userName}
+                      </TableCell>
+                      <TableCell style={{ color: theme.colors.textSecondary }}>{user.email}</TableCell>
+                      <TableCell>
+                        <UserTypeBadge>
+                          {user.userType.replace(/_/g, ' ')}
+                        </UserTypeBadge>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge $active={user.isActive}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </StatusBadge>
+                      </TableCell>
+                      <TableCell style={{ textAlign: 'right' }}>
+                        <Button
+                          size="sm"
+                          variant={selectedUser === user.userId ? "default" : "secondary"}
+                          onClick={() => setSelectedUser(user.userId)}
+                          style={{
+                            borderRadius: '6px',
+                            fontWeight: 600,
+                            backgroundColor: selectedUser === user.userId ? theme.colors.primary : theme.colors.backgroundSecondary,
+                            color: selectedUser === user.userId ? '#FFFFFF' : theme.colors.text,
+                            border: 'none'
+                          }}
+                        >
+                          {selectedUser === user.userId ? (
+                            'Editing'
+                          ) : (
+                            'Settings'
+                          )}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableWrapper>
 
-          {filteredUsers.length > itemsPerPage && (
-          <PaginationContainer>
-            <PageInfo>
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
-            </PageInfo>
-            <PageControls>
-              <PageButton
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </PageButton>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <PageButton
-                  key={page}
-                  $active={page === currentPage}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </PageButton>
-              ))}
-              <PageButton
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </PageButton>
-            </PageControls>
-          </PaginationContainer>
+            {filteredUsers.length > itemsPerPage && (
+              <PaginationContainer>
+                <PageInfo>
+                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+                </PageInfo>
+                <PageControls>
+                  <PageButton
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </PageButton>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <PageButton
+                      key={page}
+                      $active={page === currentPage}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </PageButton>
+                  ))}
+                  <PageButton
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </PageButton>
+                </PageControls>
+              </PaginationContainer>
+            )}
+          </>
         )}
-      </>
-        )}
-    </Card>
+      </Card>
 
       {
-    selectedUserData && (
-      <Card>
-        <SelectionHeader>
-          <Subtitle>
-            Managing Permissions for {selectedUserData.userName} ({selectedUserData.userType})
-          </Subtitle>
-        </SelectionHeader>
+        selectedUserData && (
+          <Card>
+            <SelectionHeader>
+              <Subtitle>
+                Managing Permissions for {selectedUserData.userName} ({selectedUserData.userType})
+              </Subtitle>
+            </SelectionHeader>
 
-        <TemplateContainer>
-          <Subtitle>Permission Templates</Subtitle>
-          <TemplateControls>
-            <TemplateName
-              placeholder="New template name..."
-              value={newTemplateName}
-              onChange={(e) => setNewTemplateName(e.target.value)}
-            />
-            <Button
-              variant="secondary"
-              onClick={handleSaveTemplate}
-              disabled={!newTemplateName.trim()}
-            >
-              <Copy size={16} />
-              Save as Template
-            </Button>
+            <TemplateContainer>
+              <Subtitle>Permission Templates</Subtitle>
+              <TemplateControls>
+                <TemplateName
+                  placeholder="New template name..."
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={handleSaveTemplate}
+                  disabled={!newTemplateName.trim()}
+                >
+                  <Copy size={16} />
+                  Save as Template
+                </Button>
 
-            <TemplateSelect
-              value={selectedTemplate}
-              onChange={(e) => setSelectedTemplate(e.target.value)}
-            >
-              <option value="">Select template to apply...</option>
-              {templates
-                .filter(t => t.userType === selectedUserData.userType)
-                .map(template => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                  </option>
-                ))
-              }
-            </TemplateSelect>
+                <TemplateSelect
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                >
+                  <option value="">Select template to apply...</option>
+                  {templates
+                    .filter(t => t.userType === selectedUserData.userType)
+                    .map(template => (
+                      <option key={template.id} value={template.id}>
+                        {template.name}
+                      </option>
+                    ))
+                  }
+                </TemplateSelect>
 
-            <Button
-              variant="secondary"
-              onClick={handleApplyTemplate}
-              disabled={!selectedTemplate}
-            >
-              Apply Template
-            </Button>
-          </TemplateControls>
+                <Button
+                  variant="secondary"
+                  onClick={handleApplyTemplate}
+                  disabled={!selectedTemplate}
+                >
+                  Apply Template
+                </Button>
+              </TemplateControls>
 
-          {showSavedMessage && (
-            <SuccessMessage>
-              <Check size={16} />
-              Template saved successfully
-            </SuccessMessage>
-          )}
-        </TemplateContainer>
-        <TableWrapper>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead style={{ width: '30%' }}>Resource</TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <Eye size={16} color="#6366f1" />
-                    View
-                  </div>
-                </TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <Plus size={16} color="#10b981" />
-                    Create
-                  </div>
-                </TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <Pencil size={16} color="#f59e0b" />
-                    Edit
-                  </div>
-                </TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <Trash2 size={16} color="#ef4444" />
-                    Delete
-                  </div>
-                </TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <ShieldAlert size={16} color="#8b5cf6" />
-                    Manage All
-                  </div>
-                </TableHead>
-                <TableHead style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <Check size={16} color={theme.colors.primary} />
-                    Select All
-                  </div>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {allResources.map(resource => {
-                // Find if this user has permissions for this resource
-                const resourcePermission = selectedUserData.permissions.find(
-                  p => p.resource === resource
-                );
-
-                // Check if all permissions are selected
-                const allSelected = areAllActionsSelected(selectedUserData.permissions, resource);
-
-                return (
-                  <TableRow key={resource} style={{
-                    backgroundColor: allSelected ? `${theme.colors.primary}05` : 'transparent',
-                    transition: 'background-color 0.2s ease'
-                  }}>
-                    <TableCell style={{ fontWeight: 600, color: theme.colors.text, fontSize: '14px' }}>
-                      {resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={resourcePermission?.actions[Action.READ] || false}
-                        onCheckedChange={(checked) => handlePermissionChange(
-                          selectedUserData.userId,
-                          resource,
-                          Action.READ,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={resourcePermission?.actions[Action.CREATE] || false}
-                        onCheckedChange={(checked) => handlePermissionChange(
-                          selectedUserData.userId,
-                          resource,
-                          Action.CREATE,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={resourcePermission?.actions[Action.UPDATE] || false}
-                        onCheckedChange={(checked) => handlePermissionChange(
-                          selectedUserData.userId,
-                          resource,
-                          Action.UPDATE,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={resourcePermission?.actions[Action.DELETE] || false}
-                        onCheckedChange={(checked) => handlePermissionChange(
-                          selectedUserData.userId,
-                          resource,
-                          Action.DELETE,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={resourcePermission?.actions[Action.MANAGE] || false}
-                        onCheckedChange={(checked) => handlePermissionChange(
-                          selectedUserData.userId,
-                          resource,
-                          Action.MANAGE,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'center' }}>
-                      <Checkbox
-                        checked={allSelected}
-                        onCheckedChange={(checked) => handleToggleAllForResource(
-                          selectedUserData.userId,
-                          resource,
-                          checked === true
-                        )}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableWrapper>
-
-        <ButtonGroup>
-          <div style={{ display: 'flex', gap: theme.spacing.md }}>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setSelectedUser(null);
-                setError(null);
-                setSuccess(null);
-              }}
-              style={{ backgroundColor: theme.colors.backgroundSecondary, color: theme.colors.text, fontWeight: 600 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleResetToDefaults}
-              style={{ borderColor: theme.colors.border, color: theme.colors.text, fontWeight: 600 }}
-            >
-              Reset to Defaults
-            </Button>
-          </div>
-          <Button
-            onClick={handleSaveClick}
-            disabled={loading || !selectedUser}
-            style={{ fontWeight: 600 }}
-          >
-            {loading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
-                Saving...
-              </>
-            ) : (
-              'Save Permissions'
-            )}
-          </Button>
-        </ButtonGroup>
-      </Card>
-    )
-  }
-
-  {
-    showConfirm && confirmUser && (
-      <ConfirmOverlay>
-        <ConfirmDialog>
-          <ConfirmTitle>Review permissions before saving</ConfirmTitle>
-          <ConfirmBody>
-            <div>
-              <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User:</strong>
-              <span style={{ fontWeight: 600, color: theme.colors.text }}>{confirmUser.userName}</span>
-              <span style={{ color: theme.colors.textSecondary, fontSize: '14px', marginLeft: '4px' }}>({confirmUser.email})</span>
-            </div>
-            <div style={{ marginTop: '8px' }}>
-              <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User Type:</strong>
-              <UserTypeBadge>{confirmUser.userType.replace(/_/g, ' ')}</UserTypeBadge>
-            </div>
-            <div style={{ marginTop: '16px' }}>
-              <strong style={{ color: theme.colors.text, fontSize: '16px' }}>Permissions Summary</strong>
-              <div style={{
-                marginTop: '12px',
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '10px',
-                background: theme.colors.backgroundSecondary,
-                padding: '20px',
-                borderRadius: '12px',
-                border: `1px solid ${theme.colors.border}`
-              }}>
-                {confirmUser.permissions.map((perm) => {
-                  const enabledActions = Object.entries(perm.actions || {})
-                    .filter(([, value]) => value === true)
-                    .map(([action]) => action.toLowerCase());
-                  return (
-                    <PermissionChip key={perm.resource}>
-                      {perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}: {enabledActions.length > 0 ? enabledActions.join(', ') : 'No actions'}
-                    </PermissionChip>
-                  );
-                })}
-              </div>
-            </div>
-          </ConfirmBody>
-          <ConfirmFooter>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setShowConfirm(false);
-                setConfirmUser(null);
-              }}
-              disabled={loading}
-            >
-              Back
-            </Button>
-            <Button onClick={executeSavePermissions} disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save size={16} style={{ marginRight: theme.spacing.sm }} />
-                  Confirm & Save
-                </>
+              {showSavedMessage && (
+                <SuccessMessage>
+                  <Check size={16} />
+                  Template saved successfully
+                </SuccessMessage>
               )}
-            </Button>
-          </ConfirmFooter>
-        </ConfirmDialog>
-      </ConfirmOverlay>
-    )
-  }
+            </TemplateContainer>
+            <TableWrapper>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead style={{ width: '30%' }}>Resource</TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <Eye size={16} color="#6366f1" />
+                        View
+                      </div>
+                    </TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <Plus size={16} color="#10b981" />
+                        Create
+                      </div>
+                    </TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <Pencil size={16} color="#f59e0b" />
+                        Edit
+                      </div>
+                    </TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <Trash2 size={16} color="#ef4444" />
+                        Delete
+                      </div>
+                    </TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <ShieldAlert size={16} color="#8b5cf6" />
+                        Manage All
+                      </div>
+                    </TableHead>
+                    <TableHead style={{ textAlign: 'center' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <Check size={16} color={theme.colors.primary} />
+                        Select All
+                      </div>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allResources.map(resource => {
+                    // Find if this user has permissions for this resource
+                    const resourcePermission = selectedUserData.permissions.find(
+                      p => p.resource === resource
+                    );
+
+                    // Check if all permissions are selected
+                    const allSelected = areAllActionsSelected(selectedUserData.permissions, resource);
+
+                    return (
+                      <TableRow key={resource} style={{
+                        backgroundColor: allSelected ? `${theme.colors.primary}05` : 'transparent',
+                        transition: 'background-color 0.2s ease'
+                      }}>
+                        <TableCell style={{ fontWeight: 600, color: theme.colors.text, fontSize: '14px' }}>
+                          {resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={resourcePermission?.actions[Action.READ] || false}
+                            onCheckedChange={(checked) => handlePermissionChange(
+                              selectedUserData.userId,
+                              resource,
+                              Action.READ,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={resourcePermission?.actions[Action.CREATE] || false}
+                            onCheckedChange={(checked) => handlePermissionChange(
+                              selectedUserData.userId,
+                              resource,
+                              Action.CREATE,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={resourcePermission?.actions[Action.UPDATE] || false}
+                            onCheckedChange={(checked) => handlePermissionChange(
+                              selectedUserData.userId,
+                              resource,
+                              Action.UPDATE,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={resourcePermission?.actions[Action.DELETE] || false}
+                            onCheckedChange={(checked) => handlePermissionChange(
+                              selectedUserData.userId,
+                              resource,
+                              Action.DELETE,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={resourcePermission?.actions[Action.MANAGE] || false}
+                            onCheckedChange={(checked) => handlePermissionChange(
+                              selectedUserData.userId,
+                              resource,
+                              Action.MANAGE,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <Checkbox
+                            checked={allSelected}
+                            onCheckedChange={(checked) => handleToggleAllForResource(
+                              selectedUserData.userId,
+                              resource,
+                              checked === true
+                            )}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableWrapper>
+
+            <ButtonGroup>
+              <div style={{ display: 'flex', gap: theme.spacing.md }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setError(null);
+                    setSuccess(null);
+                  }}
+                  style={{ backgroundColor: theme.colors.backgroundSecondary, color: theme.colors.text, fontWeight: 600 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleResetToDefaults}
+                  style={{ borderColor: theme.colors.border, color: theme.colors.text, fontWeight: 600 }}
+                >
+                  Reset to Defaults
+                </Button>
+              </div>
+              <Button
+                onClick={handleSaveClick}
+                disabled={loading || !selectedUser}
+                style={{ fontWeight: 600 }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Permissions'
+                )}
+              </Button>
+            </ButtonGroup>
+          </Card>
+        )
+      }
+
+      {
+        showConfirm && confirmUser && (
+          <ConfirmOverlay>
+            <ConfirmDialog>
+              <ConfirmTitle>Review permissions before saving</ConfirmTitle>
+              <ConfirmBody>
+                <div>
+                  <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User:</strong>
+                  <span style={{ fontWeight: 600, color: theme.colors.text }}>{confirmUser.userName}</span>
+                  <span style={{ color: theme.colors.textSecondary, fontSize: '14px', marginLeft: '4px' }}>({confirmUser.email})</span>
+                </div>
+                <div style={{ marginTop: '8px' }}>
+                  <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User Type:</strong>
+                  <UserTypeBadge>{confirmUser.userType.replace(/_/g, ' ')}</UserTypeBadge>
+                </div>
+                <div style={{ marginTop: '16px' }}>
+                  <strong style={{ color: theme.colors.text, fontSize: '16px' }}>Permissions Summary</strong>
+                  <div style={{
+                    marginTop: '12px',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '10px',
+                    background: theme.colors.backgroundSecondary,
+                    padding: '20px',
+                    borderRadius: '12px',
+                    border: `1px solid ${theme.colors.border}`
+                  }}>
+                    {confirmUser.permissions.map((perm) => {
+                      const enabledActions = Object.entries(perm.actions || {})
+                        .filter(([, value]) => value === true)
+                        .map(([action]) => action.toLowerCase());
+                      return (
+                        <PermissionChip key={perm.resource}>
+                          {perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}: {enabledActions.length > 0 ? enabledActions.join(', ') : 'No actions'}
+                        </PermissionChip>
+                      );
+                    })}
+                  </div>
+                </div>
+              </ConfirmBody>
+              <ConfirmFooter>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setConfirmUser(null);
+                  }}
+                  disabled={loading}
+                >
+                  Back
+                </Button>
+                <Button onClick={executeSavePermissions} disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} style={{ marginRight: theme.spacing.sm }} />
+                      Confirm & Save
+                    </>
+                  )}
+                </Button>
+              </ConfirmFooter>
+            </ConfirmDialog>
+          </ConfirmOverlay>
+        )
+      }
     </Container >
   );
 };
