@@ -28,7 +28,11 @@ import {
   Lightbulb,
   Target,
   CheckCircle2,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import {
   Dialog,
@@ -573,6 +577,54 @@ const QuickForecastButton = styled(Button)`
   width: 100%;
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${theme.spacing.md} 0;
+  margin-top: ${theme.spacing.md};
+  border-top: 1px solid ${theme.colors.border};
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  align-items: center;
+`;
+
+const PageInfo = styled.div`
+  color: ${theme.colors.textSecondary};
+  font-size: ${theme.typography.fontSizes.sm};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${theme.borderRadius.sm};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR : theme.colors.border};
+  background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.background};
+  color: ${props => props.$active ? '#fff' : theme.colors.textDark};
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${props => props.$active ? 600 : 400};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.backgroundSecondary};
+    border-color: ${PRIMARY_COLOR};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 interface IncomeStatement {
   period: { start_date?: string; end_date?: string };
   revenue: {
@@ -749,6 +801,14 @@ export default function ReportPage() {
   });
 
   const [dailyCashFlowSearch, setDailyCashFlowSearch] = useState('');
+
+  // Pagination State for Daily Cash Flow
+  const [cashFlowPage, setCashFlowPage] = useState(1);
+  const [cashFlowItemsPerPage] = useState(10);
+
+  // Pagination State for Forecasts
+  const [forecastsPage, setForecastsPage] = useState(1);
+  const [forecastsItemsPerPage] = useState(10);
 
   // Delete Confirmation Modal State
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -1403,6 +1463,15 @@ export default function ReportPage() {
       return () => clearTimeout(timer);
     }
   }, [startDate, endDate, loadReports, user]);
+
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setCashFlowPage(1);
+  }, [dailyCashFlowSearch, startDate, endDate]);
+
+  useEffect(() => {
+    setForecastsPage(1);
+  }, [startDate, endDate]);
 
   const formatCurrency = (amount: number | null | undefined): string => {
     const safeAmount = safeNumber(amount);
