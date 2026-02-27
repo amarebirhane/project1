@@ -25,6 +25,10 @@ import {
   Lock,
   XCircle,
   Download,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { formatDate } from '@/lib/utils';
