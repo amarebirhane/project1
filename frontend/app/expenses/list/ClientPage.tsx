@@ -14,7 +14,9 @@ import {
   XCircle,
   Eye,
   EyeOff,
-  Lock
+  Lock,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
@@ -591,6 +593,56 @@ const ModalAlertIcon = styled(XCircle)`
   color: #ef4444;
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${props => props.theme.spacing.md} ${props => props.theme.spacing.lg};
+  border-top: 1px solid ${BORDER_COLOR};
+  background: ${BACKGROUND_CARD};
+  margin-top: ${props => props.theme.spacing.md};
+  border-radius: 0 0 ${props => props.theme.borderRadius.md} ${props => props.theme.borderRadius.md};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${props => props.theme.spacing.sm};
+  align-items: center;
+`;
+
+const PageInfo = styled.span`
+  font-size: ${props => props.theme.typography.fontSizes.sm};
+  color: ${TEXT_COLOR_MUTED};
+  font-weight: ${props => props.theme.typography.fontWeights.medium};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${props => props.theme.borderRadius.md};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR(props) : BORDER_COLOR(props)};
+  background: ${props => props.$active ? PRIMARY_COLOR(props) : BACKGROUND_CARD(props)};
+  color: ${props => props.$active ? props.theme.colors.primaryForeground : TEXT_COLOR_DARK(props)};
+  font-size: ${props => props.theme.typography.fontSizes.sm};
+  font-weight: ${props => props.theme.typography.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${props => props.theme.transitions.default};
+
+  &:hover:not(:disabled) {
+    border-color: ${PRIMARY_COLOR};
+    color: ${props => props.$active ? props.theme.colors.primaryForeground : PRIMARY_COLOR(props)};
+    background: ${props => props.$active ? PRIMARY_COLOR(props) : props.theme.colors.backgroundSecondary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const TextArea = styled.textarea`
   width: 100%;
   padding: ${props => props.theme.spacing.md};
@@ -679,6 +731,11 @@ export default function ExpenseListPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [verifyingPassword, setVerifyingPassword] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const getStatus = (expense: Expense) =>
     expense.approval_status || (expense.is_approved ? 'approved' : 'pending');
   const normalizeExpenses = (items: ApiExpense[] = []): Expense[] =>
@@ -917,6 +974,18 @@ export default function ExpenseListPage() {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, statusFilter]);
+
+  // Calculate paginated items
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const paginatedExpenses = filteredExpenses.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   if (loading) {
     return (
       <Layout>
@@ -1026,7 +1095,7 @@ export default function ExpenseListPage() {
                     </tr>
                   </TableHeader>
                   <TableBody>
-                    {filteredExpenses.map((expense) => {
+                    {paginatedExpenses.map((expense) => {
                       const status = getStatus(expense);
                       const isPending = status === 'pending';
                       return (
@@ -1116,6 +1185,58 @@ export default function ExpenseListPage() {
                     })}
                   </TableBody>
                 </Table>
+
+                {totalPages > 1 && (
+                  <PaginationContainer>
+                    <PageInfo>
+                      Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredExpenses.length)} of {filteredExpenses.length} entries
+                    </PageInfo>
+                    <PaginationActions>
+                      <PageButton
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        title="Previous Page"
+                      >
+                        <ChevronLeft size={16} />
+                      </PageButton>
+
+                      {[...Array(totalPages)].map((_, i) => {
+                        const pageNum = i + 1;
+                        // Logic to show limited number of page buttons if many pages
+                        if (
+                          totalPages <= 7 ||
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                        ) {
+                          return (
+                            <PageButton
+                              key={pageNum}
+                              $active={currentPage === pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                            >
+                              {pageNum}
+                            </PageButton>
+                          );
+                        } else if (
+                          (pageNum === currentPage - 2 && pageNum > 1) ||
+                          (pageNum === currentPage + 2 && pageNum < totalPages)
+                        ) {
+                          return <span key={pageNum} style={{ color: TEXT_COLOR_MUTED({ theme }) }}>...</span>;
+                        }
+                        return null;
+                      })}
+
+                      <PageButton
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        title="Next Page"
+                      >
+                        <ChevronRight size={16} />
+                      </PageButton>
+                    </PaginationActions>
+                  </PaginationContainer>
+                )}
               </div>
             )}
           </TableContainer>
