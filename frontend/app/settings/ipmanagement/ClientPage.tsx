@@ -15,7 +15,9 @@ import {
     Network,
     RefreshCw,
     XCircle,
-    Info
+    Info,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 import { apiClient } from '@/lib/api';
@@ -209,6 +211,54 @@ const StyledTableContainer = styled.div`
         background: ${props => props.theme.colors.backgroundSecondary};
         opacity: 0.8;
     }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${props => props.theme.spacing.md} ${props => props.theme.spacing.lg};
+  border-top: 1px solid ${props => props.theme.colors.border};
+  background: ${props => props.theme.colors.card};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${props => props.theme.spacing.sm};
+  align-items: center;
+`;
+
+const PageInfo = styled.span`
+  font-size: 0.9rem;
+  color: ${props => props.theme.colors.textSecondary};
+  font-weight: 500;
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR(props) : props.theme.colors.border};
+  background: ${props => props.$active ? PRIMARY_COLOR(props) : props.theme.colors.card};
+  color: ${props => props.$active ? '#ffffff' : props.theme.colors.textDark};
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: ${props => PRIMARY_COLOR(props)};
+    color: ${props => props.$active ? '#ffffff' : PRIMARY_COLOR(props)};
+    background: ${props => props.$active ? PRIMARY_COLOR(props) : props.theme.colors.backgroundSecondary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const IPBadge = styled.span<{ $status: 'allowed' | 'blocked' }>`
@@ -413,6 +463,10 @@ export default function IPManagementPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isDataRefreshing, setIsDataRefreshing] = useState(false);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     // Dialog states
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -464,6 +518,20 @@ export default function IPManagementPage() {
             (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()))
         );
     }, [ipRestrictions, searchQuery]);
+
+    // Reset to first page on search
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredRestrictions.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedRestrictions = filteredRestrictions.slice(startIndex, startIndex + itemsPerPage);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const handleCreateIP = async () => {
         if (!ipForm.ip_address) {
@@ -732,7 +800,7 @@ export default function IPManagementPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredRestrictions.map((item) => (
+                                paginatedRestrictions.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell>
                                             <div style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '0.95rem', color: theme.colors.textDark }}>
@@ -791,6 +859,72 @@ export default function IPManagementPage() {
                             )}
                         </TableBody>
                     </Table>
+
+                    {filteredRestrictions.length > 0 && (
+                        <PaginationContainer>
+                            <PageInfo>
+                                Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredRestrictions.length)} of {filteredRestrictions.length} rules
+                            </PageInfo>
+                            <PaginationActions>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    First
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    <ChevronLeft size={16} />
+                                </Button>
+
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    let pageNum;
+                                    if (totalPages <= 5) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage <= 3) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage >= totalPages - 2) {
+                                        pageNum = totalPages - 4 + i;
+                                    } else {
+                                        pageNum = currentPage - 2 + i;
+                                    }
+
+                                    return (
+                                        <PageButton
+                                            key={pageNum}
+                                            $active={currentPage === pageNum}
+                                            onClick={() => handlePageChange(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </PageButton>
+                                    );
+                                })}
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    <ChevronRight size={16} />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handlePageChange(totalPages)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    Last
+                                </Button>
+                            </PaginationActions>
+                        </PaginationContainer>
+                    )}
                 </StyledTableContainer>
             </Card>
 
