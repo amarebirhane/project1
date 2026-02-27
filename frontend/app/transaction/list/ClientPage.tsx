@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {
   AlertCircle, ArrowUpRight, ArrowDownRight,
-  Search, TrendingUp, ShoppingCart, Package, Download
+  Search, TrendingUp, ShoppingCart, Package, Download,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/rbac/auth-context';
 import useUserStore from '@/store/userStore';
+import { theme } from '@/components/common/theme';
 
 const PRIMARY_COLOR = (props: any) => props.theme.colors.primary || '#00AA00';
 const TEXT_COLOR_DARK = (props: any) => props.theme.colors.textDark;
@@ -410,6 +412,56 @@ const TransactionTitle = styled.div`
   color: ${TEXT_COLOR_DARK};
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${props => props.theme.spacing.md} ${props => props.theme.spacing.lg};
+  border-top: 1px solid ${BORDER_COLOR};
+  background: ${BACKGROUND_CARD};
+  margin-top: ${props => props.theme.spacing.md};
+  border-radius: 0 0 ${props => props.theme.borderRadius.md} ${props => props.theme.borderRadius.md};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${props => props.theme.spacing.sm};
+  align-items: center;
+`;
+
+const PageInfo = styled.span`
+  font-size: ${props => props.theme.typography.fontSizes.sm};
+  color: ${TEXT_COLOR_MUTED};
+  font-weight: ${props => props.theme.typography.fontWeights.medium};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${props => props.theme.borderRadius.md};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR : BORDER_COLOR};
+  background: ${props => props.$active ? PRIMARY_COLOR : BACKGROUND_CARD};
+  color: ${props => props.$active ? '#ffffff' : TEXT_COLOR_DARK(props)};
+  font-size: ${props => props.theme.typography.fontSizes.sm};
+  font-weight: ${props => props.theme.typography.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${props => props.theme.transitions.default};
+
+  &:hover:not(:disabled) {
+    border-color: ${PRIMARY_COLOR};
+    color: ${props => props.$active ? '#ffffff' : PRIMARY_COLOR};
+    background: ${props => props.$active ? PRIMARY_COLOR : BACKGROUND_SECONDARY};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 interface Transaction {
   id: string;
   transaction_type: 'revenue' | 'expense' | 'sale' | 'inventory';
@@ -495,6 +547,10 @@ export default function TransactionListPage() {
     totalTransactions: 0,
   });
   const [loadingSummary, setLoadingSummary] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   // Load summary data from backend
   const loadSummary = useCallback(async () => {
     if (!user) return;
@@ -915,6 +971,21 @@ export default function TransactionListPage() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, statusFilter]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleExport = () => {
     try {
       if (filteredTransactions.length === 0) {
@@ -1147,7 +1218,7 @@ export default function TransactionListPage() {
                     </tr>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransactions.map((transaction) => {
+                    {paginatedTransactions.map((transaction) => {
                       const originalId = transaction.id.split('-')[1];
                       const isExpense = transaction.transaction_type === 'expense';
                       const isSale = transaction.transaction_type === 'sale';
@@ -1236,6 +1307,72 @@ export default function TransactionListPage() {
               </div>
             )}
           </TableContainer>
+
+          {filteredTransactions.length > 0 && (
+            <PaginationContainer>
+              <PageInfo>
+                Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
+              </PageInfo>
+              <PaginationActions>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <PageButton
+                      key={pageNum}
+                      $active={currentPage === pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </PageButton>
+                  );
+                })}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight size={16} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Last
+                </Button>
+              </PaginationActions>
+            </PaginationContainer>
+          )}
         </ContentContainer>
       </PageContainer>
     </Layout>
