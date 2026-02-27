@@ -1026,54 +1026,136 @@ function AccountantListPageInner() {
                       </tr>
                     </TableHeader>
                     <TableBody>
-                      {filteredAccountants.map((accountant) => (
-                        <tr key={accountant.id}>
-                          <td>{accountant.full_name || 'N/A'}</td>
-                          <td>{accountant.email}</td>
-                          <td>{accountant.username}</td>
-                          <td>{accountant.phone || 'N/A'}</td>
-                          <td>{accountant.department || 'N/A'}</td>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-                              <StatusBadge $isActive={accountant.is_active}>
-                                {accountant.is_active ? 'Active' : 'Inactive'}
-                              </StatusBadge>
-                              <Switch
-                                checked={accountant.is_active}
-                                onCheckedChange={() => handleToggleActive(accountant)}
-                                disabled={togglingId === accountant.id || deleting}
-                                aria-label={`${accountant.is_active ? 'Deactivate' : 'Activate'} ${accountant.full_name}`}
-                              />
-                              {togglingId === accountant.id && (
-                                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite', color: theme.colors.mutedForeground }} />
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            <ActionButtons>
-                              <Link href={`/accountants/edit/${accountant.id}`}>
-                                <Button size="sm" variant="secondary">
-                                  <Edit size={14} className="h-4 w-4 mr-1" />
-                                </Button>
-                              </Link>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteClick(accountant)}
-                                disabled={deleting}
-                              >
-                                {deleting && accountantToDelete?.id === accountant.id ? (
-                                  <>
-                                    <Loader2 size={16} className="h-4 w-4 mr-1 animate-spin" />
-                                  </>
-                                ) : (
-                                  <Trash2 size={14} className="h-4 w-4 mr-1" />
-                                )}
-                              </Button>
-                            </ActionButtons>
-                          </td>
-                        </tr>
-                      ))}
+                      {(() => {
+                        const totalPages = Math.ceil(filteredAccountants.length / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const paginated = filteredAccountants.slice(startIndex, startIndex + itemsPerPage);
+
+                        if (paginated.length === 0 && filteredAccountants.length > 0) {
+                          setCurrentPage(1);
+                          return null;
+                        }
+
+                        return (
+                          <>
+                            {paginated.map((accountant) => (
+                              <tr key={accountant.id}>
+                                <td>{accountant.full_name || 'N/A'}</td>
+                                <td>{accountant.email}</td>
+                                <td>{accountant.username}</td>
+                                <td>{accountant.phone || 'N/A'}</td>
+                                <td>{accountant.department || 'N/A'}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+                                    <StatusBadge $isActive={accountant.is_active}>
+                                      {accountant.is_active ? 'Active' : 'Inactive'}
+                                    </StatusBadge>
+                                    <Switch
+                                      checked={accountant.is_active}
+                                      onCheckedChange={() => handleToggleActive(accountant)}
+                                      disabled={togglingId === accountant.id || deleting}
+                                      aria-label={`${accountant.is_active ? 'Deactivate' : 'Activate'} ${accountant.full_name}`}
+                                    />
+                                    {togglingId === accountant.id && (
+                                      <Loader2 size={14} style={{ animation: 'spin 1s linear infinite', color: theme.colors.mutedForeground }} />
+                                    )}
+                                  </div>
+                                </td>
+                                <td>
+                                  <ActionButtons>
+                                    <Link href={`/accountants/edit/${accountant.id}`}>
+                                      <Button size="sm" variant="secondary">
+                                        <Edit size={14} className="h-4 w-4 mr-1" />
+                                      </Button>
+                                    </Link>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleDeleteClick(accountant)}
+                                      disabled={deleting}
+                                    >
+                                      {deleting && accountantToDelete?.id === accountant.id ? (
+                                        <>
+                                          <Loader2 size={16} className="h-4 w-4 mr-1 animate-spin" />
+                                        </>
+                                      ) : (
+                                        <Trash2 size={14} className="h-4 w-4 mr-1" />
+                                      )}
+                                    </Button>
+                                  </ActionButtons>
+                                </td>
+                              </tr>
+                            ))}
+                            {filteredAccountants.length > itemsPerPage && (
+                              <tr>
+                                <td colSpan={7} style={{ padding: 0 }}>
+                                  <PaginationContainer>
+                                    <PageInfo>
+                                      Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredAccountants.length)} of {filteredAccountants.length} accountants
+                                    </PageInfo>
+                                    <PaginationActions>
+                                      <PageButton
+                                        onClick={() => setCurrentPage(1)}
+                                        disabled={currentPage === 1}
+                                        title="First Page"
+                                      >
+                                        <ChevronsLeft size={16} />
+                                      </PageButton>
+                                      <PageButton
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        title="Previous Page"
+                                      >
+                                        <ChevronLeft size={16} />
+                                      </PageButton>
+
+                                      {[...Array(totalPages)].map((_, i) => {
+                                        const pageNum = i + 1;
+                                        if (
+                                          pageNum === 1 ||
+                                          pageNum === totalPages ||
+                                          (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                                        ) {
+                                          return (
+                                            <PageButton
+                                              key={pageNum}
+                                              $active={currentPage === pageNum}
+                                              onClick={() => setCurrentPage(pageNum)}
+                                            >
+                                              {pageNum}
+                                            </PageButton>
+                                          );
+                                        } else if (
+                                          pageNum === currentPage - 2 ||
+                                          pageNum === currentPage + 2
+                                        ) {
+                                          return <span key={pageNum} style={{ color: theme.colors.mutedForeground }}>...</span>;
+                                        }
+                                        return null;
+                                      })}
+
+                                      <PageButton
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        title="Next Page"
+                                      >
+                                        <ChevronRight size={16} />
+                                      </PageButton>
+                                      <PageButton
+                                        onClick={() => setCurrentPage(totalPages)}
+                                        disabled={currentPage === totalPages}
+                                        title="Last Page"
+                                      >
+                                        <ChevronsRight size={16} />
+                                      </PageButton>
+                                    </PaginationActions>
+                                  </PaginationContainer>
+                                </td>
+                              </tr>
+                            )}
+                          </>
+                        );
+                      })()}
                     </TableBody>
                   </Table>
                 </TableContainer>
