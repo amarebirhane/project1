@@ -332,157 +332,194 @@ const SuccessMessage = styled.div`
   }
 `;
 
-const ErrorMessage = styled.div`
-  color: ${props => props.theme.mode === 'dark' ? '#fca5a5' : '#dc2626'};
-  display: flex;
-  align-items: center;
-  gap: ${theme.spacing.sm};
-  font-size: ${theme.typography.fontSizes.sm};
-  padding: ${theme.spacing.md};
-  background: ${props => props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.2)' : '#fee2e2'};
-  border-radius: ${theme.borderRadius.md};
-  border: 1px solid ${props => props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.5)' : '#fecaca'};
-  margin-bottom: ${theme.spacing.lg};
-  animation: shake 0.4s ease;
+animation: shake 0.4s ease;
 
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-  }
+@keyframes shake {
+  0 %, 100 % { transform: translateX(0); }
+  25 % { transform: translateX(-5px); }
+  75 % { transform: translateX(5px); }
+}
+`;
+
+const PaginationContainer = styled.div`
+display: flex;
+justify - content: space - between;
+align - items: center;
+margin - top: ${ theme.spacing.lg };
+padding - top: ${ theme.spacing.lg };
+border - top: 1px solid ${ props => props.theme.colors.border };
+flex - wrap: wrap;
+gap: ${ theme.spacing.md };
+`;
+
+const PageInfo = styled.div`
+color: ${ props => props.theme.colors.textSecondary };
+font - size: 14px;
+`;
+
+const PageControls = styled.div`
+display: flex;
+gap: ${ theme.spacing.xs };
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+padding: 8px 12px;
+border - radius: 6px;
+border: 1px solid ${ props => props.$active ? props.theme.colors.primary : props.theme.colors.border };
+background: ${ props => props.$active ? props.theme.colors.primary : props.theme.colors.card };
+color: ${ props => props.$active ? '#fff' : props.theme.colors.text };
+font - size: 14px;
+font - weight: 600;
+cursor: pointer;
+transition: all 0.2s ease;
+
+  &: hover: not(: disabled) {
+  background: ${ props => props.$active ? props.theme.colors.primary : props.theme.colors.backgroundSecondary };
+}
+
+  &:disabled {
+  opacity: 0.5;
+  cursor: not - allowed;
+}
 `;
 
 const LoadingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: ${theme.spacing.md};
+display: flex;
+flex - direction: column;
+align - items: center;
+justify - content: center;
+min - height: 60vh;
+gap: ${ theme.spacing.md };
 `;
 
 const Spinner = styled.div`
-  width: 32px;
-  height: 32px;
-  border: 3px solid ${props => props.theme.colors.backgroundSecondary};
-  border-top-color: ${props => props.theme.colors.primary};
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  
-  @keyframes spin {
+width: 32px;
+height: 32px;
+border: 3px solid ${ props => props.theme.colors.backgroundSecondary };
+border - top - color: ${ props => props.theme.colors.primary };
+border - radius: 50 %;
+animation: spin 0.8s linear infinite;
+
+@keyframes spin {
     to { transform: rotate(360deg); }
-  }
+}
 `;
 
 const SkeletonRow = styled.div`
-  height: 48px;
-  width: 100%;
-  background: ${props => props.theme.colors.backgroundSecondary};
-  margin-bottom: 2px;
-  position: relative;
-  overflow: hidden;
+height: 48px;
+width: 100 %;
+background: ${ props => props.theme.colors.backgroundSecondary };
+margin - bottom: 2px;
+position: relative;
+overflow: hidden;
 
   &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent 0, ${props => props.theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.4)'} 50%, transparent 100%);
-    animation: shimmer 1.5s infinite;
-  }
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100 %);
+  background: linear - gradient(90deg, transparent 0, ${ props => props.theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.4)' } 50 %, transparent 100 %);
+  animation: shimmer 1.5s infinite;
+}
 
-  @keyframes shimmer {
-    100% { transform: translateX(100%); }
-  }
+@keyframes shimmer {
+  100 % { transform: translateX(100 %); }
+}
 `;
 
 const StatusBadge = styled.span<{ $active: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  background: ${props => props.$active
+display: inline - flex;
+align - items: center;
+gap: 6px;
+padding: 4px 12px;
+border - radius: 4px;
+font - size: 13px;
+font - weight: 600;
+background: ${
+  props => props.$active
     ? (props.theme.mode === 'dark' ? 'rgba(22, 163, 74, 0.2)' : '#e7f3ff')
-    : (props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.2)' : '#ffe9e9')};
-  color: ${props => props.$active
+    : (props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.2)' : '#ffe9e9')
+};
+color: ${
+  props => props.$active
     ? (props.theme.mode === 'dark' ? '#86efac' : props.theme.colors.primary)
-    : (props.theme.mode === 'dark' ? '#fca5a5' : '#fa383e')};
-  border: 1px solid ${props => props.$active
+    : (props.theme.mode === 'dark' ? '#fca5a5' : '#fa383e')
+};
+border: 1px solid ${
+  props => props.$active
     ? (props.theme.mode === 'dark' ? 'rgba(22, 163, 74, 0.5)' : 'transparent')
-    : (props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.5)' : 'transparent')};
+    : (props.theme.mode === 'dark' ? 'rgba(220, 38, 38, 0.5)' : 'transparent')
+};
 `;
 
 const UserTypeBadge = styled.span`
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.theme.colors.backgroundSecondary};
-  color: ${props => props.theme.colors.textSecondary};
-  border: 1px solid ${props => props.theme.colors.border};
-  text-transform: capitalize;
+display: inline - block;
+padding: 4px 8px;
+border - radius: 4px;
+font - size: 12px;
+font - weight: 600;
+background: ${ props => props.theme.colors.backgroundSecondary };
+color: ${ props => props.theme.colors.textSecondary };
+border: 1px solid ${ props => props.theme.colors.border };
+text - transform: capitalize;
 `;
 
 const TableWrapper = styled.div`
-  overflow-x: auto;
-  border-radius: 0;
-  border: none;
-  background: transparent;
+overflow - x: auto;
+border - radius: 0;
+border: none;
+background: transparent;
 
   table {
-    border-collapse: collapse;
-    width: 100%;
-  }
+  border - collapse: collapse;
+  width: 100 %;
+}
 
   th {
-    background: ${props => props.theme.colors.background};
-    font-weight: 600;
-    color: ${props => props.theme.colors.textSecondary};
-    text-transform: none;
-    font-size: 14px;
-    letter-spacing: normal;
-    padding: 12px 16px;
-    border-bottom: 1px solid ${props => props.theme.colors.border};
-    text-align: left;
-  }
+  background: ${ props => props.theme.colors.background };
+  font - weight: 600;
+  color: ${ props => props.theme.colors.textSecondary };
+  text - transform: none;
+  font - size: 14px;
+  letter - spacing: normal;
+  padding: 12px 16px;
+  border - bottom: 1px solid ${ props => props.theme.colors.border };
+  text - align: left;
+}
 
   td {
-    padding: 12px 16px;
-    border-bottom: 1px solid ${props => props.theme.colors.backgroundSecondary};
-    vertical-align: middle;
-    color: ${props => props.theme.colors.text};
-  }
+  padding: 12px 16px;
+  border - bottom: 1px solid ${ props => props.theme.colors.backgroundSecondary };
+  vertical - align: middle;
+  color: ${ props => props.theme.colors.text };
+}
 
-  tr:hover td {
-    background-color: ${props => props.theme.colors.backgroundSecondary};
-  }
+tr:hover td {
+  background - color: ${ props => props.theme.colors.backgroundSecondary };
+}
 `;
 
 const EmptyState = styled.div`
-  text-align: center;
-  padding: ${theme.spacing.xl} * 3 ${theme.spacing.xl};
-  color: ${props => props.theme.colors.textSecondary};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${theme.spacing.md};
+text - align: center;
+padding: ${ theme.spacing.xl } * 3 ${ theme.spacing.xl };
+color: ${ props => props.theme.colors.textSecondary };
+display: flex;
+flex - direction: column;
+align - items: center;
+gap: ${ theme.spacing.md };
   
   svg {
-    opacity: 0.2;
-    margin-bottom: ${theme.spacing.sm};
-  }
+  opacity: 0.2;
+  margin - bottom: ${ theme.spacing.sm };
+}
   
   p {
-    font-size: ${theme.typography.fontSizes.lg};
-    font-weight: 500;
-  }
+  font - size: ${ theme.typography.fontSizes.lg };
+  font - weight: 500;
+}
 `;
 
 // Interfaces
@@ -570,6 +607,10 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({
   const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmUser, setConfirmUser] = useState<UserPermissions | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Map backend role to frontend UserType
   const mapRoleToUserType = (role?: string): UserType => {
@@ -717,7 +758,7 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({
               // Use defaults, no error needed
             } else {
               // Other errors (network, server error, etc.) - log but continue with defaults
-              console.warn(`Failed to load permissions for user ${apiUser.id}:`, permErr);
+              console.warn(`Failed to load permissions for user ${ apiUser.id }: `, permErr);
             }
           }
 
@@ -857,710 +898,756 @@ const PermissionManager: React.FC<PermissionManagerProps> = ({
     setUserPermissions(prev => prev.map(u =>
       u.userId === selectedUser ? { ...u, permissions: mergePermissionsByResource(defaults) } : u
     ));
-    setSuccess(`Permissions reset to default ${user.userType.replace(/_/g, ' ')} settings. Don't forget to save!`);
-    setTimeout(() => setSuccess(null), 4000);
+    setSuccess(`Permissions reset to default ${ user.userType.replace(/_/g, ' ') } settings.Don't forget to save!`);
+setTimeout(() => setSuccess(null), 4000);
   };
 
-  const areAllActionsSelected = (permissions: PermissionItem[], resource: Resource): boolean => {
-    const resourcePermission = permissions.find(p => p.resource === resource);
-    if (!resourcePermission) return false;
+const areAllActionsSelected = (permissions: PermissionItem[], resource: Resource): boolean => {
+  const resourcePermission = permissions.find(p => p.resource === resource);
+  if (!resourcePermission) return false;
 
-    // Check if all actions are true
-    return Object.values(Action).every(action =>
-      resourcePermission.actions[action] === true
-    );
-  };
+  // Check if all actions are true
+  return Object.values(Action).every(action =>
+    resourcePermission.actions[action] === true
+  );
+};
 
-  const handleSaveClick = () => {
-    if (!selectedUser) return;
-    const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
-    if (!selectedUserData) return;
-    setConfirmUser(selectedUserData);
-    setShowConfirm(true);
-    setError(null);
-    setSuccess(null);
-  };
+const handleSaveClick = () => {
+  if (!selectedUser) return;
+  const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
+  if (!selectedUserData) return;
+  setConfirmUser(selectedUserData);
+  setShowConfirm(true);
+  setError(null);
+  setSuccess(null);
+};
 
-  const handleExport = () => {
-    try {
-      if (filteredUsers.length === 0) {
-        setError('No users to export');
-        return;
-      }
-
-      // Define columns to export
-      const headers = [
-        'Name',
-        'Email',
-        'User Type',
-        'Status',
-        'Permissions Summary'
-      ];
-
-      // Format data as CSV
-      const csvRows = filteredUsers.map(user => {
-        const userTypeLabel = user.userType.replace(/_/g, ' ');
-        const statusLabel = user.isActive ? 'Active' : 'Inactive';
-
-        // Summarize permissions
-        const permissionSummary = user.permissions
-          .map(perm => {
-            const enabledActions = Object.entries(perm.actions || {})
-              .filter(([, value]) => value === true)
-              .map(([action]) => action.toLowerCase());
-
-            if (enabledActions.length === 0) return null;
-
-            const resourceLabel = perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-            return `${resourceLabel}: ${enabledActions.join(', ')}`;
-          })
-          .filter(Boolean)
-          .join('; ');
-
-        return [
-          `"${(user.userName || '').replace(/"/g, '""')}"`,
-          `"${(user.email || '').replace(/"/g, '""')}"`,
-          `"${userTypeLabel}"`,
-          `"${statusLabel}"`,
-          `"${permissionSummary.replace(/"/g, '""')}"`
-        ].join(',');
-      });
-
-      const csvContent = [headers.join(','), ...csvRows].join('\n');
-
-      // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const date = new Date().toISOString().split('T')[0];
-
-      link.setAttribute('href', url);
-      link.setAttribute('download', `permissions_export_${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setSuccess('Permissions exported successfully!');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      console.error('Export failed:', err);
-      setError('Failed to export permissions');
-    }
-  };
-
-  const executeSavePermissions = async () => {
-    if (!selectedUser) return;
-
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
-      if (!selectedUserData) {
-        throw new Error('Selected user not found');
-      }
-
-      const userId = parseInt(selectedUser, 10);
-      if (isNaN(userId)) {
-        throw new Error('Invalid user ID');
-      }
-
-      // Serialize permissions locally to JSON format required by backend
-      const serializedPermissions = selectedUserData.permissions
-        .filter(perm => Object.values(perm.actions).some(enabled => enabled))
-        .map(perm => ({
-          resource: perm.resource,
-          actions: perm.actions
-        }));
-
-      // Type assertion needed because apiClient expects Record<string, unknown>[]
-      await apiClient.updateUserPermissions(userId, serializedPermissions as unknown as Record<string, unknown>[]);
-
-      setSuccess('Permissions saved successfully!');
-      setTimeout(() => setSuccess(null), 3000);
-      setShowConfirm(false);
-      setConfirmUser(null);
-      // Refresh from backend to reflect real-time state
-      await loadUsers();
-    } catch (err: unknown) {
-      const errorMessage =
-        typeof err === 'object' && err !== null && 'response' in err
-          ? (err as { response?: { data?: { detail?: string } }; message?: string }).response?.data?.detail ||
-          (err as { message?: string }).message
-          : err instanceof Error
-            ? err.message
-            : 'Failed to save permissions';
-      setError(errorMessage || 'Failed to save permissions');
-      console.error('Error saving permissions:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load templates from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedTemplates = localStorage.getItem('permission_templates');
-      if (savedTemplates) {
-        try {
-          setTemplates(JSON.parse(savedTemplates));
-        } catch (err) {
-          console.error('Failed to load templates:', err);
-        }
-      }
-    }
-  }, []);
-
-  // Template handlers
-  const handleSaveTemplate = () => {
-    if (!selectedUser || !newTemplateName.trim()) return;
-
-    const userToTemplate = userPermissions.find(u => u.userId === selectedUser);
-    if (!userToTemplate) return;
-
-    // Check if template name already exists
-    const templateExists = templates.some(t =>
-      t.name.toLowerCase() === newTemplateName.trim().toLowerCase() &&
-      t.userType === userToTemplate.userType
-    );
-
-    if (templateExists) {
-      setError('Template with this name already exists for this user type');
+const handleExport = () => {
+  try {
+    if (filteredUsers.length === 0) {
+      setError('No users to export');
       return;
     }
 
-    const newTemplate: RoleTemplate = {
-      id: `template-${Date.now()}`,
-      name: newTemplateName.trim(),
-      userType: userToTemplate.userType,
-      permissions: JSON.parse(JSON.stringify(userToTemplate.permissions))
-    };
+    // Define columns to export
+    const headers = [
+      'Name',
+      'Email',
+      'User Type',
+      'Status',
+      'Permissions Summary'
+    ];
 
-    const updatedTemplates = [...templates, newTemplate];
-    setTemplates(updatedTemplates);
+    // Format data as CSV
+    const csvRows = filteredUsers.map(user => {
+      const userTypeLabel = user.userType.replace(/_/g, ' ');
+      const statusLabel = user.isActive ? 'Active' : 'Inactive';
 
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('permission_templates', JSON.stringify(updatedTemplates));
+      // Summarize permissions
+      const permissionSummary = user.permissions
+        .map(perm => {
+          const enabledActions = Object.entries(perm.actions || {})
+            .filter(([, value]) => value === true)
+            .map(([action]) => action.toLowerCase());
+
+          if (enabledActions.length === 0) return null;
+
+          const resourceLabel = perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+          return `${resourceLabel}: ${enabledActions.join(', ')}`;
+        })
+        .filter(Boolean)
+        .join('; ');
+
+      return [
+        `"${(user.userName || '').replace(/"/g, '""')}"`,
+        `"${(user.email || '').replace(/"/g, '""')}"`,
+        `"${userTypeLabel}"`,
+        `"${statusLabel}"`,
+        `"${permissionSummary.replace(/"/g, '""')}"`
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...csvRows].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+
+    link.setAttribute('href', url);
+    link.setAttribute('download', `permissions_export_${date}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setSuccess('Permissions exported successfully!');
+    setTimeout(() => setSuccess(null), 3000);
+  } catch (err) {
+    console.error('Export failed:', err);
+    setError('Failed to export permissions');
+  }
+};
+
+const executeSavePermissions = async () => {
+  if (!selectedUser) return;
+
+  setLoading(true);
+  setError(null);
+  setSuccess(null);
+
+  try {
+    const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
+    if (!selectedUserData) {
+      throw new Error('Selected user not found');
     }
 
-    setNewTemplateName('');
-    setError(null);
+    const userId = parseInt(selectedUser, 10);
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID');
+    }
 
-    // Show saved message
-    setShowSavedMessage(true);
+    // Serialize permissions locally to JSON format required by backend
+    const serializedPermissions = selectedUserData.permissions
+      .filter(perm => Object.values(perm.actions).some(enabled => enabled))
+      .map(perm => ({
+        resource: perm.resource,
+        actions: perm.actions
+      }));
 
-    // Clear previous timeout if it exists
+    // Type assertion needed because apiClient expects Record<string, unknown>[]
+    await apiClient.updateUserPermissions(userId, serializedPermissions as unknown as Record<string, unknown>[]);
+
+    setSuccess('Permissions saved successfully!');
+    setTimeout(() => setSuccess(null), 3000);
+    setShowConfirm(false);
+    setConfirmUser(null);
+    // Refresh from backend to reflect real-time state
+    await loadUsers();
+  } catch (err: unknown) {
+    const errorMessage =
+      typeof err === 'object' && err !== null && 'response' in err
+        ? (err as { response?: { data?: { detail?: string } }; message?: string }).response?.data?.detail ||
+        (err as { message?: string }).message
+        : err instanceof Error
+          ? err.message
+          : 'Failed to save permissions';
+    setError(errorMessage || 'Failed to save permissions');
+    console.error('Error saving permissions:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Load templates from localStorage
+useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const savedTemplates = localStorage.getItem('permission_templates');
+    if (savedTemplates) {
+      try {
+        setTemplates(JSON.parse(savedTemplates));
+      } catch (err) {
+        console.error('Failed to load templates:', err);
+      }
+    }
+  }
+}, []);
+
+// Template handlers
+const handleSaveTemplate = () => {
+  if (!selectedUser || !newTemplateName.trim()) return;
+
+  const userToTemplate = userPermissions.find(u => u.userId === selectedUser);
+  if (!userToTemplate) return;
+
+  // Check if template name already exists
+  const templateExists = templates.some(t =>
+    t.name.toLowerCase() === newTemplateName.trim().toLowerCase() &&
+    t.userType === userToTemplate.userType
+  );
+
+  if (templateExists) {
+    setError('Template with this name already exists for this user type');
+    return;
+  }
+
+  const newTemplate: RoleTemplate = {
+    id: `template-${Date.now()}`,
+    name: newTemplateName.trim(),
+    userType: userToTemplate.userType,
+    permissions: JSON.parse(JSON.stringify(userToTemplate.permissions))
+  };
+
+  const updatedTemplates = [...templates, newTemplate];
+  setTemplates(updatedTemplates);
+
+  // Save to localStorage
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('permission_templates', JSON.stringify(updatedTemplates));
+  }
+
+  setNewTemplateName('');
+  setError(null);
+
+  // Show saved message
+  setShowSavedMessage(true);
+
+  // Clear previous timeout if it exists
+  if (messageTimeoutRef.current) {
+    clearTimeout(messageTimeoutRef.current);
+  }
+
+  // Hide message after 3 seconds
+  messageTimeoutRef.current = setTimeout(() => {
+    setShowSavedMessage(false);
+  }, 3000);
+};
+
+const handleApplyTemplate = () => {
+  if (!selectedUser || !selectedTemplate) return;
+
+  const template = templates.find(t => t.id === selectedTemplate);
+  if (!template) {
+    setError('Template not found');
+    return;
+  }
+
+  setUserPermissions(prev =>
+    prev.map(user => {
+      if (user.userId === selectedUser) {
+        return {
+          ...user,
+          permissions: mergePermissionsByResource(JSON.parse(JSON.stringify(template.permissions)))
+        };
+      }
+      return user;
+    })
+  );
+
+  setError(null);
+  setSuccess('Template applied successfully!');
+  setTimeout(() => setSuccess(null), 3000);
+};
+
+// Clean up timeout on unmount
+useEffect(() => {
+  return () => {
     if (messageTimeoutRef.current) {
       clearTimeout(messageTimeoutRef.current);
     }
-
-    // Hide message after 3 seconds
-    messageTimeoutRef.current = setTimeout(() => {
-      setShowSavedMessage(false);
-    }, 3000);
   };
+}, []);
 
-  const handleApplyTemplate = () => {
-    if (!selectedUser || !selectedTemplate) return;
+// Get selected user data
+const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
 
-    const template = templates.find(t => t.id === selectedTemplate);
-    if (!template) {
-      setError('Template not found');
-      return;
-    }
+// Get all available resources for checkboxes
+const allResources = Object.values(Resource);
 
-    setUserPermissions(prev =>
-      prev.map(user => {
-        if (user.userId === selectedUser) {
-          return {
-            ...user,
-            permissions: mergePermissionsByResource(JSON.parse(JSON.stringify(template.permissions)))
-          };
-        }
-        return user;
-      })
-    );
+// Filter users by search term and user type
+const filteredUsers = userPermissions.filter(user => {
+  const matchesSearch =
+    user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    setError(null);
-    setSuccess('Template applied successfully!');
-    setTimeout(() => setSuccess(null), 3000);
-  };
+  const matchesType = userTypeFilter === 'all' || user.userType === userTypeFilter;
 
-  // Clean up timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (messageTimeoutRef.current) {
-        clearTimeout(messageTimeoutRef.current);
-      }
-    };
-  }, []);
+  return matchesSearch && matchesType;
+});
 
-  // Get selected user data
-  const selectedUserData = userPermissions.find(u => u.userId === selectedUser);
+// Calculate pagination
+const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+const startIndex = (currentPage - 1) * itemsPerPage;
+const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
 
-  // Get all available resources for checkboxes
-  const allResources = Object.values(Resource);
+// Reset page when filters change
+useEffect(() => {
+  setCurrentPage(1);
+}, [searchTerm, userTypeFilter]);
 
-  // Filter users by search term and user type
-  const filteredUsers = userPermissions.filter(user => {
-    const matchesSearch =
-      user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesType = userTypeFilter === 'all' || user.userType === userTypeFilter;
-
-    return matchesSearch && matchesType;
-  });
-
-  if (loading && userPermissions.length === 0) {
-    return (
-      <Container>
-        <HeaderContainer>
-          <Title>{title}</Title>
-        </HeaderContainer>
-        <LoadingContainer>
-          <Spinner />
-          <p>Loading users...</p>
-        </LoadingContainer>
-      </Container>
-    );
-  }
-
+if (loading && userPermissions.length === 0) {
   return (
     <Container>
       <HeaderContainer>
         <Title>{title}</Title>
-        <p style={{ marginTop: theme.spacing.sm, opacity: 0.9, fontSize: theme.typography.fontSizes.md }}>
-          Manage user permissions and access controls
-        </p>
       </HeaderContainer>
-
-      {error && (
-        <ErrorMessage>
-          {error}
-        </ErrorMessage>
-      )}
-
-      {success && (
-        <SuccessMessage>
-          <Check size={16} />
-          {success}
-        </SuccessMessage>
-      )}
-
-      <FilterContainer>
-        <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <SearchInput
-            placeholder="Search team members by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ paddingLeft: '48px' }}
-          />
-        </div>
-
-        <FilterLabel>
-          <Filter size={16} />
-          <Select
-            value={userTypeFilter}
-            onChange={(e) => setUserTypeFilter(e.target.value)}
-          >
-            <option value="all">All User Types</option>
-            {managedUserTypes.map(type => (
-              <option key={type} value={type}>
-                {type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
-              </option>
-            ))}
-          </Select>
-        </FilterLabel>
-
-        <Button
-          variant="outline"
-          onClick={handleExport}
-          disabled={loading || filteredUsers.length === 0}
-          style={{
-            borderRadius: '999px',
-            fontWeight: 600,
-            borderColor: theme.colors.border,
-            color: theme.colors.text,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: theme.colors.card
-          }}
-        >
-          <Download size={16} />
-          Export
-        </Button>
-      </FilterContainer>
-
-      <Card>
-        {loading && userPermissions.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {[1, 2, 3, 4, 5].map(i => <SkeletonRow key={i} />)}
-          </div>
-        ) : filteredUsers.length === 0 ? (
-          <EmptyState>
-            <Search size={64} />
-            <p>No results found for "{searchTerm}"</p>
-            <span style={{ fontSize: '14px' }}>Try adjusting your search or filters</span>
-          </EmptyState>
-        ) : (
-          <TableWrapper>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Name</div></TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>User Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map(user => (
-                  <TableRow key={user.userId}>
-                    <TableCell style={{ fontWeight: 600 }}>
-                      {user.userName}
-                    </TableCell>
-                    <TableCell style={{ color: theme.colors.textSecondary }}>{user.email}</TableCell>
-                    <TableCell>
-                      <UserTypeBadge>
-                        {user.userType.replace(/_/g, ' ')}
-                      </UserTypeBadge>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge $active={user.isActive}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell style={{ textAlign: 'right' }}>
-                      <Button
-                        size="sm"
-                        variant={selectedUser === user.userId ? "default" : "secondary"}
-                        onClick={() => setSelectedUser(user.userId)}
-                        style={{
-                          borderRadius: '6px',
-                          fontWeight: 600,
-                          backgroundColor: selectedUser === user.userId ? theme.colors.primary : theme.colors.backgroundSecondary,
-                          color: selectedUser === user.userId ? '#FFFFFF' : theme.colors.text,
-                          border: 'none'
-                        }}
-                      >
-                        {selectedUser === user.userId ? (
-                          'Editing'
-                        ) : (
-                          'Settings'
-                        )}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableWrapper>
-        )}
-      </Card>
-
-      {selectedUserData && (
-        <Card>
-          <SelectionHeader>
-            <Subtitle>
-              Managing Permissions for {selectedUserData.userName} ({selectedUserData.userType})
-            </Subtitle>
-          </SelectionHeader>
-
-          <TemplateContainer>
-            <Subtitle>Permission Templates</Subtitle>
-            <TemplateControls>
-              <TemplateName
-                placeholder="New template name..."
-                value={newTemplateName}
-                onChange={(e) => setNewTemplateName(e.target.value)}
-              />
-              <Button
-                variant="secondary"
-                onClick={handleSaveTemplate}
-                disabled={!newTemplateName.trim()}
-              >
-                <Copy size={16} />
-                Save as Template
-              </Button>
-
-              <TemplateSelect
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-              >
-                <option value="">Select template to apply...</option>
-                {templates
-                  .filter(t => t.userType === selectedUserData.userType)
-                  .map(template => (
-                    <option key={template.id} value={template.id}>
-                      {template.name}
-                    </option>
-                  ))
-                }
-              </TemplateSelect>
-
-              <Button
-                variant="secondary"
-                onClick={handleApplyTemplate}
-                disabled={!selectedTemplate}
-              >
-                Apply Template
-              </Button>
-            </TemplateControls>
-
-            {showSavedMessage && (
-              <SuccessMessage>
-                <Check size={16} />
-                Template saved successfully
-              </SuccessMessage>
-            )}
-          </TemplateContainer>
-          <TableWrapper>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead style={{ width: '30%' }}>Resource</TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <Eye size={16} color="#6366f1" />
-                      View
-                    </div>
-                  </TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <Plus size={16} color="#10b981" />
-                      Create
-                    </div>
-                  </TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <Pencil size={16} color="#f59e0b" />
-                      Edit
-                    </div>
-                  </TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <Trash2 size={16} color="#ef4444" />
-                      Delete
-                    </div>
-                  </TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <ShieldAlert size={16} color="#8b5cf6" />
-                      Manage All
-                    </div>
-                  </TableHead>
-                  <TableHead style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <Check size={16} color={theme.colors.primary} />
-                      Select All
-                    </div>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allResources.map(resource => {
-                  // Find if this user has permissions for this resource
-                  const resourcePermission = selectedUserData.permissions.find(
-                    p => p.resource === resource
-                  );
-
-                  // Check if all permissions are selected
-                  const allSelected = areAllActionsSelected(selectedUserData.permissions, resource);
-
-                  return (
-                    <TableRow key={resource} style={{
-                      backgroundColor: allSelected ? `${theme.colors.primary}05` : 'transparent',
-                      transition: 'background-color 0.2s ease'
-                    }}>
-                      <TableCell style={{ fontWeight: 600, color: theme.colors.text, fontSize: '14px' }}>
-                        {resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={resourcePermission?.actions[Action.READ] || false}
-                          onCheckedChange={(checked) => handlePermissionChange(
-                            selectedUserData.userId,
-                            resource,
-                            Action.READ,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={resourcePermission?.actions[Action.CREATE] || false}
-                          onCheckedChange={(checked) => handlePermissionChange(
-                            selectedUserData.userId,
-                            resource,
-                            Action.CREATE,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={resourcePermission?.actions[Action.UPDATE] || false}
-                          onCheckedChange={(checked) => handlePermissionChange(
-                            selectedUserData.userId,
-                            resource,
-                            Action.UPDATE,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={resourcePermission?.actions[Action.DELETE] || false}
-                          onCheckedChange={(checked) => handlePermissionChange(
-                            selectedUserData.userId,
-                            resource,
-                            Action.DELETE,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={resourcePermission?.actions[Action.MANAGE] || false}
-                          onCheckedChange={(checked) => handlePermissionChange(
-                            selectedUserData.userId,
-                            resource,
-                            Action.MANAGE,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell style={{ textAlign: 'center' }}>
-                        <Checkbox
-                          checked={allSelected}
-                          onCheckedChange={(checked) => handleToggleAllForResource(
-                            selectedUserData.userId,
-                            resource,
-                            checked === true
-                          )}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableWrapper>
-
-          <ButtonGroup>
-            <div style={{ display: 'flex', gap: theme.spacing.md }}>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setSelectedUser(null);
-                  setError(null);
-                  setSuccess(null);
-                }}
-                style={{ backgroundColor: theme.colors.backgroundSecondary, color: theme.colors.text, fontWeight: 600 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleResetToDefaults}
-                style={{ borderColor: theme.colors.border, color: theme.colors.text, fontWeight: 600 }}
-              >
-                Reset to Defaults
-              </Button>
-            </div>
-            <Button
-              onClick={handleSaveClick}
-              disabled={loading || !selectedUser}
-              style={{ fontWeight: 600 }}
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
-                  Saving...
-                </>
-              ) : (
-                'Save Permissions'
-              )}
-            </Button>
-          </ButtonGroup>
-        </Card>
-      )}
-
-      {showConfirm && confirmUser && (
-        <ConfirmOverlay>
-          <ConfirmDialog>
-            <ConfirmTitle>Review permissions before saving</ConfirmTitle>
-            <ConfirmBody>
-              <div>
-                <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User:</strong>
-                <span style={{ fontWeight: 600, color: theme.colors.text }}>{confirmUser.userName}</span>
-                <span style={{ color: theme.colors.textSecondary, fontSize: '14px', marginLeft: '4px' }}>({confirmUser.email})</span>
-              </div>
-              <div style={{ marginTop: '8px' }}>
-                <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User Type:</strong>
-                <UserTypeBadge>{confirmUser.userType.replace(/_/g, ' ')}</UserTypeBadge>
-              </div>
-              <div style={{ marginTop: '16px' }}>
-                <strong style={{ color: theme.colors.text, fontSize: '16px' }}>Permissions Summary</strong>
-                <div style={{
-                  marginTop: '12px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '10px',
-                  background: theme.colors.backgroundSecondary,
-                  padding: '20px',
-                  borderRadius: '12px',
-                  border: `1px solid ${theme.colors.border}`
-                }}>
-                  {confirmUser.permissions.map((perm) => {
-                    const enabledActions = Object.entries(perm.actions || {})
-                      .filter(([, value]) => value === true)
-                      .map(([action]) => action.toLowerCase());
-                    return (
-                      <PermissionChip key={perm.resource}>
-                        {perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}: {enabledActions.length > 0 ? enabledActions.join(', ') : 'No actions'}
-                      </PermissionChip>
-                    );
-                  })}
-                </div>
-              </div>
-            </ConfirmBody>
-            <ConfirmFooter>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setShowConfirm(false);
-                  setConfirmUser(null);
-                }}
-                disabled={loading}
-              >
-                Back
-              </Button>
-              <Button onClick={executeSavePermissions} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save size={16} style={{ marginRight: theme.spacing.sm }} />
-                    Confirm & Save
-                  </>
-                )}
-              </Button>
-            </ConfirmFooter>
-          </ConfirmDialog>
-        </ConfirmOverlay>
-      )}
+      <LoadingContainer>
+        <Spinner />
+        <p>Loading users...</p>
+      </LoadingContainer>
     </Container>
+  );
+}
+
+return (
+  <Container>
+    <HeaderContainer>
+      <Title>{title}</Title>
+      <p style={{ marginTop: theme.spacing.sm, opacity: 0.9, fontSize: theme.typography.fontSizes.md }}>
+        Manage user permissions and access controls
+      </p>
+    </HeaderContainer>
+
+    {error && (
+      <ErrorMessage>
+        {error}
+      </ErrorMessage>
+    )}
+
+    {success && (
+      <SuccessMessage>
+        <Check size={16} />
+        {success}
+      </SuccessMessage>
+    )}
+
+    <FilterContainer>
+      <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+        <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+        <SearchInput
+          placeholder="Search team members by name or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ paddingLeft: '48px' }}
+        />
+      </div>
+
+      <FilterLabel>
+        <Filter size={16} />
+        <Select
+          value={userTypeFilter}
+          onChange={(e) => setUserTypeFilter(e.target.value)}
+        >
+          <option value="all">All User Types</option>
+          {managedUserTypes.map(type => (
+            <option key={type} value={type}>
+              {type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+            </option>
+          ))}
+        </Select>
+      </FilterLabel>
+
+      <Button
+        variant="outline"
+        onClick={handleExport}
+        disabled={loading || filteredUsers.length === 0}
+        style={{
+          borderRadius: '999px',
+          fontWeight: 600,
+          borderColor: theme.colors.border,
+          color: theme.colors.text,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          backgroundColor: theme.colors.card
+        }}
+      >
+        <Download size={16} />
+        Export
+      </Button>
+    </FilterContainer>
+
+    <Card>
+      {loading && userPermissions.length === 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {[1, 2, 3, 4, 5].map(i => <SkeletonRow key={i} />)}
+        </div>
+      ) : filteredUsers.length === 0 ? (
+        <EmptyState>
+          <Search size={64} />
+          <p>No results found for "{searchTerm}"</p>
+          <span style={{ fontSize: '14px' }}>Try adjusting your search or filters</span>
+        </EmptyState>
+      ) : (
+        <TableWrapper>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead><div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>Name</div></TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>User Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead style={{ textAlign: 'right' }}>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map(user => (
+                <TableRow key={user.userId}>
+                  <TableCell style={{ fontWeight: 600 }}>
+                    {user.userName}
+                  </TableCell>
+                  <TableCell style={{ color: theme.colors.textSecondary }}>{user.email}</TableCell>
+                  <TableCell>
+                    <UserTypeBadge>
+                      {user.userType.replace(/_/g, ' ')}
+                    </UserTypeBadge>
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge $active={user.isActive}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'right' }}>
+                    <Button
+                      size="sm"
+                      variant={selectedUser === user.userId ? "default" : "secondary"}
+                      onClick={() => setSelectedUser(user.userId)}
+                      style={{
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        backgroundColor: selectedUser === user.userId ? theme.colors.primary : theme.colors.backgroundSecondary,
+                        color: selectedUser === user.userId ? '#FFFFFF' : theme.colors.text,
+                        border: 'none'
+                      }}
+                    >
+                      {selectedUser === user.userId ? (
+                        'Editing'
+                      ) : (
+                        'Settings'
+                      )}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableWrapper>
+
+          {filteredUsers.length > itemsPerPage && (
+        <PaginationContainer>
+          <PageInfo>
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+          </PageInfo>
+          <PageControls>
+            <PageButton
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </PageButton>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <PageButton
+                key={page}
+                $active={page === currentPage}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </PageButton>
+            ))}
+            <PageButton
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </PageButton>
+          </PageControls>
+        </PaginationContainer>
+      )}
+    </>
+        )}
+  </Card>
+
+      {
+  selectedUserData && (
+    <Card>
+      <SelectionHeader>
+        <Subtitle>
+          Managing Permissions for {selectedUserData.userName} ({selectedUserData.userType})
+        </Subtitle>
+      </SelectionHeader>
+
+      <TemplateContainer>
+        <Subtitle>Permission Templates</Subtitle>
+        <TemplateControls>
+          <TemplateName
+            placeholder="New template name..."
+            value={newTemplateName}
+            onChange={(e) => setNewTemplateName(e.target.value)}
+          />
+          <Button
+            variant="secondary"
+            onClick={handleSaveTemplate}
+            disabled={!newTemplateName.trim()}
+          >
+            <Copy size={16} />
+            Save as Template
+          </Button>
+
+          <TemplateSelect
+            value={selectedTemplate}
+            onChange={(e) => setSelectedTemplate(e.target.value)}
+          >
+            <option value="">Select template to apply...</option>
+            {templates
+              .filter(t => t.userType === selectedUserData.userType)
+              .map(template => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))
+            }
+          </TemplateSelect>
+
+          <Button
+            variant="secondary"
+            onClick={handleApplyTemplate}
+            disabled={!selectedTemplate}
+          >
+            Apply Template
+          </Button>
+        </TemplateControls>
+
+        {showSavedMessage && (
+          <SuccessMessage>
+            <Check size={16} />
+            Template saved successfully
+          </SuccessMessage>
+        )}
+      </TemplateContainer>
+      <TableWrapper>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead style={{ width: '30%' }}>Resource</TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <Eye size={16} color="#6366f1" />
+                  View
+                </div>
+              </TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <Plus size={16} color="#10b981" />
+                  Create
+                </div>
+              </TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <Pencil size={16} color="#f59e0b" />
+                  Edit
+                </div>
+              </TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <Trash2 size={16} color="#ef4444" />
+                  Delete
+                </div>
+              </TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <ShieldAlert size={16} color="#8b5cf6" />
+                  Manage All
+                </div>
+              </TableHead>
+              <TableHead style={{ textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <Check size={16} color={theme.colors.primary} />
+                  Select All
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {allResources.map(resource => {
+              // Find if this user has permissions for this resource
+              const resourcePermission = selectedUserData.permissions.find(
+                p => p.resource === resource
+              );
+
+              // Check if all permissions are selected
+              const allSelected = areAllActionsSelected(selectedUserData.permissions, resource);
+
+              return (
+                <TableRow key={resource} style={{
+                  backgroundColor: allSelected ? `${theme.colors.primary}05` : 'transparent',
+                  transition: 'background-color 0.2s ease'
+                }}>
+                  <TableCell style={{ fontWeight: 600, color: theme.colors.text, fontSize: '14px' }}>
+                    {resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={resourcePermission?.actions[Action.READ] || false}
+                      onCheckedChange={(checked) => handlePermissionChange(
+                        selectedUserData.userId,
+                        resource,
+                        Action.READ,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={resourcePermission?.actions[Action.CREATE] || false}
+                      onCheckedChange={(checked) => handlePermissionChange(
+                        selectedUserData.userId,
+                        resource,
+                        Action.CREATE,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={resourcePermission?.actions[Action.UPDATE] || false}
+                      onCheckedChange={(checked) => handlePermissionChange(
+                        selectedUserData.userId,
+                        resource,
+                        Action.UPDATE,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={resourcePermission?.actions[Action.DELETE] || false}
+                      onCheckedChange={(checked) => handlePermissionChange(
+                        selectedUserData.userId,
+                        resource,
+                        Action.DELETE,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={resourcePermission?.actions[Action.MANAGE] || false}
+                      onCheckedChange={(checked) => handlePermissionChange(
+                        selectedUserData.userId,
+                        resource,
+                        Action.MANAGE,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                  <TableCell style={{ textAlign: 'center' }}>
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(checked) => handleToggleAllForResource(
+                        selectedUserData.userId,
+                        resource,
+                        checked === true
+                      )}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableWrapper>
+
+      <ButtonGroup>
+        <div style={{ display: 'flex', gap: theme.spacing.md }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSelectedUser(null);
+              setError(null);
+              setSuccess(null);
+            }}
+            style={{ backgroundColor: theme.colors.backgroundSecondary, color: theme.colors.text, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleResetToDefaults}
+            style={{ borderColor: theme.colors.border, color: theme.colors.text, fontWeight: 600 }}
+          >
+            Reset to Defaults
+          </Button>
+        </div>
+        <Button
+          onClick={handleSaveClick}
+          disabled={loading || !selectedUser}
+          style={{ fontWeight: 600 }}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
+              Saving...
+            </>
+          ) : (
+            'Save Permissions'
+          )}
+        </Button>
+      </ButtonGroup>
+    </Card>
+  )
+}
+
+{
+  showConfirm && confirmUser && (
+    <ConfirmOverlay>
+      <ConfirmDialog>
+        <ConfirmTitle>Review permissions before saving</ConfirmTitle>
+        <ConfirmBody>
+          <div>
+            <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User:</strong>
+            <span style={{ fontWeight: 600, color: theme.colors.text }}>{confirmUser.userName}</span>
+            <span style={{ color: theme.colors.textSecondary, fontSize: '14px', marginLeft: '4px' }}>({confirmUser.email})</span>
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <strong style={{ color: theme.colors.textSecondary, fontSize: '14px', marginRight: '8px' }}>User Type:</strong>
+            <UserTypeBadge>{confirmUser.userType.replace(/_/g, ' ')}</UserTypeBadge>
+          </div>
+          <div style={{ marginTop: '16px' }}>
+            <strong style={{ color: theme.colors.text, fontSize: '16px' }}>Permissions Summary</strong>
+            <div style={{
+              marginTop: '12px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '10px',
+              background: theme.colors.backgroundSecondary,
+              padding: '20px',
+              borderRadius: '12px',
+              border: `1px solid ${theme.colors.border}`
+            }}>
+              {confirmUser.permissions.map((perm) => {
+                const enabledActions = Object.entries(perm.actions || {})
+                  .filter(([, value]) => value === true)
+                  .map(([action]) => action.toLowerCase());
+                return (
+                  <PermissionChip key={perm.resource}>
+                    {perm.resource.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}: {enabledActions.length > 0 ? enabledActions.join(', ') : 'No actions'}
+                  </PermissionChip>
+                );
+              })}
+            </div>
+          </div>
+        </ConfirmBody>
+        <ConfirmFooter>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowConfirm(false);
+              setConfirmUser(null);
+            }}
+            disabled={loading}
+          >
+            Back
+          </Button>
+          <Button onClick={executeSavePermissions} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" style={{ marginRight: theme.spacing.sm }} />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={16} style={{ marginRight: theme.spacing.sm }} />
+                Confirm & Save
+              </>
+            )}
+          </Button>
+        </ConfirmFooter>
+      </ConfirmDialog>
+    </ConfirmOverlay>
+  )
+}
+    </Container >
   );
 };
 
