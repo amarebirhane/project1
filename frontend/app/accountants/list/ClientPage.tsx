@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Layout from '@/components/layout';
 import Link from 'next/link';
 import apiClient from '@/lib/api';
-import { AlertCircle, Edit, Trash2, UserPlus, Loader2, UserCheck, Shield, Eye, EyeOff, Lock, XCircle, Search, X } from 'lucide-react';
+import { AlertCircle, Edit, Trash2, UserPlus, Loader2, UserCheck, Shield, Eye, EyeOff, Lock, XCircle, Search, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { theme } from '@/components/common/theme';
 import { Switch } from '@/components/ui/switch';
@@ -439,6 +439,54 @@ const ModalActions = styled.div`
   margin-top: ${props => props.theme.spacing.lg};
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${theme.spacing.md} 0;
+  margin-top: ${theme.spacing.md};
+  border-top: 1px solid ${theme.colors.border};
+  flex-wrap: wrap;
+  gap: ${theme.spacing.md};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${theme.spacing.xs};
+  align-items: center;
+`;
+
+const PageInfo = styled.div`
+  color: ${theme.colors.mutedForeground};
+  font-size: ${theme.typography.fontSizes.sm};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${theme.borderRadius.sm};
+  border: 1px solid ${props => props.$active ? theme.colors.primary : theme.colors.border};
+  background: ${props => props.$active ? theme.colors.primary : theme.colors.background};
+  color: ${props => props.$active ? '#fff' : theme.colors.textDark};
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${props => props.$active ? 600 : 400};
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.$active ? theme.colors.primary : theme.colors.backgroundSecondary};
+    border-color: ${theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const SearchContainer = styled.div`
   display: flex;
   gap: ${props => props.theme.spacing.sm};
@@ -593,6 +641,10 @@ function AccountantListPageInner() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredAccountants, setFilteredAccountants] = useState<Accountant[]>([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
   useEffect(() => {
     loadAccountants();
   }, []);
@@ -600,6 +652,11 @@ function AccountantListPageInner() {
   useEffect(() => {
     filterAccountants();
   }, [accountants, searchQuery]);
+
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const filterAccountants = () => {
     if (!searchQuery.trim()) {
@@ -988,7 +1045,7 @@ function AccountantListPageInner() {
                                 aria-label={`${accountant.is_active ? 'Deactivate' : 'Activate'} ${accountant.full_name}`}
                               />
                               {togglingId === accountant.id && (
-                                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite', color:theme.colors.mutedForeground }} />
+                                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite', color: theme.colors.mutedForeground }} />
                               )}
                             </div>
                           </td>
