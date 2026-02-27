@@ -2181,25 +2181,106 @@ export default function ReportPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {cashFlow.daily_cash_flow && Object.entries(cashFlow.daily_cash_flow).length > 0 ? (
-                            Object.entries(cashFlow.daily_cash_flow)
+                          {cashFlow.daily_cash_flow && Object.entries(cashFlow.daily_cash_flow).length > 0 ? (() => {
+                            const entries = Object.entries(cashFlow.daily_cash_flow)
                               .filter(([date]) => formatDate(date).toLowerCase().includes(dailyCashFlowSearch.toLowerCase()))
-                              .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-                              .map(([date, flow]: [string, { inflow: number; outflow: number; net: number }]) => (
-                                <tr key={date}>
-                                  <td>{formatDate(date)}</td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    {flow.inflow > 0 ? formatCurrency(flow.inflow) : '—'}
-                                  </td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    {flow.outflow > 0 ? formatCurrency(flow.outflow) : '—'}
-                                  </td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    {formatCurrency(flow.net || 0)}
-                                  </td>
-                                </tr>
-                              ))
-                          ) : (
+                              .sort(([dateA], [dateB]) => dateB.localeCompare(dateA));
+
+                            const totalPages = Math.ceil(entries.length / cashFlowItemsPerPage);
+                            const startIndex = (cashFlowPage - 1) * cashFlowItemsPerPage;
+                            const paginated = entries.slice(startIndex, startIndex + cashFlowItemsPerPage);
+
+                            if (paginated.length === 0 && entries.length > 0) {
+                              setCashFlowPage(1);
+                              return null;
+                            }
+
+                            return (
+                              <>
+                                {paginated.map(([date, flow]: [string, { inflow: number; outflow: number; net: number }]) => (
+                                  <tr key={date}>
+                                    <td>{formatDate(date)}</td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      {flow.inflow > 0 ? formatCurrency(flow.inflow) : '—'}
+                                    </td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      {flow.outflow > 0 ? formatCurrency(flow.outflow) : '—'}
+                                    </td>
+                                    <td style={{ textAlign: 'right' }}>
+                                      {formatCurrency(flow.net || 0)}
+                                    </td>
+                                  </tr>
+                                ))}
+                                {entries.length > cashFlowItemsPerPage && (
+                                  <tr>
+                                    <td colSpan={4} style={{ padding: 0 }}>
+                                      <PaginationContainer>
+                                        <PageInfo>
+                                          Showing {startIndex + 1}-{Math.min(startIndex + cashFlowItemsPerPage, entries.length)} of {entries.length} days
+                                        </PageInfo>
+                                        <PaginationActions>
+                                          <PageButton
+                                            onClick={() => setCashFlowPage(1)}
+                                            disabled={cashFlowPage === 1}
+                                            title="First Page"
+                                          >
+                                            <ChevronsLeft size={16} />
+                                          </PageButton>
+                                          <PageButton
+                                            onClick={() => setCashFlowPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={cashFlowPage === 1}
+                                            title="Previous Page"
+                                          >
+                                            <ChevronLeft size={16} />
+                                          </PageButton>
+
+                                          {[...Array(totalPages)].map((_, i) => {
+                                            const pageNum = i + 1;
+                                            if (
+                                              pageNum === 1 ||
+                                              pageNum === totalPages ||
+                                              (pageNum >= cashFlowPage - 1 && pageNum <= cashFlowPage + 1)
+                                            ) {
+                                              return (
+                                                <PageButton
+                                                  key={pageNum}
+                                                  $active={cashFlowPage === pageNum}
+                                                  onClick={() => setCashFlowPage(pageNum)}
+                                                >
+                                                  {pageNum}
+                                                </PageButton>
+                                              );
+                                            } else if (
+                                              pageNum === cashFlowPage - 2 ||
+                                              pageNum === cashFlowPage + 2
+                                            ) {
+                                              return <span key={pageNum}>...</span>;
+                                            }
+                                            return null;
+                                          })}
+
+                                          <PageButton
+                                            onClick={() => setCashFlowPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={cashFlowPage === totalPages}
+                                            title="Next Page"
+                                          >
+                                            <ChevronRight size={16} />
+                                          </PageButton>
+                                          <PageButton
+                                            onClick={() => setCashFlowPage(totalPages)}
+                                            disabled={cashFlowPage === totalPages}
+                                            title="Last Page"
+                                          >
+                                            <ChevronsRight size={16} />
+                                          </PageButton>
+                                        </PaginationActions>
+                                      </PaginationContainer>
+                                    </td>
+                                  </tr>
+                                )}
+                              </>
+                            );
+                          })() : (
                             <tr>
                               <td colSpan={4} style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
                                 No cash flow data for this period
