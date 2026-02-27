@@ -12,19 +12,9 @@ import Layout from '@/components/layout';
 import { theme } from '@/components/common/theme';
 import { useAuth } from '@/lib/rbac/auth-context';
 import {
-  AlertCircle,
-  UserPlus,
-  Edit,
-  Trash2,
-  Briefcase,
-  Search,
-  Loader2,
-  UserCheck,
-  Shield,
-  Eye,
-  EyeOff,
-  Lock,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -226,6 +216,54 @@ const ActionButtons = styled.div`
   display: flex;
   gap: ${theme.spacing.sm};
   align-items: center;
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  border-top: 1px solid ${theme.colors.border};
+  background: ${theme.colors.background};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${theme.spacing.sm};
+  align-items: center;
+`;
+
+const PageInfo = styled.span`
+  font-size: ${theme.typography.fontSizes.sm};
+  color: ${TEXT_COLOR_MUTED};
+  font-weight: ${theme.typography.fontWeights.medium};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${theme.borderRadius.md};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR : theme.colors.border};
+  background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.background};
+  color: ${props => props.$active ? '#ffffff' : TEXT_COLOR_DARK};
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${theme.typography.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${theme.transitions.default};
+
+  &:hover:not(:disabled) {
+    border-color: ${PRIMARY_COLOR};
+    color: ${props => props.$active ? '#ffffff' : PRIMARY_COLOR};
+    background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.backgroundSecondary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const LoadingContainer = styled.div`
@@ -513,23 +551,11 @@ export default function FinanceListPage() {
   const [financeManagers, setFinanceManagers] = useState<FinanceManager[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [managerToDelete, setManagerToDelete] = useState<FinanceManager | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [deletePasswordError, setDeletePasswordError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
-  const [verifyingPassword, setVerifyingPassword] = useState(false);
-  const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [showActivateModal, setShowActivateModal] = useState(false);
-  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
-  const [managerToActivate, setManagerToActivate] = useState<FinanceManager | null>(null);
-  const [managerToDeactivate, setManagerToDeactivate] = useState<FinanceManager | null>(null);
-  const [activatePassword, setActivatePassword] = useState('');
-  const [deactivatePassword, setDeactivatePassword] = useState('');
-  const [activatePasswordError, setActivatePasswordError] = useState<string | null>(null);
   const [deactivatePasswordError, setDeactivatePasswordError] = useState<string | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadFinanceManagers();
@@ -550,7 +576,7 @@ export default function FinanceListPage() {
     } catch (err: unknown) {
       console.error('Error loading finance managers:', err);
       let message = 'Failed to load finance managers';
-      
+
       if (err && typeof err === 'object' && 'response' in err) {
         const response = (err as { response?: { status?: number; data?: { detail?: string; message?: string } } }).response;
         if (response?.status === 404) {
@@ -563,7 +589,7 @@ export default function FinanceListPage() {
       } else if (err instanceof Error && err.message) {
         message = err.message;
       }
-      
+
       setError(message);
       toast.error(message);
     } finally {
@@ -573,7 +599,7 @@ export default function FinanceListPage() {
 
   const verifyPassword = async (password: string): Promise<boolean> => {
     if (!user) return false;
-    
+
     try {
       // Use login endpoint to verify password
       const identifier = user.email || '';
@@ -623,7 +649,7 @@ export default function FinanceListPage() {
     try {
       // First verify password
       const isValid = await verifyPassword(deletePassword.trim());
-      
+
       if (!isValid) {
         setDeletePasswordError('Incorrect password. Please try again.');
         setVerifyingPassword(false);
@@ -748,6 +774,21 @@ export default function FinanceListPage() {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
+
+  // Reset to first page on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getRoleBadgeVariant = (role: string): 'admin' | 'finance_manager' | 'finance_admin' | 'accountant' | 'employee' | 'default' => {
     const normalizedRole = (role || '').toLowerCase();
