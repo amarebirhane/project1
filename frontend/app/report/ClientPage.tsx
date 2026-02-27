@@ -3020,59 +3020,147 @@ export default function ReportPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {forecasts.map((forecast) => {
-                              const forecastData = forecast.forecast_data || [];
-                              const totalForecasted = forecastData.reduce((sum, point) => sum + (point.forecasted_value || 0), 0);
-                              const isAIModel = forecast.method === 'arima' ||
-                                forecast.method === 'prophet' ||
-                                forecast.method === 'xgboost' ||
-                                forecast.method === 'lstm' ||
-                                forecast.method === 'linear_regression' ||
-                                forecast.method === 'sarima';
+                            {forecasts && forecasts.length > 0 ? (() => {
+                              const totalPages = Math.ceil(forecasts.length / forecastsItemsPerPage);
+                              const startIndex = (forecastsPage - 1) * forecastsItemsPerPage;
+                              const paginated = forecasts.slice(startIndex, startIndex + forecastsItemsPerPage);
+
+                              if (paginated.length === 0 && forecasts.length > 0) {
+                                setForecastsPage(1);
+                                return null;
+                              }
 
                               return (
-                                <tr key={forecast.id}>
-                                  <td>
-                                    <strong>{forecast.name}</strong>
-                                    {forecast.description && (
-                                      <div style={{ fontSize: theme.typography.fontSizes.xs, color: theme.colors.textSecondary, marginTop: theme.spacing.xs }}>
-                                        {forecast.description}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td>
-                                    <span style={{ textTransform: 'capitalize' }}>
-                                      {forecast.forecast_type}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    <span style={{ textTransform: 'capitalize' }}>
-                                      {forecast.method.replace(/_/g, ' ')}
-                                      {isAIModel && ' (AI)'}
-                                    </span>
-                                  </td>
-                                  <td>
-                                    {formatDate(forecast.start_date)} - {formatDate(forecast.end_date)}
-                                  </td>
-                                  <td style={{ textAlign: 'right', fontWeight: theme.typography.fontWeights.bold }}>
-                                    {formatCurrency(totalForecasted)}
-                                  </td>
-                                  <td>{forecastData.length}</td>
-                                  <td>{formatDate(forecast.created_at)}</td>
-                                  <td style={{ textAlign: 'right' }}>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      disabled={isDeleting}
-                                      onClick={() => handleDeleteForecastClick(forecast)}
-                                      style={{ color: '#dc2626' }}
-                                    >
-                                      Delete
-                                    </Button>
-                                  </td>
-                                </tr>
+                                <>
+                                  {paginated.map((forecast) => {
+                                    const forecastData = forecast.forecast_data || [];
+                                    const totalForecasted = forecastData.reduce((sum, point) => sum + (point.forecasted_value || 0), 0);
+                                    const isAIModel = forecast.method === 'arima' ||
+                                      forecast.method === 'prophet' ||
+                                      forecast.method === 'xgboost' ||
+                                      forecast.method === 'lstm' ||
+                                      forecast.method === 'linear_regression' ||
+                                      forecast.method === 'sarima';
+
+                                    return (
+                                      <tr key={forecast.id}>
+                                        <td>
+                                          <strong>{forecast.name}</strong>
+                                          {forecast.description && (
+                                            <div style={{ fontSize: theme.typography.fontSizes.xs, color: theme.colors.textSecondary, marginTop: theme.spacing.xs }}>
+                                              {forecast.description}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td>
+                                          <span style={{ textTransform: 'capitalize' }}>
+                                            {forecast.forecast_type}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          <span style={{ textTransform: 'capitalize' }}>
+                                            {forecast.method.replace(/_/g, ' ')}
+                                            {isAIModel && ' (AI)'}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          {formatDate(forecast.start_date)} - {formatDate(forecast.end_date)}
+                                        </td>
+                                        <td style={{ textAlign: 'right', fontWeight: theme.typography.fontWeights.bold }}>
+                                          {formatCurrency(totalForecasted)}
+                                        </td>
+                                        <td>{forecastData.length}</td>
+                                        <td>{formatDate(forecast.created_at)}</td>
+                                        <td style={{ textAlign: 'right' }}>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            disabled={isDeleting}
+                                            onClick={() => handleDeleteForecastClick(forecast)}
+                                            style={{ color: '#dc2626' }}
+                                          >
+                                            Delete
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                  {forecasts.length > forecastsItemsPerPage && (
+                                    <tr>
+                                      <td colSpan={8} style={{ padding: 0 }}>
+                                        <PaginationContainer>
+                                          <PageInfo>
+                                            Showing {startIndex + 1}-{Math.min(startIndex + forecastsItemsPerPage, forecasts.length)} of {forecasts.length} forecasts
+                                          </PageInfo>
+                                          <PaginationActions>
+                                            <PageButton
+                                              onClick={() => setForecastsPage(1)}
+                                              disabled={forecastsPage === 1}
+                                              title="First Page"
+                                            >
+                                              <ChevronsLeft size={16} />
+                                            </PageButton>
+                                            <PageButton
+                                              onClick={() => setForecastsPage(prev => Math.max(prev - 1, 1))}
+                                              disabled={forecastsPage === 1}
+                                              title="Previous Page"
+                                            >
+                                              <ChevronLeft size={16} />
+                                            </PageButton>
+
+                                            {[...Array(totalPages)].map((_, i) => {
+                                              const pageNum = i + 1;
+                                              if (
+                                                pageNum === 1 ||
+                                                pageNum === totalPages ||
+                                                (pageNum >= forecastsPage - 1 && pageNum <= forecastsPage + 1)
+                                              ) {
+                                                return (
+                                                  <PageButton
+                                                    key={pageNum}
+                                                    $active={forecastsPage === pageNum}
+                                                    onClick={() => setForecastsPage(pageNum)}
+                                                  >
+                                                    {pageNum}
+                                                  </PageButton>
+                                                );
+                                              } else if (
+                                                pageNum === forecastsPage - 2 ||
+                                                pageNum === forecastsPage + 2
+                                              ) {
+                                                return <span key={pageNum}>...</span>;
+                                              }
+                                              return null;
+                                            })}
+
+                                            <PageButton
+                                              onClick={() => setForecastsPage(prev => Math.min(prev + 1, totalPages))}
+                                              disabled={forecastsPage === totalPages}
+                                              title="Next Page"
+                                            >
+                                              <ChevronRight size={16} />
+                                            </PageButton>
+                                            <PageButton
+                                              onClick={() => setForecastsPage(totalPages)}
+                                              disabled={forecastsPage === totalPages}
+                                              title="Last Page"
+                                            >
+                                              <ChevronsRight size={16} />
+                                            </PageButton>
+                                          </PaginationActions>
+                                        </PaginationContainer>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </>
                               );
-                            })}
+                            })() : (
+                              <tr>
+                                <td colSpan={8} style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
+                                  No forecasts available
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </CategoryTable>
                       </div>
