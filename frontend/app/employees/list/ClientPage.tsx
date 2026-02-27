@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Layout from '@/components/layout';
 import Link from 'next/link';
 import apiClient from '@/lib/api';
-import { AlertCircle, UserPlus, Edit, Trash2, Users, Loader2, UserCheck, Shield, Eye, EyeOff, Lock, XCircle, Search, X } from 'lucide-react';
+import { AlertCircle, UserPlus, Edit, Trash2, Users, Loader2, UserCheck, Shield, Eye, EyeOff, Lock, XCircle, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { theme } from '@/components/common/theme';
 import { Switch } from '@/components/ui/switch';
@@ -162,6 +162,54 @@ const StatusBadge = styled.span<{ $active: boolean }>`
 const ActionButtons = styled.div`
   display: flex;
   gap: ${theme.spacing.sm};
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  border-top: 1px solid ${theme.colors.border};
+  background: ${theme.colors.background};
+`;
+
+const PaginationActions = styled.div`
+  display: flex;
+  gap: ${theme.spacing.sm};
+  align-items: center;
+`;
+
+const PageInfo = styled.span`
+  font-size: ${theme.typography.fontSizes.sm};
+  color: ${TEXT_COLOR_MUTED};
+  font-weight: ${theme.typography.fontWeights.medium};
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: ${theme.borderRadius.md};
+  border: 1px solid ${props => props.$active ? PRIMARY_COLOR : theme.colors.border};
+  background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.background};
+  color: ${props => props.$active ? '#ffffff' : TEXT_COLOR_DARK(props)};
+  font-size: ${theme.typography.fontSizes.sm};
+  font-weight: ${theme.typography.fontWeights.medium};
+  cursor: pointer;
+  transition: all ${theme.transitions.default};
+
+  &:hover:not(:disabled) {
+    border-color: ${PRIMARY_COLOR};
+    color: ${props => props.$active ? '#ffffff' : PRIMARY_COLOR};
+    background: ${props => props.$active ? PRIMARY_COLOR : theme.colors.backgroundSecondary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const LoadingContainer = styled.div`
@@ -550,6 +598,10 @@ export default function EmployeeListPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     loadEmployees();
   }, []);
@@ -582,6 +634,7 @@ export default function EmployeeListPage() {
     });
 
     setFilteredEmployees(filtered);
+    setCurrentPage(1); // Reset to first page on search
   };
 
   const handleSearch = () => {
@@ -591,6 +644,7 @@ export default function EmployeeListPage() {
   const handleClearSearch = () => {
     setSearchQuery('');
     setFilteredEmployees(employees);
+    setCurrentPage(1);
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -602,7 +656,7 @@ export default function EmployeeListPage() {
   const loadEmployees = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiClient.getUsers();
       const rawUsers: ApiUser[] = Array.isArray(response.data) ? response.data : [];
@@ -634,7 +688,7 @@ export default function EmployeeListPage() {
 
   const verifyPassword = async (password: string): Promise<boolean> => {
     if (!user) return false;
-    
+
     try {
       // Use login endpoint to verify password
       const identifier = user.email || '';
@@ -683,7 +737,7 @@ export default function EmployeeListPage() {
     try {
       // First verify password
       const isValid = await verifyPassword(deletePassword.trim());
-      
+
       if (!isValid) {
         setDeletePasswordError('Incorrect password. Please try again.');
         setVerifyingPassword(false);
@@ -834,6 +888,15 @@ export default function EmployeeListPage() {
     return roleNames[normalizedRole] || normalizedRole;
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -948,7 +1011,7 @@ export default function EmployeeListPage() {
                     </tr>
                   </TableHeader>
                   <TableBody>
-                    {filteredEmployees.map((employee) => (
+                    {paginatedEmployees.map((employee) => (
                       <tr key={employee.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
@@ -985,8 +1048,8 @@ export default function EmployeeListPage() {
                                 <Edit size={14} className="h-4 w-4 mr-1" />
                               </Button>
                             </Link>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="destructive"
                               onClick={() => handleDeleteClick(employee)}
                               disabled={deleting}
@@ -1005,6 +1068,72 @@ export default function EmployeeListPage() {
                     ))}
                   </TableBody>
                 </Table>
+
+                {filteredEmployees.length > 0 && (
+                  <PaginationContainer>
+                    <PageInfo>
+                      Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
+                    </PageInfo>
+                    <PaginationActions>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                      >
+                        First
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft size={16} />
+                      </Button>
+
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <PageButton
+                            key={pageNum}
+                            $active={currentPage === pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                          >
+                            {pageNum}
+                          </PageButton>
+                        );
+                      })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight size={16} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </Button>
+                    </PaginationActions>
+                  </PaginationContainer>
+                )}
               </div>
             )}
           </Card>
@@ -1024,7 +1153,7 @@ export default function EmployeeListPage() {
                 <XCircle />
               </button>
             </ModalHeader>
-            
+
             <WarningBox>
               <p>
                 <strong>Warning:</strong> This action cannot be undone. All data associated with this employee will be permanently deleted.
