@@ -1190,751 +1190,754 @@ export default function InventoryManagePage() {
     }
   };
 
-  return matchesSearch && matchesCategory;
-});
+  const filteredItems = items.filter((item) => {
+    const matchesSearch = item.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.sku || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
-// Reset to first page when filters change
-useEffect(() => {
-  setCurrentPage(1);
-}, [searchTerm, categoryFilter]);
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter]);
 
-// Calculate pagination
-const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-const startIndex = (currentPage - 1) * itemsPerPage;
-const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedItems = filteredItems.slice(startIndex, startIndex + itemsPerPage);
 
-const handlePageChange = (page: number) => {
-  setCurrentPage(page);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-const categories = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
+  const categories = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
 
-const userRole = user?.role?.toLowerCase() || '';
-const isAccountant = userRole === 'accountant';
-const allowedRoles = ['admin', 'super_admin', 'finance_manager', 'finance_admin', 'manager', 'accountant'];
+  const userRole = user?.role?.toLowerCase() || '';
+  const isAccountant = userRole === 'accountant';
+  const allowedRoles = ['admin', 'super_admin', 'finance_manager', 'finance_admin', 'manager', 'accountant'];
 
-if (!user || !allowedRoles.includes(userRole)) {
-  return null;
-}
+  if (!user || !allowedRoles.includes(userRole)) {
+    return null;
+  }
 
-return (
-  <Layout>
-    <PageContainer>
-      <HeaderContainer>
-        <HeaderContent>
-          <HeaderText>
-            <h1>
-              <HeaderIcon $iconType="package" $size={32} $active={true}>
-                <Package size={32} />
-              </HeaderIcon>
-              {isAccountant ? 'Inventory Items' : 'Inventory Management'}
-            </h1>
-            <p>
-              {isAccountant
-                ? 'View inventory items, selling prices, and quantities (Read Only)'
-                : 'Manage inventory items, costs, and pricing (Finance Admin Only)'
-              }
-            </p>
-          </HeaderText>
-          {!isAccountant && (
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/inventory/warehouses')}
-                style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
-              >
-                <WarehouseIcon size={16} />
-                Warehouses
-              </Button>
-              <Button onClick={handleCreate} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-                <ButtonIcon $iconType="plus" $size={16} $active={true}>
-                  <Plus size={16} />
-                </ButtonIcon>
-                Add Item
-              </Button>
-            </div>
-          )}
-        </HeaderContent>
-      </HeaderContainer>
+  return (
+    <Layout>
+      <PageContainer>
+        <HeaderContainer>
+          <HeaderContent>
+            <HeaderText>
+              <h1>
+                <HeaderIcon $iconType="package" $size={32} $active={true}>
+                  <Package size={32} />
+                </HeaderIcon>
+                {isAccountant ? 'Inventory Items' : 'Inventory Management'}
+              </h1>
+              <p>
+                {isAccountant
+                  ? 'View inventory items, selling prices, and quantities (Read Only)'
+                  : 'Manage inventory items, costs, and pricing (Finance Admin Only)'
+                }
+              </p>
+            </HeaderText>
+            {!isAccountant && (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/inventory/warehouses')}
+                  style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, backgroundColor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}
+                >
+                  <WarehouseIcon size={16} />
+                  Warehouses
+                </Button>
+                <Button onClick={handleCreate} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+                  <ButtonIcon $iconType="plus" $size={16} $active={true}>
+                    <Plus size={16} />
+                  </ButtonIcon>
+                  Add Item
+                </Button>
+              </div>
+            )}
+          </HeaderContent>
+        </HeaderContainer>
 
-      {summary && (
-        <StatsGrid>
-          <StatCard>
-            <StatContent>
-              <StatInfo>
-                <p>Total Items</p>
-                <p>{summary.total_unique_items || summary.total_items || 0}</p>
-              </StatInfo>
-              <StatIcon $iconType="package" $size={24} $active={true}>
-                <Package size={24} />
-              </StatIcon>
-            </StatContent>
-          </StatCard>
-          <StatCard>
-            <StatContent>
-              <StatInfo>
-                <p>Total Stock</p>
-                <p>{summary.total_quantity_in_stock || 0}</p>
-              </StatInfo>
-              <StatIcon $iconType="package" $size={24} $active={true}>
-                <Package size={24} />
-              </StatIcon>
-            </StatContent>
-          </StatCard>
-          {summary.total_cost_value !== undefined && (
+        {summary && (
+          <StatsGrid>
             <StatCard>
               <StatContent>
                 <StatInfo>
-                  <p>Total Cost Value</p>
-                  <p>${Number(summary.total_cost_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p>Total Items</p>
+                  <p>{summary.total_unique_items || summary.total_items || 0}</p>
                 </StatInfo>
-                <StatIcon $iconType="dollar-sign" $size={24} $active={true}>
-                  <DollarSign size={24} />
+                <StatIcon $iconType="package" $size={24} $active={true}>
+                  <Package size={24} />
                 </StatIcon>
               </StatContent>
             </StatCard>
-          )}
-          {(summary.total_selling_value !== undefined || summary.potential_profit !== undefined) && (
-            <ParallelStatsContainer>
-              {summary.total_selling_value !== undefined && (
-                <StatCard>
-                  <StatContent>
-                    <StatInfo>
-                      <p>Total Selling Value</p>
-                      <p>${Number(summary.total_selling_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </StatInfo>
-                    <StatIcon $iconType="trending-up" $size={24} $active={true}>
-                      <TrendingUp size={24} />
-                    </StatIcon>
-                  </StatContent>
-                </StatCard>
-              )}
-              {summary.potential_profit !== undefined && (
-                <StatCard>
-                  <StatContent>
-                    <StatInfo>
-                      <p>Potential Profit</p>
-                      <p style={{ color: '#16a34a' }}>
-                        ${Number(summary.potential_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                    </StatInfo>
-                    <StatIcon $iconType="trending-up" $size={24} $active={true}>
-                      <TrendingUp size={24} />
-                    </StatIcon>
-                  </StatContent>
-                </StatCard>
-              )}
-            </ParallelStatsContainer>
-          )}
-        </StatsGrid>
-      )}
-
-      <FiltersContainer>
-        <SearchInput
-          type="text"
-          placeholder="Search items..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ paddingLeft: '40px' }}
-        />
-        <StyledSelect value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-          <option value="all">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </StyledSelect>
-        <Button
-          variant="outline"
-          onClick={handleExport}
-          style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}
-        >
-          <ButtonIcon $iconType="download" $size={16} $active={true}>
-            <Download size={16} />
-          </ButtonIcon>
-          Export
-        </Button>
-      </FiltersContainer>
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: theme.spacing.xxl }}>
-          <IconWrapper $iconType="loader2" $size={32} $active={true}>
-            <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto' }} />
-          </IconWrapper>
-          <p style={{ marginTop: theme.spacing.md, color: TEXT_COLOR_MUTED }}>Loading inventory...</p>
-        </div>
-      ) : error ? (
-        <div style={{ textAlign: 'center', padding: theme.spacing.xxl }}>
-          <MessageIcon $iconType="alert-circle" $size={32} $active={true}>
-            <AlertCircle size={32} style={{ margin: '0 auto' }} />
-          </MessageIcon>
-          <p style={{ marginTop: theme.spacing.md, color: '#dc2626' }}>{error}</p>
-        </div>
-      ) : (
-        <ItemsTable>
-          <TableHeader $isAccountant={isAccountant}>
-            <div>Item Name</div>
-            {!isAccountant && <div>Buying Price</div>}
-            {!isAccountant && <div>Expense</div>}
-            {!isAccountant && <div>Total Cost</div>}
-            <div>Selling Price</div>
-            <div>Stock</div>
-            {!isAccountant && <div>Profit/Unit</div>}
-            {!isAccountant && <div>Margin %</div>}
-            <div>Status</div>
-            {!isAccountant && <div>Actions</div>}
-          </TableHeader>
-          {filteredItems.length === 0 ? (
-            <div style={{ padding: theme.spacing.xxl, textAlign: 'center', color: TEXT_COLOR_MUTED }}>
-              {items.length === 0 ? (
-                <>
-                  <IconWrapper $iconType="package" $size={48} $active={false} style={{ margin: '0 auto', opacity: 0.5, marginBottom: theme.spacing.md }}>
-                    <Package size={48} />
-                  </IconWrapper>
-                  <p style={{ margin: 0, marginBottom: theme.spacing.sm }}>No inventory items yet</p>
-                  <p style={{ margin: 0, fontSize: theme.typography.fontSizes.sm }}>Click &quot;Add Item&quot; to create your first inventory item</p>
-                </>
-              ) : (
-                <>
-                  <IconWrapper $iconType="search" $size={48} $active={false} style={{ margin: '0 auto', opacity: 0.5, marginBottom: theme.spacing.md }}>
-                    <Search size={48} />
-                  </IconWrapper>
-                  <p style={{ margin: 0 }}>No items match your search criteria</p>
-                </>
-              )}
-            </div>
-          ) : (
-            paginatedItems.map((item) => (
-              <TableRow key={item.id} $isAccountant={isAccountant}>
-                <TableCell>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.item_name}</div>
-                    {item.sku && <div style={{ fontSize: '12px', color: TEXT_COLOR_MUTED, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>SKU: {item.sku}</div>}
-                  </div>
-                </TableCell>
-                {!isAccountant && (
-                  <TableCell>
-                    {item.buying_price !== undefined && item.buying_price !== null
-                      ? `$${Number(item.buying_price).toFixed(2)}`
-                      : 'N/A'}
-                  </TableCell>
-                )}
-                {!isAccountant && (
-                  <TableCell>
-                    {item.expense_amount !== undefined && item.expense_amount !== null
-                      ? `$${Number(item.expense_amount).toFixed(2)}`
-                      : '$0.00'}
-                  </TableCell>
-                )}
-                {!isAccountant && (
-                  <TableCell>
-                    {item.total_cost !== undefined && item.total_cost !== null
-                      ? `$${Number(item.total_cost).toFixed(2)}`
-                      : 'N/A'}
-                  </TableCell>
-                )}
-                <TableCell>${Number(item.selling_price).toFixed(2)}</TableCell>
-                <TableCell>
-                  <Badge $variant={item.quantity < 10 ? 'danger' : item.quantity < 50 ? 'warning' : 'success'}>
-                    {item.quantity}
-                  </Badge>
-                </TableCell>
-                {!isAccountant && (
-                  <TableCell>
-                    {item.profit_per_unit !== undefined && item.profit_per_unit !== null
-                      ? `$${Number(item.profit_per_unit).toFixed(2)}`
-                      : 'N/A'}
-                  </TableCell>
-                )}
-                {!isAccountant && (
-                  <TableCell>
-                    {item.profit_margin !== undefined && item.profit_margin !== null
-                      ? `${Number(item.profit_margin).toFixed(1)}%`
-                      : 'N/A'}
-                  </TableCell>
-                )}
-                <TableCell>
-                  <Badge $variant={item.is_active ? 'success' : 'danger'}>
-                    {item.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </TableCell>
-                {!isAccountant && (
-                  <TableCell>
-                    <div style={{ display: 'flex', gap: theme.spacing.xs }}>
-                      <ActionButton onClick={() => handleEdit(item)} title="Edit">
-                        <ActionIcon $iconType="edit" $size={16} $active={true}>
-                          <Edit size={16} />
-                        </ActionIcon>
-                      </ActionButton>
-                      <ActionButton
-                        onClick={() => {
-                          setItemToDelete(item);
-                          setShowDeleteModal(true);
-                          setDeletePassword('');
-                          setDeletePasswordError(null);
-                        }}
-                        title="Delete"
-                        data-destructive="true"
-                      >
-                        <ActionIcon $iconType="trash2" $size={16} $active={true}>
-                          <Trash2 size={16} />
-                        </ActionIcon>
-                      </ActionButton>
-                      {item.is_active ? (
-                        <ActionButton
-                          onClick={() => {
-                            setItemToActivateDeactivate(item);
-                            setIsActivating(false);
-                            setShowActivateDeactivateModal(true);
-                            setActivateDeactivatePassword('');
-                            setActivateDeactivatePasswordError(null);
-                          }}
-                          title="Deactivate"
-                        >
-                          <ActionIcon $iconType="power-off" $size={16} $active={true}>
-                            <PowerOff size={16} />
-                          </ActionIcon>
-                        </ActionButton>
-                      ) : (
-                        <ActionButton
-                          onClick={() => {
-                            setItemToActivateDeactivate(item);
-                            setIsActivating(true);
-                            setShowActivateDeactivateModal(true);
-                            setActivateDeactivatePassword('');
-                            setActivateDeactivatePasswordError(null);
-                          }}
-                          title="Activate"
-                        >
-                          <ActionIcon $iconType="power" $size={16} $active={true}>
-                            <Power size={16} />
-                          </ActionIcon>
-                        </ActionButton>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))
-          )}
+            <StatCard>
+              <StatContent>
+                <StatInfo>
+                  <p>Total Stock</p>
+                  <p>{summary.total_quantity_in_stock || 0}</p>
+                </StatInfo>
+                <StatIcon $iconType="package" $size={24} $active={true}>
+                  <Package size={24} />
+                </StatIcon>
+              </StatContent>
+            </StatCard>
+            {summary.total_cost_value !== undefined && (
+              <StatCard>
+                <StatContent>
+                  <StatInfo>
+                    <p>Total Cost Value</p>
+                    <p>${Number(summary.total_cost_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  </StatInfo>
+                  <StatIcon $iconType="dollar-sign" $size={24} $active={true}>
+                    <DollarSign size={24} />
+                  </StatIcon>
+                </StatContent>
+              </StatCard>
             )}
-        </ItemsTable>
-      )}
+            {(summary.total_selling_value !== undefined || summary.potential_profit !== undefined) && (
+              <ParallelStatsContainer>
+                {summary.total_selling_value !== undefined && (
+                  <StatCard>
+                    <StatContent>
+                      <StatInfo>
+                        <p>Total Selling Value</p>
+                        <p>${Number(summary.total_selling_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      </StatInfo>
+                      <StatIcon $iconType="trending-up" $size={24} $active={true}>
+                        <TrendingUp size={24} />
+                      </StatIcon>
+                    </StatContent>
+                  </StatCard>
+                )}
+                {summary.potential_profit !== undefined && (
+                  <StatCard>
+                    <StatContent>
+                      <StatInfo>
+                        <p>Potential Profit</p>
+                        <p style={{ color: '#16a34a' }}>
+                          ${Number(summary.potential_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </StatInfo>
+                      <StatIcon $iconType="trending-up" $size={24} $active={true}>
+                        <TrendingUp size={24} />
+                      </StatIcon>
+                    </StatContent>
+                  </StatCard>
+                )}
+              </ParallelStatsContainer>
+            )}
+          </StatsGrid>
+        )}
 
-      {filteredItems.length > 0 && (
-        <PaginationContainer>
-          <PageInfo>
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredItems.length)} of {filteredItems.length} items
-          </PageInfo>
-          <PaginationActions>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              First
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft size={16} />
-            </Button>
+        <FiltersContainer>
+          <SearchInput
+            type="text"
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ paddingLeft: '40px' }}
+          />
+          <StyledSelect value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="all">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </StyledSelect>
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}
+          >
+            <ButtonIcon $iconType="download" $size={16} $active={true}>
+              <Download size={16} />
+            </ButtonIcon>
+            Export
+          </Button>
+        </FiltersContainer>
 
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <PageButton
-                  key={pageNum}
-                  $active={currentPage === pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                >
-                  {pageNum}
-                </PageButton>
-              );
-            })}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight size={16} />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Last
-            </Button>
-          </PaginationActions>
-        </PaginationContainer>
-      )}
-
-      {/* Create/Edit Modal */}
-      {showModal && (
-        <ModalOverlay onClick={() => setShowModal(false)}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
-              <ActionButton onClick={() => setShowModal(false)}>
-                <IconWrapper $iconType="x" $size={20} $active={false}>
-                  <X size={20} />
-                </IconWrapper>
-              </ActionButton>
-            </ModalHeader>
-
-            <FormGroup>
-              <Label htmlFor="item_name">Item Name :</Label>
-              <StyledInput
-                id="item_name"
-                value={formData.item_name}
-                onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
-                placeholder="Enter item name"
-              />
-            </FormGroup>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="buying_price">Buying Price: </Label>
-                <StyledInput
-                  id="buying_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.buying_price}
-                  onChange={(e) => setFormData({ ...formData, buying_price: e.target.value })}
-                  placeholder="0.00"
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="expense_amount">Expense Amount: </Label>
-                <StyledInput
-                  id="expense_amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.expense_amount}
-                  onChange={(e) => setFormData({ ...formData, expense_amount: e.target.value })}
-                  placeholder="0.00"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="selling_price">Selling Price: </Label>
-                <StyledInput
-                  id="selling_price"
-                  type="number"
-                  step="0.01"
-                  value={formData.selling_price}
-                  onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
-                  placeholder="0.00"
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="quantity">Initial Stock: </Label>
-                <StyledInput
-                  id="quantity"
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                  placeholder="0"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="category">Category: </Label>
-                <StyledInput
-                  id="category"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g., Electronics, Clothing"
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="sku">SKU: </Label>
-                <StyledInput
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder="Stock Keeping Unit"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormGroup>
-              <Label htmlFor="description">Description: </Label>
-              <StyledTextarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Item description"
-                rows={4}
-              />
-            </FormGroup>
-
-            <ModalActions>
-              <Button variant="outline" onClick={() => setShowModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}
-              >
-                {saving ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: theme.spacing.xxl }}>
+            <IconWrapper $iconType="loader2" $size={32} $active={true}>
+              <Loader2 size={32} className="animate-spin" style={{ margin: '0 auto' }} />
+            </IconWrapper>
+            <p style={{ marginTop: theme.spacing.md, color: TEXT_COLOR_MUTED }}>Loading inventory...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: theme.spacing.xxl }}>
+            <MessageIcon $iconType="alert-circle" $size={32} $active={true}>
+              <AlertCircle size={32} style={{ margin: '0 auto' }} />
+            </MessageIcon>
+            <p style={{ marginTop: theme.spacing.md, color: '#dc2626' }}>{error}</p>
+          </div>
+        ) : (
+          <ItemsTable>
+            <TableHeader $isAccountant={isAccountant}>
+              <div>Item Name</div>
+              {!isAccountant && <div>Buying Price</div>}
+              {!isAccountant && <div>Expense</div>}
+              {!isAccountant && <div>Total Cost</div>}
+              <div>Selling Price</div>
+              <div>Stock</div>
+              {!isAccountant && <div>Profit/Unit</div>}
+              {!isAccountant && <div>Margin %</div>}
+              <div>Status</div>
+              {!isAccountant && <div>Actions</div>}
+            </TableHeader>
+            {filteredItems.length === 0 ? (
+              <div style={{ padding: theme.spacing.xxl, textAlign: 'center', color: TEXT_COLOR_MUTED }}>
+                {items.length === 0 ? (
                   <>
-                    <ButtonIcon $iconType="loader2" $size={16} $active={true}>
-                      <Loader2 size={16} className="animate-spin" />
-                    </ButtonIcon>
-                    Saving...
+                    <IconWrapper $iconType="package" $size={48} $active={false} style={{ margin: '0 auto', opacity: 0.5, marginBottom: theme.spacing.md }}>
+                      <Package size={48} />
+                    </IconWrapper>
+                    <p style={{ margin: 0, marginBottom: theme.spacing.sm }}>No inventory items yet</p>
+                    <p style={{ margin: 0, fontSize: theme.typography.fontSizes.sm }}>Click &quot;Add Item&quot; to create your first inventory item</p>
                   </>
                 ) : (
                   <>
-                    <ButtonIcon $iconType="save" $size={16} $active={true}>
-                      <Save size={16} />
-                    </ButtonIcon>
-                    {editingItem ? 'Update' : 'Create'} Item
+                    <IconWrapper $iconType="search" $size={48} $active={false} style={{ margin: '0 auto', opacity: 0.5, marginBottom: theme.spacing.md }}>
+                      <Search size={48} />
+                    </IconWrapper>
+                    <p style={{ margin: 0 }}>No items match your search criteria</p>
                   </>
                 )}
-              </Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+              </div>
+            ) : (
+              paginatedItems.map((item) => (
+                <TableRow key={item.id} $isAccountant={isAccountant}>
+                  <TableCell>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.item_name}</div>
+                      {item.sku && <div style={{ fontSize: '12px', color: TEXT_COLOR_MUTED, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>SKU: {item.sku}</div>}
+                    </div>
+                  </TableCell>
+                  {!isAccountant && (
+                    <TableCell>
+                      {item.buying_price !== undefined && item.buying_price !== null
+                        ? `$${Number(item.buying_price).toFixed(2)}`
+                        : 'N/A'}
+                    </TableCell>
+                  )}
+                  {!isAccountant && (
+                    <TableCell>
+                      {item.expense_amount !== undefined && item.expense_amount !== null
+                        ? `$${Number(item.expense_amount).toFixed(2)}`
+                        : '$0.00'}
+                    </TableCell>
+                  )}
+                  {!isAccountant && (
+                    <TableCell>
+                      {item.total_cost !== undefined && item.total_cost !== null
+                        ? `$${Number(item.total_cost).toFixed(2)}`
+                        : 'N/A'}
+                    </TableCell>
+                  )}
+                  <TableCell>${Number(item.selling_price).toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Badge $variant={item.quantity < 10 ? 'danger' : item.quantity < 50 ? 'warning' : 'success'}>
+                      {item.quantity}
+                    </Badge>
+                  </TableCell>
+                  {!isAccountant && (
+                    <TableCell>
+                      {item.profit_per_unit !== undefined && item.profit_per_unit !== null
+                        ? `$${Number(item.profit_per_unit).toFixed(2)}`
+                        : 'N/A'}
+                    </TableCell>
+                  )}
+                  {!isAccountant && (
+                    <TableCell>
+                      {item.profit_margin !== undefined && item.profit_margin !== null
+                        ? `${Number(item.profit_margin).toFixed(1)}%`
+                        : 'N/A'}
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <Badge $variant={item.is_active ? 'success' : 'danger'}>
+                      {item.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TableCell>
+                  {!isAccountant && (
+                    <TableCell>
+                      <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                        <ActionButton onClick={() => handleEdit(item)} title="Edit">
+                          <ActionIcon $iconType="edit" $size={16} $active={true}>
+                            <Edit size={16} />
+                          </ActionIcon>
+                        </ActionButton>
+                        <ActionButton
+                          onClick={() => {
+                            setItemToDelete(item);
+                            setShowDeleteModal(true);
+                            setDeletePassword('');
+                            setDeletePasswordError(null);
+                          }}
+                          title="Delete"
+                          data-destructive="true"
+                        >
+                          <ActionIcon $iconType="trash2" $size={16} $active={true}>
+                            <Trash2 size={16} />
+                          </ActionIcon>
+                        </ActionButton>
+                        {item.is_active ? (
+                          <ActionButton
+                            onClick={() => {
+                              setItemToActivateDeactivate(item);
+                              setIsActivating(false);
+                              setShowActivateDeactivateModal(true);
+                              setActivateDeactivatePassword('');
+                              setActivateDeactivatePasswordError(null);
+                            }}
+                            title="Deactivate"
+                          >
+                            <ActionIcon $iconType="power-off" $size={16} $active={true}>
+                              <PowerOff size={16} />
+                            </ActionIcon>
+                          </ActionButton>
+                        ) : (
+                          <ActionButton
+                            onClick={() => {
+                              setItemToActivateDeactivate(item);
+                              setIsActivating(true);
+                              setShowActivateDeactivateModal(true);
+                              setActivateDeactivatePassword('');
+                              setActivateDeactivatePasswordError(null);
+                            }}
+                            title="Activate"
+                          >
+                            <ActionIcon $iconType="power" $size={16} $active={true}>
+                              <Power size={16} />
+                            </ActionIcon>
+                          </ActionButton>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
+          </ItemsTable>
+        )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && itemToDelete && (
-        <ModalOverlay onClick={() => {
-          setShowDeleteModal(false);
-          setItemToDelete(null);
-          setDeletePassword('');
-          setDeletePasswordError(null);
-        }}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <h2>Delete Inventory Item</h2>
-              <ActionButton onClick={() => {
-                setShowDeleteModal(false);
-                setItemToDelete(null);
-                setDeletePassword('');
-                setDeletePasswordError(null);
-              }}>
-                <IconWrapper $iconType="x" $size={20} $active={false}>
-                  <X size={20} />
-                </IconWrapper>
-              </ActionButton>
-            </ModalHeader>
-
-            <div style={{
-              padding: theme.spacing.md,
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: theme.borderRadius.md,
-              marginBottom: theme.spacing.lg
-            }}>
-              <p style={{ margin: 0, color: '#dc2626', fontSize: theme.typography.fontSizes.sm, display: 'flex', alignItems: 'center' }}>
-                <MessageIcon $iconType="alert-circle" $size={16} $active={true}>
-                  <AlertCircle size={16} />
-                </MessageIcon>
-                You are about to permanently delete <strong>&quot;{itemToDelete.item_name}&quot;</strong>. This action cannot be undone.
-              </p>
-            </div>
-
-            <FormGroup>
-              <Label htmlFor="delete-password">
-                Enter your password to confirm deletion:
-              </Label>
-              <StyledInput
-                id="delete-password"
-                type="password"
-                value={deletePassword}
-                onChange={(e) => {
-                  setDeletePassword(e.target.value);
-                  setDeletePasswordError(null);
-                }}
-                placeholder="Enter your password"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && deletePassword.trim() && !deleting) {
-                    handleDelete();
-                  }
-                }}
-              />
-              {deletePasswordError && (
-                <p style={{ color: '#dc2626', fontSize: theme.typography.fontSizes.sm, marginTop: theme.spacing.xs, margin: 0 }}>
-                  {deletePasswordError}
-                </p>
-              )}
-            </FormGroup>
-
-            <ModalActions>
+        {filteredItems.length > 0 && (
+          <PaginationContainer>
+            <PageInfo>
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredItems.length)} of {filteredItems.length} items
+            </PageInfo>
+            <PaginationActions>
               <Button
                 variant="outline"
-                onClick={() => {
+                size="sm"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={16} />
+              </Button>
+
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <PageButton
+                    key={pageNum}
+                    $active={currentPage === pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </PageButton>
+                );
+              })}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight size={16} />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
+            </PaginationActions>
+          </PaginationContainer>
+        )}
+
+        {/* Create/Edit Modal */}
+        {showModal && (
+          <ModalOverlay onClick={() => setShowModal(false)}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
+                <ActionButton onClick={() => setShowModal(false)}>
+                  <IconWrapper $iconType="x" $size={20} $active={false}>
+                    <X size={20} />
+                  </IconWrapper>
+                </ActionButton>
+              </ModalHeader>
+
+              <FormGroup>
+                <Label htmlFor="item_name">Item Name :</Label>
+                <StyledInput
+                  id="item_name"
+                  value={formData.item_name}
+                  onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
+                  placeholder="Enter item name"
+                />
+              </FormGroup>
+
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="buying_price">Buying Price: </Label>
+                  <StyledInput
+                    id="buying_price"
+                    type="number"
+                    step="0.01"
+                    value={formData.buying_price}
+                    onChange={(e) => setFormData({ ...formData, buying_price: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="expense_amount">Expense Amount: </Label>
+                  <StyledInput
+                    id="expense_amount"
+                    type="number"
+                    step="0.01"
+                    value={formData.expense_amount}
+                    onChange={(e) => setFormData({ ...formData, expense_amount: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </FormGroup>
+              </FormRow>
+
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="selling_price">Selling Price: </Label>
+                  <StyledInput
+                    id="selling_price"
+                    type="number"
+                    step="0.01"
+                    value={formData.selling_price}
+                    onChange={(e) => setFormData({ ...formData, selling_price: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="quantity">Initial Stock: </Label>
+                  <StyledInput
+                    id="quantity"
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    placeholder="0"
+                  />
+                </FormGroup>
+              </FormRow>
+
+              <FormRow>
+                <FormGroup>
+                  <Label htmlFor="category">Category: </Label>
+                  <StyledInput
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="e.g., Electronics, Clothing"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="sku">SKU: </Label>
+                  <StyledInput
+                    id="sku"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    placeholder="Stock Keeping Unit"
+                  />
+                </FormGroup>
+              </FormRow>
+
+              <FormGroup>
+                <Label htmlFor="description">Description: </Label>
+                <StyledTextarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Item description"
+                  rows={4}
+                />
+              </FormGroup>
+
+              <ModalActions>
+                <Button variant="outline" onClick={() => setShowModal(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}
+                >
+                  {saving ? (
+                    <>
+                      <ButtonIcon $iconType="loader2" $size={16} $active={true}>
+                        <Loader2 size={16} className="animate-spin" />
+                      </ButtonIcon>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <ButtonIcon $iconType="save" $size={16} $active={true}>
+                        <Save size={16} />
+                      </ButtonIcon>
+                      {editingItem ? 'Update' : 'Create'} Item
+                    </>
+                  )}
+                </Button>
+              </ModalActions>
+            </ModalContent>
+          </ModalOverlay>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && itemToDelete && (
+          <ModalOverlay onClick={() => {
+            setShowDeleteModal(false);
+            setItemToDelete(null);
+            setDeletePassword('');
+            setDeletePasswordError(null);
+          }}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <h2>Delete Inventory Item</h2>
+                <ActionButton onClick={() => {
                   setShowDeleteModal(false);
                   setItemToDelete(null);
                   setDeletePassword('');
                   setDeletePasswordError(null);
-                }}
-                disabled={deleting}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={!deletePassword.trim() || deleting}
-              >
-                {deleting ? (
-                  <>
-                    <ButtonIcon $iconType="loader2" $size={16} $active={true}>
-                      <Loader2 size={16} className="animate-spin" />
-                    </ButtonIcon>
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <ButtonIcon $iconType="trash2" $size={16} $active={true}>
-                      <Trash2 size={16} />
-                    </ButtonIcon>
-                    Delete Item
-                  </>
-                )}
-              </Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+                }}>
+                  <IconWrapper $iconType="x" $size={20} $active={false}>
+                    <X size={20} />
+                  </IconWrapper>
+                </ActionButton>
+              </ModalHeader>
 
-      {/* Activate/Deactivate Confirmation Modal */}
-      {showActivateDeactivateModal && itemToActivateDeactivate && (
-        <ModalOverlay onClick={() => {
-          setShowActivateDeactivateModal(false);
-          setItemToActivateDeactivate(null);
-          setActivateDeactivatePassword('');
-          setActivateDeactivatePasswordError(null);
-        }}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <h2>{isActivating ? 'Activate Inventory Item' : 'Deactivate Inventory Item'}</h2>
-              <ActionButton onClick={() => {
-                setShowActivateDeactivateModal(false);
-                setItemToActivateDeactivate(null);
-                setActivateDeactivatePassword('');
-                setActivateDeactivatePasswordError(null);
+              <div style={{
+                padding: theme.spacing.md,
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.lg
               }}>
-                <IconWrapper $iconType="x" $size={20} $active={false}>
-                  <X size={20} />
-                </IconWrapper>
-              </ActionButton>
-            </ModalHeader>
-
-            <div style={{
-              padding: theme.spacing.md,
-              background: isActivating ? 'rgba(16, 185, 129, 0.1)' : 'rgba(251, 191, 36, 0.1)',
-              border: isActivating ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(251, 191, 36, 0.3)',
-              borderRadius: theme.borderRadius.md,
-              marginBottom: theme.spacing.lg
-            }}>
-              <p style={{ margin: 0, color: isActivating ? '#059669' : '#d97706', fontSize: theme.typography.fontSizes.sm, display: 'flex', alignItems: 'center' }}>
-                <MessageIcon $iconType="alert-circle" $size={16} $active={true}>
-                  <AlertCircle size={16} />
-                </MessageIcon>
-                You are about to {isActivating ? 'activate' : 'deactivate'} <strong>&quot;{itemToActivateDeactivate.item_name}&quot;</strong>.
-                {!isActivating && ' Deactivated items will not be available for sale.'}
-              </p>
-            </div>
-
-            <FormGroup>
-              <Label htmlFor="activate-deactivate-password">
-                Enter your password to confirm:
-              </Label>
-              <StyledInput
-                id="activate-deactivate-password"
-                type="password"
-                value={activateDeactivatePassword}
-                onChange={(e) => {
-                  setActivateDeactivatePassword(e.target.value);
-                  setActivateDeactivatePasswordError(null);
-                }}
-                placeholder="Enter your password"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && activateDeactivatePassword.trim() && !activatingDeactivating) {
-                    handleActivateDeactivate();
-                  }
-                }}
-              />
-              {activateDeactivatePasswordError && (
-                <p style={{ color: '#dc2626', fontSize: theme.typography.fontSizes.sm, marginTop: theme.spacing.xs, margin: 0 }}>
-                  {activateDeactivatePasswordError}
+                <p style={{ margin: 0, color: '#dc2626', fontSize: theme.typography.fontSizes.sm, display: 'flex', alignItems: 'center' }}>
+                  <MessageIcon $iconType="alert-circle" $size={16} $active={true}>
+                    <AlertCircle size={16} />
+                  </MessageIcon>
+                  You are about to permanently delete <strong>&quot;{itemToDelete.item_name}&quot;</strong>. This action cannot be undone.
                 </p>
-              )}
-            </FormGroup>
+              </div>
 
-            <ModalActions>
-              <Button
-                variant="outline"
-                onClick={() => {
+              <FormGroup>
+                <Label htmlFor="delete-password">
+                  Enter your password to confirm deletion:
+                </Label>
+                <StyledInput
+                  id="delete-password"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => {
+                    setDeletePassword(e.target.value);
+                    setDeletePasswordError(null);
+                  }}
+                  placeholder="Enter your password"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && deletePassword.trim() && !deleting) {
+                      handleDelete();
+                    }
+                  }}
+                />
+                {deletePasswordError && (
+                  <p style={{ color: '#dc2626', fontSize: theme.typography.fontSizes.sm, marginTop: theme.spacing.xs, margin: 0 }}>
+                    {deletePasswordError}
+                  </p>
+                )}
+              </FormGroup>
+
+              <ModalActions>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setItemToDelete(null);
+                    setDeletePassword('');
+                    setDeletePasswordError(null);
+                  }}
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={!deletePassword.trim() || deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <ButtonIcon $iconType="loader2" $size={16} $active={true}>
+                        <Loader2 size={16} className="animate-spin" />
+                      </ButtonIcon>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <ButtonIcon $iconType="trash2" $size={16} $active={true}>
+                        <Trash2 size={16} />
+                      </ButtonIcon>
+                      Delete Item
+                    </>
+                  )}
+                </Button>
+              </ModalActions>
+            </ModalContent>
+          </ModalOverlay>
+        )}
+
+        {/* Activate/Deactivate Confirmation Modal */}
+        {showActivateDeactivateModal && itemToActivateDeactivate && (
+          <ModalOverlay onClick={() => {
+            setShowActivateDeactivateModal(false);
+            setItemToActivateDeactivate(null);
+            setActivateDeactivatePassword('');
+            setActivateDeactivatePasswordError(null);
+          }}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <h2>{isActivating ? 'Activate Inventory Item' : 'Deactivate Inventory Item'}</h2>
+                <ActionButton onClick={() => {
                   setShowActivateDeactivateModal(false);
                   setItemToActivateDeactivate(null);
                   setActivateDeactivatePassword('');
                   setActivateDeactivatePasswordError(null);
-                }}
-                disabled={activatingDeactivating}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant={isActivating ? 'default' : 'destructive'}
-                onClick={handleActivateDeactivate}
-                disabled={!activateDeactivatePassword.trim() || activatingDeactivating}
-              >
-                {activatingDeactivating ? (
-                  <>
-                    <ButtonIcon $iconType="loader2" $size={16} $active={true}>
-                      <Loader2 size={16} className="animate-spin" />
-                    </ButtonIcon>
-                    {isActivating ? 'Activating...' : 'Deactivating...'}
-                  </>
-                ) : (
-                  <>
-                    {isActivating ? (
-                      <ButtonIcon $iconType="power" $size={16} $active={true}>
-                        <Power size={16} />
-                      </ButtonIcon>
-                    ) : (
-                      <ButtonIcon $iconType="power-off" $size={16} $active={true}>
-                        <PowerOff size={16} />
-                      </ButtonIcon>
-                    )}
-                    {isActivating ? 'Activate' : 'Deactivate'} Item
-                  </>
+                }}>
+                  <IconWrapper $iconType="x" $size={20} $active={false}>
+                    <X size={20} />
+                  </IconWrapper>
+                </ActionButton>
+              </ModalHeader>
+
+              <div style={{
+                padding: theme.spacing.md,
+                background: isActivating ? 'rgba(16, 185, 129, 0.1)' : 'rgba(251, 191, 36, 0.1)',
+                border: isActivating ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: theme.borderRadius.md,
+                marginBottom: theme.spacing.lg
+              }}>
+                <p style={{ margin: 0, color: isActivating ? '#059669' : '#d97706', fontSize: theme.typography.fontSizes.sm, display: 'flex', alignItems: 'center' }}>
+                  <MessageIcon $iconType="alert-circle" $size={16} $active={true}>
+                    <AlertCircle size={16} />
+                  </MessageIcon>
+                  You are about to {isActivating ? 'activate' : 'deactivate'} <strong>&quot;{itemToActivateDeactivate.item_name}&quot;</strong>.
+                  {!isActivating && ' Deactivated items will not be available for sale.'}
+                </p>
+              </div>
+
+              <FormGroup>
+                <Label htmlFor="activate-deactivate-password">
+                  Enter your password to confirm:
+                </Label>
+                <StyledInput
+                  id="activate-deactivate-password"
+                  type="password"
+                  value={activateDeactivatePassword}
+                  onChange={(e) => {
+                    setActivateDeactivatePassword(e.target.value);
+                    setActivateDeactivatePasswordError(null);
+                  }}
+                  placeholder="Enter your password"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && activateDeactivatePassword.trim() && !activatingDeactivating) {
+                      handleActivateDeactivate();
+                    }
+                  }}
+                />
+                {activateDeactivatePasswordError && (
+                  <p style={{ color: '#dc2626', fontSize: theme.typography.fontSizes.sm, marginTop: theme.spacing.xs, margin: 0 }}>
+                    {activateDeactivatePasswordError}
+                  </p>
                 )}
-              </Button>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </PageContainer>
-  </Layout>
-);
+              </FormGroup>
+
+              <ModalActions>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowActivateDeactivateModal(false);
+                    setItemToActivateDeactivate(null);
+                    setActivateDeactivatePassword('');
+                    setActivateDeactivatePasswordError(null);
+                  }}
+                  disabled={activatingDeactivating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant={isActivating ? 'default' : 'destructive'}
+                  onClick={handleActivateDeactivate}
+                  disabled={!activateDeactivatePassword.trim() || activatingDeactivating}
+                >
+                  {activatingDeactivating ? (
+                    <>
+                      <ButtonIcon $iconType="loader2" $size={16} $active={true}>
+                        <Loader2 size={16} className="animate-spin" />
+                      </ButtonIcon>
+                      {isActivating ? 'Activating...' : 'Deactivating...'}
+                    </>
+                  ) : (
+                    <>
+                      {isActivating ? (
+                        <ButtonIcon $iconType="power" $size={16} $active={true}>
+                          <Power size={16} />
+                        </ButtonIcon>
+                      ) : (
+                        <ButtonIcon $iconType="power-off" $size={16} $active={true}>
+                          <PowerOff size={16} />
+                        </ButtonIcon>
+                      )}
+                      {isActivating ? 'Activate' : 'Deactivate'} Item
+                    </>
+                  )}
+                </Button>
+              </ModalActions>
+            </ModalContent>
+          </ModalOverlay>
+        )}
+      </PageContainer>
+    </Layout>
+  );
 }
 
