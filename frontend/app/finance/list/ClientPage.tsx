@@ -968,6 +968,7 @@ export default function FinanceListPage() {
                         </td>
                       </tr>
                     ))}
+                  </TableBody>
                 </Table>
 
                 {filtered.length > 0 && (
