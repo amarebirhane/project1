@@ -920,7 +920,7 @@ export default function FinanceListPage() {
                     </tr>
                   </TableHeader>
                   <TableBody>
-                    {filtered.map((m) => (
+                    {paginated.map((m) => (
                       <tr key={m.id}>
                         <td style={{ whiteSpace: 'nowrap' }}>{m.full_name || 'N/A'}</td>
                         <td style={{ whiteSpace: 'nowrap' }}>{m.email}</td>
@@ -968,8 +968,73 @@ export default function FinanceListPage() {
                         </td>
                       </tr>
                     ))}
-                  </TableBody>
                 </Table>
+
+                {filtered.length > 0 && (
+                  <PaginationContainer>
+                    <PageInfo>
+                      Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filtered.length)} of {filtered.length} finance managers
+                    </PageInfo>
+                    <PaginationActions>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                      >
+                        First
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft size={16} />
+                      </Button>
+
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <PageButton
+                            key={pageNum}
+                            $active={currentPage === pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                          >
+                            {pageNum}
+                          </PageButton>
+                        );
+                      })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight size={16} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </Button>
+                    </PaginationActions>
+                  </PaginationContainer>
+                )}
               </div>
             )}
           </TableContainer>
