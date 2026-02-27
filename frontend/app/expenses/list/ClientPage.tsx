@@ -16,7 +16,9 @@ import {
   EyeOff,
   Lock,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
@@ -1193,7 +1195,20 @@ export default function ExpenseListPage() {
                     </PageInfo>
                     <PaginationActions>
                       <PageButton
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        onClick={() => {
+                          setCurrentPage(1);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        disabled={currentPage === 1}
+                        title="First Page"
+                      >
+                        <ChevronsLeft size={16} />
+                      </PageButton>
+                      <PageButton
+                        onClick={() => {
+                          setCurrentPage(p => Math.max(1, p - 1));
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         disabled={currentPage === 1}
                         title="Previous Page"
                       >
@@ -1202,9 +1217,7 @@ export default function ExpenseListPage() {
 
                       {[...Array(totalPages)].map((_, i) => {
                         const pageNum = i + 1;
-                        // Logic to show limited number of page buttons if many pages
                         if (
-                          totalPages <= 7 ||
                           pageNum === 1 ||
                           pageNum === totalPages ||
                           (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
@@ -1213,14 +1226,17 @@ export default function ExpenseListPage() {
                             <PageButton
                               key={pageNum}
                               $active={currentPage === pageNum}
-                              onClick={() => setCurrentPage(pageNum)}
+                              onClick={() => {
+                                setCurrentPage(pageNum);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
                             >
                               {pageNum}
                             </PageButton>
                           );
                         } else if (
-                          (pageNum === currentPage - 2 && pageNum > 1) ||
-                          (pageNum === currentPage + 2 && pageNum < totalPages)
+                          pageNum === currentPage - 2 ||
+                          pageNum === currentPage + 2
                         ) {
                           return <span key={pageNum} style={{ color: TEXT_COLOR_MUTED({ theme }) }}>...</span>;
                         }
@@ -1228,11 +1244,24 @@ export default function ExpenseListPage() {
                       })}
 
                       <PageButton
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() => {
+                          setCurrentPage(p => Math.min(totalPages, p + 1));
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         disabled={currentPage === totalPages}
                         title="Next Page"
                       >
                         <ChevronRight size={16} />
+                      </PageButton>
+                      <PageButton
+                        onClick={() => {
+                          setCurrentPage(totalPages);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        disabled={currentPage === totalPages}
+                        title="Last Page"
+                      >
+                        <ChevronsRight size={16} />
                       </PageButton>
                     </PaginationActions>
                   </PaginationContainer>
