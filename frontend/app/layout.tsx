@@ -13,6 +13,7 @@ import FeedbackWidget from '@/components/common/FeedbackWidget';
 import AIChatWidget from '@/components/common/AIChatWidget';
 import WebSocketInitializer from '@/components/common/WebSocketInitializer';
 import { useAuth } from '@/lib/rbac/auth-context';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 // Use system fonts instead of Google Fonts to avoid download warnings
 const GlobalStyle = createGlobalStyle`
@@ -82,11 +83,13 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <ThemeProvider theme={currentTheme}>
             <AuthProvider>
-              <LayoutContainer>
-                <MainContent>
-                  <ContentWrapper>{children}</ContentWrapper>
-                </MainContent>
-              </LayoutContainer>
+              <ErrorBoundary>
+                <LayoutContainer>
+                  <MainContent>
+                    <ContentWrapper>{children}</ContentWrapper>
+                  </MainContent>
+                </LayoutContainer>
+              </ErrorBoundary>
               <Toaster position="top-right" />
               <WidgetWrapper />
               <WebSocketInitializer />
