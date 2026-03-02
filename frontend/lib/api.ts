@@ -1,7 +1,15 @@
 // lib/api.ts
 'use client';
 
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { toast } from 'sonner';
+
+// Type for API error response
+interface ApiErrorResponse {
+  detail?: string | { msg: string }[];
+  message?: string;
+  error?: string;
+}
 
 const DEFAULT_BASE_URL = 'http://localhost:8000/api/v1';
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_BASE_URL).replace(/\/$/, '');
@@ -233,100 +241,100 @@ class ApiClient {
     );
 
     this.client.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        const requestUrl = originalRequest?.url || '';
+      (response: AxiosResponse) => response,
+      (error: AxiosError<ApiErrorResponse>) => {
+        const { response } = error;
 
-        // Handle 401 Unauthorized - but DON'T redirect on login endpoint
-        // The login page handles its own error states and redirects
-        if (error.response?.status === 401 && !originalRequest?._retry) {
-          originalRequest._retry = true;
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
+        if (response) {
+          const status = response.status;
+          const data = response.data;
 
-            // Only redirect if NOT on the login endpoint
-            // Login endpoint errors should be handled by the login page component
-            const isLoginEndpoint = requestUrl.includes('/auth/login-json') ||
-              requestUrl.includes('/auth/login');
-
-            if (!isLoginEndpoint && !window.location.pathname.includes('/auth/login')) {
-              // Redirect to home page for other 401 errors (not login-related)
-              window.location.href = '/';
-            }
-            // For login endpoint 401s, let the error propagate to the component
+          // Extract error message
+          let errorMessage = 'An unexpected error occurred';
+          if (typeof data?.detail === 'string') {
+            errorMessage = data.detail;
+          } else if (Array.isArray(data?.detail)) {
+            errorMessage = data.detail[0]?.msg || errorMessage;
+          } else if (data?.message) {
+            errorMessage = data.message;
+          } else if (data?.error) {
+            errorMessage = data.error;
           }
-        }
 
-        // Handle 403 Forbidden - user doesn't have permission
-        if (error.response?.status === 403) {
-          const url = error.config?.url || '';
-          const errorDetail = error.response?.data?.detail || 'Insufficient permissions';
+          switch (status) {
+            case 401:
+              // Only redirect if not already on login page
+              if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
+                const originalRequest = error.config;
+                const requestUrl = originalRequest?.url || '';
+                const isLoginEndpoint = requestUrl.includes('/auth/login-json') || requestUrl.includes('/auth/login');
 
-          // Suppress warnings for expected 403s on role-restricted endpoints
-          // These are handled gracefully by the calling code
-          const suppressWarnings = url.includes('/inventory/summary') ||
-            url.includes('/sales/summary') ||
-            url.includes('/sales/summary/overview') ||
-            url.includes('/sales/journal-entries') ||
-            url.includes('/backup');
-
-          // For user endpoints, provide more helpful error messages
-          if (url.includes('/users/') && !url.includes('/users/me')) {
-            // Don't suppress warnings for user endpoints - these are important
-            if (typeof window !== 'undefined') {
-              console.warn('Access forbidden to user resource:', errorDetail);
-            }
-            // Enhance error with more context
-            error.response.data = {
-              ...error.response.data,
-              detail: errorDetail,
-              message: `You don't have permission to access this user. ${errorDetail}`,
-            };
-          } else if (!suppressWarnings && typeof window !== 'undefined') {
-            console.warn('Access forbidden:', errorDetail);
-          }
-        }
-
-        // Handle 404 Not Found - suppress console warnings for non-critical endpoints
-        if (error.response?.status === 404) {
-          const url = error.config?.url || '';
-          // Only log 404s in development mode to reduce console noise
-          if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-            console.warn('Resource not found:', url);
-          }
-        }
-
-        // Handle network errors - suppress repetitive errors for polling endpoints
-        if (!error.response) {
-          const url = error.config?.url || '';
-          // Suppress errors for polling endpoints to reduce console noise
-          // These are expected when backend is down
-          const isPollingEndpoint = url.includes('/notifications/unread/count') ||
-            url.includes('/dashboard/recent-activity') ||
-            url.includes('/health');
-
-          if (!isPollingEndpoint) {
-            // Only log non-polling endpoint errors
-            const errorMessage = error.message || 'Network error: Unable to connect to server';
-
-            if (process.env.NODE_ENV === 'development') {
-              console.error('Network error:', errorMessage);
-
-              if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-                console.error('Backend server may not be running. Please ensure the backend is running on http://localhost:8000');
-              } else if (error.code === 'ERR_NETWORK') {
-                console.error('Network request failed. Check your internet connection and backend server status.');
+                if (!isLoginEndpoint) {
+                  localStorage.removeItem('access_token');
+                  localStorage.removeItem('refresh_token');
+                  window.location.href = '/auth/login?expired=true';
+                }
               }
-            }
+              break;
+            case 403:
+              toast.error('Permission Denied', {
+                description: "You don't have permission to perform this action."
+              });
+              break;
+            case 422:
+              toast.error('Validation Error', {
+                description: errorMessage
+              });
+              break;
+            case 429:
+              toast.error('Too Many Requests', {
+                description: 'Please wait a moment before trying again.'
+              });
+              break;
+            case 500:
+              toast.error('Server Error', {
+                description: 'Our team has been notified. Please try again later.'
+              });
+              break;
+            default:
+              break;
           }
-          // Polling endpoint errors are silently handled - they're expected when backend is down
+        } else if (error.request) {
+          toast.error('Network Error', {
+            description: 'Please check your internet connection.'
+          });
         }
 
         return Promise.reject(error);
-      },
+      }
     );
+  }
+
+  /**
+   * Universal error handler for components to use in try/catch blocks
+   */
+  public static handleError(error: unknown, fallbackMessage = 'Action failed'): string {
+    console.error('API Error:', error);
+
+    let message = fallbackMessage;
+
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data as ApiErrorResponse;
+      if (typeof data?.detail === 'string') {
+        message = data.detail;
+      } else if (Array.isArray(data?.detail)) {
+        message = data.detail[0]?.msg || message;
+      } else if (data?.message) {
+        message = data.message;
+      } else if (data?.error) {
+        message = data.error;
+      }
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    toast.error(message);
+    return message;
   }
 
   private normalizeResponse<T>(payload: unknown): ApiResponse<T> {
