@@ -23,6 +23,9 @@ from .api.v1 import (
 )
 
 from .utils.audit import AuditLogger, AuditAction
+from .core.limiter import limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 # --- Critical imports for default admin creation ---
 from .models.user import User, UserRole        # SQLAlchemy model + Enum
@@ -247,8 +250,12 @@ app = FastAPI(
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
     openapi_url="/openapi.json" if settings.DEBUG else None,
-    lifespan=lifespan,                     # <-- new way
+    lifespan=lifespan,
 )
+
+# --- Rate Limiting ---
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # --- CORS Configuration ---
 # Standard FastAPI CORS handling. Added here to be the outermost middleware layer.

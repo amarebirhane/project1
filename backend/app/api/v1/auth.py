@@ -19,6 +19,7 @@ from ...utils.audit import AuditLogger, AuditAction
 
 import pyotp # type: ignore[import-untyped]
 
+from ...core.limiter import limiter
 logger = logging.getLogger(__name__)
 
 
@@ -242,6 +243,7 @@ def is_ip_allowed(user_ip: str, allowed_ips_str: str) -> bool:
 # LOGIN (OAuth2 form-data) – CRITICAL FOR test_hierarchy.py
 # ------------------------------------------------------------------
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     request: Request = None,
@@ -347,6 +349,7 @@ def login(
 # REGISTER
 # ------------------------------------------------------------------
 @router.post("/register", response_model=UserOut, status_code=201)
+@limiter.limit("3/minute")
 def register(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
     user = user_crud.create(db, user_data)
     
@@ -369,6 +372,7 @@ def register(user_data: UserCreate, request: Request, db: Session = Depends(get_
 # LOGIN with JSON (with 2FA support)
 # ------------------------------------------------------------------
 @router.post("/login-json", response_model=dict)
+@limiter.limit("5/minute")
 def login_json(
     user_data: UserLogin,
     request: Request = None,
