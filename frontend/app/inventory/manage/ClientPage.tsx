@@ -1942,4 +1942,3 @@ export default function InventoryManagePage() {
     </Layout>
   );
 }
-
