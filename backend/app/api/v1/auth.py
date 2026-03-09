@@ -368,7 +368,24 @@ def login(
         data={"sub": str(user.id)},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    return {"access_token": access_token, "token_type": "bearer", "requires_2fa": False}
+    
+    # Issue Refresh Token
+    refresh_token_value, refresh_expires_at = create_refresh_token(data={"sub": str(user.id)})
+    db_refresh_token = RefreshToken(
+        token=refresh_token_value,
+        user_id=user.id,
+        expires_at=refresh_expires_at,
+        created_ip=ip_address
+    )
+    db.add(db_refresh_token)
+    db.commit()
+    
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token_value,
+        "token_type": "bearer", 
+        "requires_2fa": False
+    }
 
 
 # ------------------------------------------------------------------
@@ -506,8 +523,21 @@ def login_json(
         data={"sub": str(user.id)},
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+    
+    # Issue Refresh Token
+    refresh_token_value, refresh_expires_at = create_refresh_token(data={"sub": str(user.id)})
+    db_refresh_token = RefreshToken(
+        token=refresh_token_value,
+        user_id=user.id,
+        expires_at=refresh_expires_at,
+        created_ip=ip_address
+    )
+    db.add(db_refresh_token)
+    db.commit()
+    
     return {
         "access_token": access_token,
+        "refresh_token": refresh_token_value,
         "token_type": "bearer",
         "requires_2fa": False,
         "user": {
