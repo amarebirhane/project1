@@ -44,5 +44,5 @@ async def test_ocr_analyze_image_invalid_json(mock_genai):
     
     result = await service.analyze_image(file)
     
-    assert result.document_type == "error"
-    assert "Expect value" in result.raw_text # JSON decode error message
+    assert result.document_type == "error", f"Expected error due to invalid JSON, got {result.document_type}. Error: {result.raw_text}"
+    assert "Expecting value" in result.raw_text
