@@ -450,7 +450,7 @@ def post_sale(
         except Exception as e:
             logger.warning(f"Auto-learning trigger failed for sale posting: {str(e)}")
 
-        return _format_sale_output(sale, current_user)
+        return GenericResponse(message="Sale posted to ledger successfully", data=_format_sale_output(sale, current_user))
     except HTTPException:
         raise
     except ValueError as e:
@@ -499,7 +499,7 @@ def cancel_sale(
         except Exception as e:
             logger.warning(f"Auto-learning trigger failed for sale cancellation: {str(e)}")
 
-        return _format_sale_output(sale, current_user)
+        return GenericResponse(message="Sale cancelled successfully", data=_format_sale_output(sale, current_user))
     except HTTPException:
         raise
     except ValueError as e:
