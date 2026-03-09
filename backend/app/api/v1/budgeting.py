@@ -823,7 +823,7 @@ def update_forecast(
 # AI/ML MODEL TRAINING
 # ============================================================================
 
-@router.post("/ml/train/all")
+@router.post("/ml/train/all", response_model=GenericResponse)
 def train_all_models(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -844,11 +844,11 @@ def train_all_models(
         results = MLForecastingService.train_all_models(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return {
-            "status": "success",
-            "message": "Model training completed",
-            "results": results
-        }
+        return GenericResponse(
+            status="success",
+            message="Model training completed",
+            data=results
+        )
     except ValueError as e:
         logger.error(f"Model training failed (validation error): {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -860,7 +860,7 @@ def train_all_models(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/expenses/arima")
+@router.post("/ml/train/expenses/arima", response_model=GenericResponse)
 def train_expenses_arima(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -892,7 +892,7 @@ def train_expenses_arima(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/expenses/prophet")
+@router.post("/ml/train/expenses/prophet", response_model=GenericResponse)
 def train_expenses_prophet(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -932,7 +932,7 @@ def train_expenses_prophet(
         raise HTTPException(status_code=500, detail=f"Training failed: {error_msg}")
 
 
-@router.post("/ml/train/expenses/linear-regression")
+@router.post("/ml/train/expenses/linear-regression", response_model=GenericResponse)
 def train_expenses_linear_regression(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -962,7 +962,7 @@ def train_expenses_linear_regression(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/revenue/prophet")
+@router.post("/ml/train/revenue/prophet", response_model=GenericResponse)
 def train_revenue_prophet(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1002,7 +1002,7 @@ def train_revenue_prophet(
         raise HTTPException(status_code=500, detail=f"Training failed: {error_msg}")
 
 
-@router.post("/ml/train/revenue/xgboost")
+@router.post("/ml/train/revenue/xgboost", response_model=GenericResponse)
 def train_revenue_xgboost(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1032,7 +1032,7 @@ def train_revenue_xgboost(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/revenue/lstm")
+@router.post("/ml/train/revenue/lstm", response_model=GenericResponse)
 def train_revenue_lstm(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1065,7 +1065,7 @@ def train_revenue_lstm(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/inventory/sarima")
+@router.post("/ml/train/inventory/sarima", response_model=GenericResponse)
 def train_inventory_sarima(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1100,7 +1100,7 @@ def train_inventory_sarima(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/inventory/xgboost")
+@router.post("/ml/train/inventory/xgboost", response_model=GenericResponse)
 def train_inventory_xgboost(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1130,7 +1130,7 @@ def train_inventory_xgboost(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.post("/ml/train/inventory/lstm")
+@router.post("/ml/train/inventory/lstm", response_model=GenericResponse)
 def train_inventory_lstm(
     start_date: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end_date: str = Query(..., description="End date (YYYY-MM-DD)"),
@@ -1163,7 +1163,7 @@ def train_inventory_lstm(
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
-@router.get("/ml/auto-learn/status")
+@router.get("/ml/auto-learn/status", response_model=GenericResponse)
 def get_auto_learn_status(
     current_user: User = Depends(get_current_active_user),
 ):
@@ -1172,16 +1172,18 @@ def get_auto_learn_status(
         from ...services.ml_auto_learn import get_auto_learn_status, get_training_statistics
         status = get_auto_learn_status()
         stats = get_training_statistics()
-        return {
-            "status": status,
-            "statistics": stats
-        }
+        return GenericResponse(
+            data={
+                "status": status,
+                "statistics": stats
+            }
+        )
     except Exception as e:
         logger.error(f"Failed to get auto-learn status: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get auto-learn status: {str(e)}")
 
 
-@router.post("/ml/auto-learn/trigger/{metric}")
+@router.post("/ml/auto-learn/trigger/{metric}", response_model=GenericResponse)
 def trigger_auto_learn_manual(
     metric: str,
     current_user: User = Depends(get_current_active_user),
@@ -1206,27 +1208,33 @@ def trigger_auto_learn_manual(
         result = trigger_auto_learn(metric, db=db, force=True)
         
         if result:
-            return {
-                "status": "success",
-                "metric": metric,
-                "models_trained": len(result.get('trained_models', [])),
-                "best_model": result.get('best_model_type'),
-                "best_rmse": result.get('best_model', {}).get('rmse') if result.get('best_model') else None,
-                "model_saved": result.get('model_saved', False),
-                "details": result
-            }
+            return GenericResponse(
+                message=f"Auto-learning triggered for {metric}",
+                data={
+                    "status": "success",
+                    "metric": metric,
+                    "models_trained": len(result.get('trained_models', [])),
+                    "best_model": result.get('best_model_type'),
+                    "best_rmse": result.get('best_model', {}).get('rmse') if result.get('best_model') else None,
+                    "model_saved": result.get('model_saved', False),
+                    "details": result
+                }
+            )
         else:
-            return {
-                "status": "skipped",
-                "metric": metric,
-                "message": "Auto-learning conditions not met (not enough data or too soon since last training)"
-            }
+            return GenericResponse(
+                message="Auto-learning skipped",
+                data={
+                    "status": "skipped",
+                    "metric": metric,
+                    "message": "Auto-learning conditions not met (not enough data or too soon since last training)"
+                }
+            )
     except Exception as e:
         logger.error(f"Failed to trigger auto-learn for {metric}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Auto-learning failed: {str(e)}")
 
 
-@router.get("/ml/models")
+@router.get("/ml/models", response_model=GenericResponse)
 def list_trained_models(
     metric: Optional[str] = Query(None, description="Filter by metric (expense, revenue, inventory)"),
     current_user: User = Depends(get_current_active_user),
@@ -1249,16 +1257,18 @@ def list_trained_models(
                 "source": info.get('source', 'unknown')
             })
         
-        return {
-            "total_models": len(formatted_models),
-            "models": formatted_models
-        }
+        return GenericResponse(
+            data={
+                "total_models": len(formatted_models),
+                "models": formatted_models
+            }
+        )
     except Exception as e:
         logger.error(f"Failed to list trained models: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to list models: {str(e)}")
 
 
-@router.get("/ml/scheduler/status")
+@router.get("/ml/scheduler/status", response_model=GenericResponse)
 def get_scheduler_status(
     current_user: User = Depends(get_current_active_user),
 ):
@@ -1271,13 +1281,13 @@ def get_scheduler_status(
     
     try:
         from ...services.ml_scheduler import get_scheduler_status
-        return get_scheduler_status()
+        return GenericResponse(data=get_scheduler_status())
     except Exception as e:
         logger.error(f"Failed to get scheduler status: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get scheduler status: {str(e)}")
 
 
-@router.post("/ml/forecast/with-advice")
+@router.post("/ml/forecast/with-advice", response_model=GenericResponse)
 def generate_forecast_with_advice(
     metric: str = Query(..., description="Metric to forecast (expense, revenue, inventory)"),
     model_type: str = Query(..., description="Model type (arima, sarima, prophet, xgboost, lstm, linear_regression)"),
@@ -1331,17 +1341,20 @@ def generate_forecast_with_advice(
                 "trend_analysis": {}
             }
         
-        return {
-            "status": "success",
-            "metric": metric,
-            "model_type": model_type,
-            "periods": periods,
-            "forecast": result.get("forecast", []),
-            "advice": result.get("advice", []),
-            "alerts": result.get("alerts", []),
-            "summary": result.get("summary", ""),
-            "trend_analysis": result.get("trend_analysis", {})
-        }
+        return GenericResponse(
+            message="Forecast with advice generated successfully",
+            data={
+                "status": "success",
+                "metric": metric,
+                "model_type": model_type,
+                "periods": periods,
+                "forecast": result.get("forecast", []),
+                "advice": result.get("advice", []),
+                "alerts": result.get("alerts", []),
+                "summary": result.get("summary", ""),
+                "trend_analysis": result.get("trend_analysis", {})
+            }
+        )
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=f"Trained model not found. Please train a model first: {str(e)}")
     except Exception as e:
@@ -1349,7 +1362,7 @@ def generate_forecast_with_advice(
         raise HTTPException(status_code=500, detail=f"Forecast generation failed: {str(e)}")
 
 
-@router.post("/ml/train/custom")
+@router.post("/ml/train/custom", response_model=GenericResponse)
 def train_from_custom_data(
     training_request: CustomTrainingRequest,
     current_user: User = Depends(get_current_active_user),
@@ -1436,7 +1449,7 @@ def train_from_custom_data(
         raise HTTPException(status_code=500, detail=f"Training failed: {error_msg}")
 
 
-@router.post("/ml/forecast/custom")
+@router.post("/ml/forecast/custom", response_model=GenericResponse)
 def train_and_forecast_from_custom_data(
     forecast_request: CustomForecastRequest,
     current_user: User = Depends(get_current_active_user),
@@ -1525,19 +1538,22 @@ def train_and_forecast_from_custom_data(
             batch_size=forecast_request.batch_size or 32
         )
         
-        return {
-            "status": "success",
-            "message": f"Forecast generated successfully from {len(data_points)} data points",
-            "training_metrics": result.get("training_result", {}),
-            "forecast": result.get("forecast_data", []),
-            "forecast_summary": {
-                "total_periods": len(result.get("forecast_data", [])),
-                "total_forecasted_value": sum(point.get("forecasted_value", 0) for point in result.get("forecast_data", [])),
-                "average_per_period": sum(point.get("forecasted_value", 0) for point in result.get("forecast_data", [])) / len(result.get("forecast_data", [])) if result.get("forecast_data") else 0
-            },
-            "model_saved": forecast_request.save_model,
-            "model_path": result.get("model_path")
-        }
+        return GenericResponse(
+            message="Custom forecast generated successfully",
+            data={
+                "status": "success",
+                "message": f"Forecast generated successfully from {len(data_points)} data points",
+                "training_metrics": result.get("training_result", {}),
+                "forecast": result.get("forecast_data", []),
+                "forecast_summary": {
+                    "total_periods": len(result.get("forecast_data", [])),
+                    "total_forecasted_value": sum(point.get("forecasted_value", 0) for point in result.get("forecast_data", [])),
+                    "average_per_period": sum(point.get("forecasted_value", 0) for point in result.get("forecast_data", [])) / len(result.get("forecast_data", [])) if result.get("forecast_data") else 0
+                },
+                "model_saved": forecast_request.save_model,
+                "model_path": result.get("model_path")
+            }
+        )
         
     except ImportError as e:
         logger.error(f"Custom forecast failed (import error): {str(e)}", exc_info=True)
@@ -1554,7 +1570,7 @@ def train_and_forecast_from_custom_data(
         raise HTTPException(status_code=500, detail=f"Forecast generation failed: {error_msg}")
 
 
-@router.delete("/forecasts/{forecast_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/forecasts/{forecast_id}", response_model=GenericResponse, status_code=status.HTTP_200_OK)
 def delete_forecast(
     forecast_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -1571,7 +1587,7 @@ def delete_forecast(
             raise HTTPException(status_code=403, detail="Not enough permissions")
     
     forecast.delete(db, forecast_id)
-    return None
+    return GenericResponse(message="Forecast deleted successfully")
 
 
 class DeleteForecastRequest(BaseModel):
@@ -1624,14 +1640,14 @@ def delete_forecast_with_password(
     
     # Delete the forecast
     forecast.delete(db, forecast_id)
-    return {"message": "Forecast deleted successfully"}
+    return GenericResponse(message="Forecast deleted successfully")
 
 
 # ============================================================================
 # VARIANCE ANALYSIS
 # ============================================================================
 
-@router.post("/budgets/{budget_id}/variance", response_model=BudgetVarianceOut, status_code=status.HTTP_201_CREATED)
+@router.post("/budgets/{budget_id}/variance", response_model=GenericResponse[BudgetVarianceOut], status_code=status.HTTP_201_CREATED)
 def calculate_variance(
     budget_id: int,
     period_start: str = Query(..., description="Period start date (YYYY-MM-DD)"),
@@ -1654,10 +1670,10 @@ def calculate_variance(
         db, budget_id, period_start_dt, period_end_dt,
         current_user.id, current_user.role
     )
-    return variance
+    return GenericResponse(message="Variance calculated successfully", data=variance)
 
 
-@router.get("/budgets/{budget_id}/variance", response_model=List[BudgetVarianceOut])
+@router.get("/budgets/{budget_id}/variance", response_model=GenericResponse[List[BudgetVarianceOut]])
 def get_variance_history(
     budget_id: int,
     skip: int = Query(0, ge=0),
@@ -1671,10 +1687,10 @@ def get_variance_history(
         raise HTTPException(status_code=404, detail="Budget not found")
     
     variances = budget_variance.get_by_budget(db, budget_id, skip, limit)
-    return variances
+    return GenericResponse(data=variances)
 
 
-@router.get("/budgets/{budget_id}/variance/summary")
+@router.get("/budgets/{budget_id}/variance/summary", response_model=GenericResponse)
 def get_variance_summary(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -1686,5 +1702,5 @@ def get_variance_summary(
         raise HTTPException(status_code=404, detail="Budget not found")
     
     summary = VarianceAnalysisService.get_variance_summary(db, budget_id)
-    return summary
+    return GenericResponse(data=summary)
 
