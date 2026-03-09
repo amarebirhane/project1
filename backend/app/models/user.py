@@ -39,6 +39,10 @@ class User(Base):
     permissions = Column(JSON, nullable=True)  # Custom permissions: [{"resource": "REVENUES", "actions": {"READ": true, "CREATE": true}}]
     notification_preferences = Column(JSON, nullable=True)  # Notification preferences: {"notificationPreferences": {...}, "doNotDisturb": bool, "quietHours": {...}}
     profile_image_url = Column(String, nullable=True)  # URL to the user's profile picture
+    
+    # Account Lockout fields
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    locked_until = Column(DateTime(timezone=True), nullable=True)
 
     manager = relationship("User", remote_side=[id], back_populates="subordinates")
     subordinates = relationship("User", back_populates="manager")
