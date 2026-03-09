@@ -1,8 +1,8 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
 import { useTranslations } from 'next-intl';
-import styled from "styled-components";
 
 const HeaderWrapper = styled.header`
   position: sticky;
