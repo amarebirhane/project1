@@ -415,7 +415,7 @@ def delete_budget_item_with_password(
 # SCENARIO PLANNING
 # ============================================================================
 
-@router.post("/budgets/{budget_id}/scenarios", response_model=BudgetScenarioOut, status_code=status.HTTP_201_CREATED)
+@router.post("/budgets/{budget_id}/scenarios", response_model=GenericResponse[BudgetScenarioOut], status_code=status.HTTP_201_CREATED)
 def create_scenario(
     budget_id: int,
     scenario_data: BudgetScenarioCreate,
@@ -453,10 +453,10 @@ def create_scenario(
         except (json.JSONDecodeError, TypeError):
             new_scenario.adjustments = None
     
-    return new_scenario
+    return GenericResponse(message="Scenario created successfully", data=new_scenario)
 
 
-@router.get("/budgets/{budget_id}/scenarios", response_model=List[BudgetScenarioOut])
+@router.get("/budgets/{budget_id}/scenarios", response_model=GenericResponse[List[BudgetScenarioOut]])
 def get_scenarios(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -477,10 +477,10 @@ def get_scenarios(
             except (json.JSONDecodeError, TypeError):
                 scenario.adjustments = None
     
-    return scenarios
+    return GenericResponse(data=scenarios)
 
 
-@router.post("/budgets/{budget_id}/scenarios/compare")
+@router.post("/budgets/{budget_id}/scenarios/compare", response_model=GenericResponse)
 def compare_scenarios(
     budget_id: int,
     comparison_request: ScenarioComparisonRequest,
@@ -495,14 +495,14 @@ def compare_scenarios(
     comparison = BudgetingService.compare_scenarios(
         db, budget_id, comparison_request.scenario_ids
     )
-    return comparison
+    return GenericResponse(data=comparison)
 
 
 # ============================================================================
 # FORECASTING
 # ============================================================================
 
-@router.post("/forecasts", response_model=ForecastOut, status_code=status.HTTP_201_CREATED)
+@router.post("/forecasts", response_model=GenericResponse[ForecastOut], status_code=status.HTTP_201_CREATED)
 def create_forecast(
     forecast_data: ForecastCreate,
     current_user: User = Depends(get_current_active_user),
@@ -620,10 +620,10 @@ def create_forecast(
     if new_forecast.forecast_data and isinstance(new_forecast.forecast_data, str):
         new_forecast.forecast_data = json.loads(new_forecast.forecast_data)
     
-    return new_forecast
+    return GenericResponse(message="Forecast generated and saved successfully", data=new_forecast)
 
 
-@router.get("/forecasts/preview", response_model=List)
+@router.get("/forecasts/preview", response_model=GenericResponse[List])
 def preview_forecast(
     forecast_type: str = Query(..., regex="^(revenue|expense|profit|all)$"),
     method: str = Query(..., regex="^(moving_average|linear_growth|trend|arima|prophet|xgboost|lstm|linear_regression|sarima)$"),
@@ -737,10 +737,10 @@ def preview_forecast(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Linear Regression forecast failed: {str(e)}")
     
-    return forecast_values
+    return GenericResponse(data=forecast_values)
 
 
-@router.get("/forecasts", response_model=List[ForecastOut])
+@router.get("/forecasts", response_model=GenericResponse[List[ForecastOut]])
 def get_forecasts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -755,10 +755,10 @@ def get_forecasts(
             f.method_params = json.loads(f.method_params)
         if f.forecast_data and isinstance(f.forecast_data, str):
             f.forecast_data = json.loads(f.forecast_data)
-    return forecasts
+    return GenericResponse(data=forecasts)
 
 
-@router.get("/forecasts/{forecast_id}", response_model=ForecastOut)
+@router.get("/forecasts/{forecast_id}", response_model=GenericResponse[ForecastOut])
 def get_forecast(
     forecast_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -780,10 +780,10 @@ def get_forecast(
     if forecast_obj.forecast_data and isinstance(forecast_obj.forecast_data, str):
         forecast_obj.forecast_data = json.loads(forecast_obj.forecast_data)
     
-    return forecast_obj
+    return GenericResponse(data=forecast_obj)
 
 
-@router.put("/forecasts/{forecast_id}", response_model=ForecastOut)
+@router.put("/forecasts/{forecast_id}", response_model=GenericResponse[ForecastOut])
 def update_forecast(
     forecast_id: int,
     forecast_data: ForecastUpdate,
@@ -816,7 +816,7 @@ def update_forecast(
     if updated_forecast.forecast_data and isinstance(updated_forecast.forecast_data, str):
         updated_forecast.forecast_data = json.loads(updated_forecast.forecast_data)
     
-    return updated_forecast
+    return GenericResponse(message="Forecast updated successfully", data=updated_forecast)
 
 
 # ============================================================================
