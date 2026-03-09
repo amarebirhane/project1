@@ -83,7 +83,8 @@ class Settings(BaseSettings):
     AUTO_BACKUP_ENABLED: bool = True
     AUTO_BACKUP_SCHEDULE: str = "0 2 * * *"
     HEALTH_CHECK_ENABLED: bool = True
-    METRICS_ENABLED: bool = False
+    METRICS_ENABLED: bool = True
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24
     UPLOAD_DIR: str = "uploads"
     REPORTS_DIR: str = "reports"
     BACKUP_DIR: str = "backups"

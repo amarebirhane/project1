@@ -71,6 +71,10 @@ LOGGING_CONFIG = {
         "default": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         },
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
+        },
     },
     "handlers": {
         "console": {  # Always include console
@@ -86,11 +90,16 @@ LOGGING_CONFIG = {
     "loggers": {
         "app": {
             "level": settings.LOG_LEVEL,
-            "handlers": ["console"],
+            "handlers": ["console", "file"] if settings.LOG_FILE else ["console"],
             "propagate": False,
         },
     },
 }
+
+# Update formatters to JSON in production/standard
+formatter = "json" if not settings.DEBUG else "default"
+for handler in LOGGING_CONFIG["handlers"].values():
+    handler["formatter"] = formatter
 
 # Conditionally add file handler AFTER directory creation
 if settings.LOG_FILE:
@@ -606,6 +615,26 @@ app.include_router(websocket.router, prefix="/api/v1", tags=["WebSockets"])
 
 
 # Health check endpoint
+@app.get("/metrics")
+async def metrics():
+    """
+    Very basic Prometheus-compatible metrics endpoint.
+    In a real production environment, use prometheus_fastapi_instrumentator.
+    """
+    if not settings.METRICS_ENABLED:
+        raise HTTPException(status_code=404, detail="Metrics disabled")
+    
+    # Simple fake metrics for demonstration
+    m = [
+        "# HELP http_requests_total Total number of HTTP requests",
+        "# TYPE http_requests_total counter",
+        "http_requests_total 42",
+        "# HELP process_cpu_seconds_total Total user and system CPU time spent in seconds",
+        "# TYPE process_cpu_seconds_total counter",
+        f"process_cpu_seconds_total {time.process_time()}"
+    ]
+    return Response(content="\n".join(m) + "\n", media_type="text/plain")
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
