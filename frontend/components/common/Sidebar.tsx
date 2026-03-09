@@ -17,8 +17,6 @@ import { useAuth } from '@/lib/rbac/auth-context';
 import { UserType } from '@/lib/rbac/models';
 import { useTranslations } from 'next-intl';
 import { theme } from './theme';
-import { UserType } from '@/lib/rbac/models';
-import { theme } from './theme';
 
 interface SidebarContainerProps {
     $collapsed: boolean;
