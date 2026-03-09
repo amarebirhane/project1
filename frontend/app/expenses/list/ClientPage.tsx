@@ -27,6 +27,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { useAuth } from '@/lib/rbac/auth-context';
 import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
+import ExportButton from '@/components/common/ExportButton';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -1012,12 +1013,20 @@ export default function ExpenseListPage() {
               <h1>Expenses</h1>
               <p>Manage expense entries</p>
             </HeaderContent>
-            <Link href="/expenses/items">
-              <AddButton>
-                <Plus size={16} style={{ marginRight: theme.spacing.xs }} />
-                Add Expenses
-              </AddButton>
-            </Link>
+            <div style={{ display: 'flex', gap: theme.spacing.sm, alignItems: 'center' }}>
+              <ExportButton
+                data={filteredExpenses}
+                fileName="expenses_report"
+                title="Expenses Report"
+                variant="secondary"
+              />
+              <Link href="/expenses/items">
+                <AddButton>
+                  <Plus size={16} style={{ marginRight: theme.spacing.xs }} />
+                  Add Expenses
+                </AddButton>
+              </Link>
+            </div>
           </HeaderContainer>
 
           {error && (
