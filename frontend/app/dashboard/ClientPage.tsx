@@ -7,11 +7,10 @@ import {
   Users, DollarSign, TrendingUp, FileText, Shield,
   CreditCard, Activity,
   ClipboardList, BarChart3, Wallet, ArrowRight, AlertCircle,
-  LineChart, ArrowUpRight, ArrowDownRight, Package, ShoppingCart
-} from 'lucide-react';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
 import useUserStore from '@/store/userStore';
+import { useTranslations } from 'next-intl';
 import { theme } from '@/components/common/theme';
 
 const PRIMARY_COLOR = (props: any) => props.theme.colors.primary || '#00AA00';
@@ -639,6 +638,7 @@ const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const currentTheme = useTheme();
   const storeUser = useUserStore((state) => state.user);
+  const t = useTranslations('Dashboard');
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState<number>(0);
