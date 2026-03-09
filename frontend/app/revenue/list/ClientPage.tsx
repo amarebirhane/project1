@@ -29,6 +29,7 @@ import { useAuth } from '@/lib/rbac/auth-context';
 import { useUserStore } from '@/store/userStore';
 import { theme } from '@/components/common/theme';
 import { Button } from '@/components/ui/button';
+import ExportButton from '@/components/common/ExportButton';
 
 // Type definitions for error handling
 type ErrorWithDetails = {
@@ -1050,10 +1051,17 @@ export default function RevenueListPage() {
                 <h1>Revenue</h1>
                 <p>Manage your revenue entries (including auto-calculated from expense items)</p>
               </div>
-              <RefreshButton onClick={handleRefresh} disabled={refreshing || loading}>
-                <RefreshCw />
-                Refresh
-              </RefreshButton>
+              <div style={{ display: 'flex', gap: theme.spacing.sm, alignItems: 'center' }}>
+                <ExportButton
+                  data={filteredRevenues}
+                  fileName="revenue_report"
+                  title="Revenue Report"
+                />
+                <RefreshButton onClick={handleRefresh} disabled={refreshing || loading}>
+                  <RefreshCw />
+                  Refresh
+                </RefreshButton>
+              </div>
             </HeaderContent>
           </HeaderContainer>
 
