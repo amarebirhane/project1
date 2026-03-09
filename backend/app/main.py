@@ -507,6 +507,8 @@ async def log_requests(request: Request, call_next):
     
     return response
 
+from fastapi.encoders import jsonable_encoder
+
 # Exception handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -514,10 +516,10 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     logger.warning(f"HTTP Exception: {exc.status_code} - {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(
+        content=jsonable_encoder(ErrorResponse(
             message=str(exc.detail),
             status_code=exc.status_code
-        ).model_dump(),
+        )),
         headers=getattr(exc, "headers", None)
     )
 
@@ -528,10 +530,10 @@ async def general_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content=ErrorResponse(
+        content=jsonable_encoder(ErrorResponse(
             message="Internal server error" if not settings.DEBUG else str(exc),
             status_code=500
-        ).model_dump()
+        ))
     )
 
 # Serve static files (uploads)
