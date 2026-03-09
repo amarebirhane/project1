@@ -269,7 +269,7 @@ def is_ip_allowed(user_ip: str, allowed_ips_str: str) -> bool:
 # ------------------------------------------------------------------
 # LOGIN (OAuth2 form-data) – CRITICAL FOR test_hierarchy.py
 # ------------------------------------------------------------------
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=GenericResponse[Token])
 @limiter.limit("5/minute")
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -381,18 +381,21 @@ def login(
     db.add(db_refresh_token)
     db.commit()
     
-    return {
-        "access_token": access_token, 
-        "refresh_token": refresh_token_value,
-        "token_type": "bearer", 
-        "requires_2fa": False
-    }
+    return GenericResponse(
+        message="Login successful",
+        data={
+            "access_token": access_token, 
+            "refresh_token": refresh_token_value,
+            "token_type": "bearer", 
+            "requires_2fa": False
+        }
+    )
 
 
 # ------------------------------------------------------------------
 # REGISTER
 # ------------------------------------------------------------------
-@router.post("/register", response_model=UserOut, status_code=201)
+@router.post("/register", response_model=GenericResponse[UserOut], status_code=201)
 @limiter.limit("3/minute")
 def register(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
     user = user_crud.create(db, user_data)
@@ -409,13 +412,17 @@ def register(user_data: UserCreate, request: Request, db: Session = Depends(get_
         user_agent=user_agent
     )
     
-    return UserOut.from_orm(user)
+    return GenericResponse(
+        message="User registered successfully",
+        data=UserOut.from_orm(user),
+        status_code=201
+    )
 
 
 # ------------------------------------------------------------------
 # LOGIN with JSON (with 2FA support)
 # ------------------------------------------------------------------
-@router.post("/login-json", response_model=dict)
+@router.post("/login-json", response_model=GenericResponse[dict])
 @limiter.limit("5/minute")
 def login_json(
     user_data: UserLogin,
@@ -536,26 +543,29 @@ def login_json(
     db.add(db_refresh_token)
     db.commit()
     
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token_value,
-        "token_type": "bearer",
-        "requires_2fa": False,
-        "user": {
-            "id": user.id,
-            "email": user.email,
-            "username": user.username,
-            "full_name": user.full_name,
-            "role": user.role.value,
-            "is_2fa_enabled": user.is_2fa_enabled,
-            "profile_image_url": user.profile_image_url,
-            "phone": user.phone,
-            "department": user.department,
-            "is_active": user.is_active,
-            "manager_id": user.manager_id,
-            "created_at": user.created_at.isoformat() if user.created_at else None
+    return GenericResponse(
+        message="Login successful",
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token_value,
+            "token_type": "bearer",
+            "requires_2fa": False,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "username": user.username,
+                "full_name": user.full_name,
+                "role": user.role.value,
+                "is_2fa_enabled": user.is_2fa_enabled,
+                "profile_image_url": user.profile_image_url,
+                "phone": user.phone,
+                "department": user.department,
+                "is_active": user.is_active,
+                "manager_id": user.manager_id,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            }
         }
-    }
+    )
 
 
 # ------------------------------------------------------------------
