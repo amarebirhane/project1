@@ -7,7 +7,8 @@ from app.services.ocr import OCRService
 
 @pytest.fixture
 def mock_genai():
-    with patch('app.services.ocr.genai.GenerativeModel') as mock_model:
+    with patch('app.services.ocr.genai.GenerativeModel') as mock_model, \
+         patch('app.services.ocr.Image.open') as mock_image_open:
         yield mock_model.return_value
 
 @pytest.mark.asyncio
