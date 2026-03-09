@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
+    # Internationalization
+    DEFAULT_LOCALE: str = "en"
+    SUPPORTED_LOCALES: str = "en,es,fr,de,am" # English, Spanish, French, German, Amharic
+    LOCALES_DIR: str = "app/locales"
+    
     # Email Configuration
     # Note: Port 465 uses SSL automatically, port 587 uses STARTTLS
     # The email service auto-detects based on port number
