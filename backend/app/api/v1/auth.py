@@ -396,29 +396,50 @@ def login(
 # ------------------------------------------------------------------
 # REGISTER
 # ------------------------------------------------------------------
-@router.post("/register", response_model=GenericResponse[UserOut], status_code=201)
-@limiter.limit("3/minute")
-def register(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
-    locale = request.state.locale if request else "en"
-    user = user_crud.create(db, user_data, locale=locale)
-    
-    # Log registration
-    ip_address, user_agent = get_client_info(request)
-    AuditLogger.log_create(
-        db=db,
-        user_id=user.id,
-        resource_type="user",
-        resource_id=user.id,
-        new_values={"username": user.username, "email": user.email, "role": user.role.value},
-        ip_address=ip_address,
-        user_agent=user_agent
-    )
+    # Send verification email
+    try:
+        from ...core.email import email_service
+        verification_token = create_access_token(
+            data={"sub": str(user.id), "type": "verification"},
+            expires_delta=timedelta(hours=settings.EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS)
+        )
+        email_service.send_verification_email(user.email, verification_token)
+    except Exception as e:
+        logger.error(f"Failed to send verification email: {str(e)}")
+        # Don't fail registration if email fails, but maybe inform admin
     
     return GenericResponse(
         message=_("REGISTER_SUCCESS", locale),
         data=UserOut.from_orm(user),
         status_code=201
     )
+
+
+@router.get("/verify-email", response_model=GenericResponse[dict])
+def verify_email(token: str, db: Session = Depends(get_db)):
+    """Verify user's email address using the token sent via email."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id = payload.get("sub")
+        token_type = payload.get("type")
+        
+        if not user_id or token_type != "verification":
+            raise HTTPException(status_code=400, detail="Invalid verification token")
+            
+        user = db.query(User).filter(User.id == int(user_id)).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        if user.is_verified:
+            return GenericResponse(message="Email already verified", data={})
+            
+        user.is_verified = True
+        db.commit()
+        
+        return GenericResponse(message="Email verified successfully", data={})
+        
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Expired or invalid verification token")
 
 
 # ------------------------------------------------------------------
