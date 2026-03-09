@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 
 from .core.config import settings
 from .core.database import engine, Base, get_db, SessionLocal
+from .core.i18n import I18nService
 from .api.v1 import (
     auth, users, revenue, expenses, dashboard,
     reports, approvals, notifications, admin,
@@ -199,9 +200,11 @@ def ensure_database_schema_sync(engine):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # -------------------- STARTUP --------------------
-    logger.info("Starting Finance Management System Backend")
+    # 1. Initialize i18n
+    I18nService.load_translations()
+    logger.info("I18n translations loaded")
 
-    # 1. Create DB tables
+    # 2. Create DB tables
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
@@ -478,6 +481,28 @@ async def add_cors_headers(request: Request, call_next):
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Expose-Headers"] = "*"
     
+    return response
+
+# Locale Detection Middleware
+@app.middleware("http")
+async def add_locale_header(request: Request, call_next):
+    """Detect locale from Accept-Language header"""
+    accept_lang = request.headers.get("accept-language", settings.DEFAULT_LOCALE)
+    # Simple parser for "en-US,en;q=0.9,es;q=0.8"
+    locale = settings.DEFAULT_LOCALE
+    supported = [l.strip() for l in settings.SUPPORTED_LOCALES.split(",")]
+    
+    parts = accept_lang.split(",")
+    for part in parts:
+        lang_code = part.split(";")[0].split("-")[0].strip().lower()
+        if lang_code in supported:
+            locale = lang_code
+            break
+            
+    # Attach to request state for use in routes
+    request.state.locale = locale
+    
+    response = await call_next(request)
     return response
 
 # Request timing middleware

@@ -12,6 +12,7 @@ from ...core.database import get_db
 from ...core.config import settings
 from ...schemas.responses import GenericResponse, ErrorResponse
 from ...core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
+from ...core.i18n import _
 from ...models.user import User, UserRole
 from ...models.refresh_token import RefreshToken
 from ...crud import login_history as login_history_crud
@@ -144,7 +145,7 @@ class UserCRUD:
         return db.query(User).filter(User.email == email).first()
 
     @staticmethod
-    def authenticate(db: Session, username: str, password: str) -> Optional[User]:
+    def authenticate(db: Session, username: str, password: str, locale: str = "en") -> Optional[User]:
         # Support username or email input
         user = UserCRUD.get_by_username(db, username)
         if not user:
@@ -159,7 +160,7 @@ class UserCRUD:
             minutes = int(remaining // 60) + 1
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Account is locked. Please try again in {minutes} minutes."
+                detail=_("ACCOUNT_LOCKED", locale, minutes=minutes)
             )
             
         if not verify_password(password, user.hashed_password):
@@ -178,11 +179,11 @@ class UserCRUD:
         return user
 
     @staticmethod
-    def create(db: Session, obj_in: UserCreate) -> User:
+    def create(db: Session, obj_in: UserCreate, locale: str = "en") -> User:
         if UserCRUD.get_by_email(db, obj_in.email):
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail=_("EMAIL_TAKEN", locale))
         if UserCRUD.get_by_username(db, obj_in.username):
-            raise HTTPException(status_code=400, detail="Username already taken")
+            raise HTTPException(status_code=400, detail=_("USERNAME_TAKEN", locale))
 
         hashed = get_password_hash(obj_in.password)
         db_user = User(
@@ -287,11 +288,12 @@ def login(
     location = get_location_from_ip(ip_address)
     
     # Try to authenticate
-    user = user_crud.authenticate(db, form_data.username, form_data.password)
+    locale = request.state.locale if request else "en"
+    user = user_crud.authenticate(db, form_data.username, form_data.password, locale=locale)
     
     if not user:
         # Log failed login attempt (without user_id, we can't identify the user)
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+        raise HTTPException(status_code=401, detail=_("INVALID_CREDENTIALS", locale))
     
     # Check if user is active before logging
     if not user.is_active:
@@ -309,7 +311,7 @@ def login(
             )
         except Exception:
             pass  # Don't fail login if history logging fails
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail=_("INACTIVE_USER", locale))
     
     # Check global IP restrictions
     if not ip_restriction_crud.is_ip_allowed(db, ip_address):
@@ -381,7 +383,7 @@ def login(
     db.commit()
     
     return GenericResponse(
-        message="Login successful",
+        message=_("LOGIN_SUCCESS", locale),
         data={
             "access_token": access_token, 
             "refresh_token": refresh_token_value,
