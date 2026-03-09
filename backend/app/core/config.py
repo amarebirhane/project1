@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     
     # Internationalization
     DEFAULT_LOCALE: str = "en"
-    SUPPORTED_LOCALES: str = "en,es,fr,de,am" # English, Spanish, French, German, Amharic
+    SUPPORTED_LOCALES: str = "en,ti,fr,de,am" # English, Tigrigna, French, German, Amharic
     LOCALES_DIR: str = "app/locales"
     
     # Email Configuration
