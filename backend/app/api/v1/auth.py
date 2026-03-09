@@ -588,7 +588,7 @@ def cleanup_expired_otps():
 # ------------------------------------------------------------------
 # OTP Endpoints
 # ------------------------------------------------------------------
-@router.post("/generate-otp", response_model=dict)
+@router.post("/generate-otp", response_model=GenericResponse[dict])
 def generate_otp_endpoint(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -599,10 +599,13 @@ def generate_otp_endpoint(
         db.refresh(current_user)
 
     otp_code = generate_otp(current_user.otp_secret)
-    return {"otp_code": otp_code, "message": "OTP generated"}
+    return GenericResponse(
+        message="OTP generated",
+        data={"otp_code": otp_code}
+    )
 
 
-@router.post("/verify-otp", response_model=dict)
+@router.post("/verify-otp", response_model=GenericResponse[dict])
 def verify_otp_endpoint(
     otp_code: str,
     current_user: User = Depends(get_current_active_user)
@@ -611,7 +614,7 @@ def verify_otp_endpoint(
         raise HTTPException(status_code=400, detail="OTP not configured")
     if not verify_otp(current_user.otp_secret, otp_code):
         raise HTTPException(status_code=400, detail="Invalid OTP")
-    return {"message": "OTP verified"}
+    return GenericResponse(message="OTP verified")
 
 
 # ------------------------------------------------------------------
@@ -626,7 +629,7 @@ class ResetPasswordRequest(BaseModel):
     newPassword: str
     totp_code: Optional[str] = None
 
-@router.post("/request-otp", response_model=dict)
+@router.post("/request-otp", response_model=GenericResponse[dict])
 def request_password_reset_otp(
     request_data: RequestOTPRequest,
     db: Session = Depends(get_db)
@@ -644,17 +647,17 @@ def request_password_reset_otp(
     if not user:
         # Don't reveal if email exists (security best practice)
         # Return success even if user doesn't exist
-        return {
-            "message": "If an account with that email exists, an OTP has been sent."
-        }
+        return GenericResponse(
+            message="If an account with that email exists, an OTP has been sent."
+        )
     
     # SECURITY: Only allow admin, finance admin, or super admin to reset password
     allowed_roles = [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.FINANCE_ADMIN]
     if user.role not in allowed_roles:
         logger.info(f"Password reset requested for non-privileged user {email} (role: {user.role}). Request ignored.")
-        return {
-            "message": "If an account with that email exists, an OTP has been sent."
-        }
+        return GenericResponse(
+            message="If an account with that email exists, an OTP has been sent."
+        )
     
     # Generate 6-digit OTP
     otp_code = ''.join(random.choices(string.digits, k=6))
@@ -697,10 +700,13 @@ def request_password_reset_otp(
             if email_error_detail:
                 response["email_error_detail"] = email_error_detail
     
-    return response
+    return GenericResponse(
+        message="If an account with that email exists, an OTP has been sent.",
+        data=response if settings.DEBUG else None
+    )
 
 
-@router.post("/reset-password", response_model=dict)
+@router.post("/reset-password", response_model=GenericResponse[dict])
 def reset_password(
     reset_data: ResetPasswordRequest,
     db: Session = Depends(get_db)
@@ -785,9 +791,9 @@ def reset_password(
     # Remove used OTP
     del password_reset_otps[email]
     
-    return {
-        "message": "Password has been reset successfully. You can now login with your new password."
-    }
+    return GenericResponse(
+        message="Password has been reset successfully. You can now login with your new password."
+    )
 
 
 # ------------------------------------------------------------------
@@ -804,7 +810,7 @@ def read_users_me(current_user: User = Depends(get_current_active_user)):
 class RefreshTokenRequest(BaseModel):
     token: str
 
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh", response_model=GenericResponse[Token])
 def refresh_token(
     request_data: RefreshTokenRequest,
     request: Request,
@@ -865,11 +871,14 @@ def refresh_token(
     db.add(new_db_refresh_token)
     db.commit()
     
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token_value,
-        "token_type": "bearer"
-    }
+    return GenericResponse(
+        message="Token refreshed successfully",
+        data={
+            "access_token": access_token,
+            "refresh_token": refresh_token_value,
+            "token_type": "bearer"
+        }
+    )
 
 
 # ------------------------------------------------------------------
@@ -894,4 +903,4 @@ def logout(
         except Exception as e:
             logger.error(f"Failed to log logout audit: {str(e)}")
             
-    return {"message": "Logged out successfully"}
+    return GenericResponse(message="Logged out successfully")
