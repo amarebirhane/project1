@@ -399,7 +399,8 @@ def login(
 @router.post("/register", response_model=GenericResponse[UserOut], status_code=201)
 @limiter.limit("3/minute")
 def register(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
-    user = user_crud.create(db, user_data)
+    locale = request.state.locale if request else "en"
+    user = user_crud.create(db, user_data, locale=locale)
     
     # Log registration
     ip_address, user_agent = get_client_info(request)
@@ -414,7 +415,7 @@ def register(user_data: UserCreate, request: Request, db: Session = Depends(get_
     )
     
     return GenericResponse(
-        message="User registered successfully",
+        message=_("REGISTER_SUCCESS", locale),
         data=UserOut.from_orm(user),
         status_code=201
     )
@@ -441,10 +442,11 @@ def login_json(
     location = get_location_from_ip(ip_address)
     
     # Try to authenticate
-    user = user_crud.authenticate(db, user_data.username, user_data.password)
+    locale = request.state.locale if request else "en"
+    user = user_crud.authenticate(db, user_data.username, user_data.password, locale=locale)
     
     if not user:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+        raise HTTPException(status_code=401, detail=_("INVALID_CREDENTIALS", locale))
     
     if not user.is_active:
         # Log failed login attempt
@@ -461,7 +463,7 @@ def login_json(
             )
         except Exception:
             pass
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail=_("INACTIVE_USER", locale))
     
     # Check global IP restrictions
     if not ip_restriction_crud.is_ip_allowed(db, ip_address):
@@ -545,7 +547,7 @@ def login_json(
     db.commit()
     
     return GenericResponse(
-        message="Login successful",
+        message=_("LOGIN_SUCCESS", locale),
         data={
             "access_token": access_token,
             "refresh_token": refresh_token_value,
