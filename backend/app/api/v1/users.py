@@ -601,7 +601,7 @@ def read_user(
     elif current_user.role not in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 
-    return user
+    return GenericResponse(data=UserOut.from_orm(user))
 
 
 # ------------------------------------------------------------------
@@ -656,7 +656,7 @@ def create_user(
         except Exception as e:
             logger.warning(f"Notification failed for user creation: {str(e)}")
             
-        return user
+        return GenericResponse(message="User created successfully", data=UserOut.from_orm(user), status_code=201)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -702,7 +702,7 @@ def create_subordinate(
         except Exception as e:
             logger.warning(f"Notification failed for subordinate creation: {str(e)}")
             
-        return user
+        return GenericResponse(message="Subordinate created successfully", data=UserOut.from_orm(user), status_code=201)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -830,7 +830,7 @@ def delete_user(
     # Admin and Super Admin can delete any user (except other admins/super admins)
     if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
         user_crud.delete(db, id=user_id)
-        return {"message": "User deleted successfully"}
+        return GenericResponse(message="User deleted successfully")
     
     # Finance Manager (Manager or Finance Admin) can delete their subordinates (accountants and employees)
     if current_user.role in [UserRole.MANAGER, UserRole.FINANCE_ADMIN]:
@@ -840,7 +840,7 @@ def delete_user(
         
         if is_subordinate and is_my_subordinate:
             user_crud.delete(db, id=user_id)
-            return {"message": "User deleted successfully"}
+            return GenericResponse(message="User deleted successfully")
         else:
             raise HTTPException(status_code=403, detail="You can only delete your subordinates (accountants and employees)")
     
