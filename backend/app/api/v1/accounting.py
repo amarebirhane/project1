@@ -82,7 +82,7 @@ def update_account(
         
     db.commit()
     db.refresh(db_account)
-    return db_account
+    return GenericResponse(message="Account updated successfully", data=db_account)
 
 @router.delete("/accounts/{account_id}")
 def delete_account(
@@ -181,7 +181,7 @@ def create_journal_entry(
         
     db.commit()
     db.refresh(db_entry)
-    return db_entry
+    return GenericResponse(message="Journal entry created successfully", data=db_entry)
 
 @router.post("/journal-entries/{entry_id}/post", response_model=GenericResponse[journal_entry_schema.JournalEntry])
 def post_journal_entry(
@@ -244,7 +244,7 @@ def update_journal_entry(
 
     db.commit()
     db.refresh(db_entry)
-    return db_entry
+    return GenericResponse(message="Journal entry updated successfully", data=db_entry)
 
 @router.delete("/journal-entries/{entry_id}")
 def delete_journal_entry(
@@ -362,7 +362,7 @@ def create_currency(
     db.add(db_currency)
     db.commit()
     db.refresh(db_currency)
-    return db_currency
+    return GenericResponse(message="Currency created successfully", data=db_currency)
 
 @router.put("/currencies/{currency_id}", response_model=GenericResponse[currency_schema.Currency])
 def update_currency(
@@ -389,7 +389,7 @@ def update_currency(
         
     db.commit()
     db.refresh(db_currency)
-    return db_currency
+    return GenericResponse(message="Currency updated successfully", data=db_currency)
 
 @router.delete("/currencies/{currency_id}")
 def delete_currency(
