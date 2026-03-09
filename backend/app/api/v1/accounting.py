@@ -512,7 +512,7 @@ def create_tax_type(
     db.add(db_tax_type)
     db.commit()
     db.refresh(db_tax_type)
-    return db_tax_type
+    return GenericResponse(message="Tax type created successfully", data=db_tax_type)
 
 @router.put("/taxes/types/{tax_type_id}", response_model=GenericResponse[tax_schema.TaxType])
 def update_tax_type(
@@ -543,7 +543,7 @@ def update_tax_type(
     
     db.commit()
     db.refresh(db_tax_type)
-    return db_tax_type
+    return GenericResponse(message="Tax type updated successfully", data=db_tax_type)
 
 @router.delete("/taxes/types/{tax_type_id}")
 def delete_tax_type(
@@ -622,7 +622,7 @@ def create_tax_rate(
     db.add(db_tax_rate)
     db.commit()
     db.refresh(db_tax_rate)
-    return db_tax_rate
+    return GenericResponse(message="Tax rate created successfully", data=db_tax_rate)
 
 @router.put("/taxes/rates/{tax_rate_id}", response_model=GenericResponse[tax_schema.TaxRate])
 def update_tax_rate(
@@ -660,7 +660,7 @@ def update_tax_rate(
     
     db.commit()
     db.refresh(db_tax_rate)
-    return db_tax_rate
+    return GenericResponse(message="Tax rate updated successfully", data=db_tax_rate)
 
 @router.delete("/taxes/rates/{tax_rate_id}")
 def delete_tax_rate(
