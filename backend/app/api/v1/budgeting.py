@@ -72,7 +72,7 @@ def create_budget(
     budget.update(db, new_budget.id, totals)
     
     db.refresh(new_budget)
-    return new_budget
+    return GenericResponse(message="Budget created successfully", data=new_budget)
 
 
 @router.post("/budgets/from-template", response_model=GenericResponse[BudgetOut], status_code=status.HTTP_201_CREATED)
@@ -102,7 +102,7 @@ def create_budget_from_template(
     )
     
     db.refresh(new_budget)
-    return new_budget
+    return GenericResponse(message="Budget created from template successfully", data=new_budget)
 
 
 @router.get("/budgets", response_model=GenericResponse[List[BudgetOut]])
@@ -262,14 +262,14 @@ def validate_budget(
             "total_profit": result["profit"]
         })
     
-    return result
+    return GenericResponse(message="Budget validation completed", data=result)
 
 
 # ============================================================================
 # BUDGET ITEMS
 # ============================================================================
 
-@router.post("/budgets/{budget_id}/items", response_model=BudgetItemOut, status_code=status.HTTP_201_CREATED)
+@router.post("/budgets/{budget_id}/items", response_model=GenericResponse[BudgetItemOut], status_code=status.HTTP_201_CREATED)
 def create_budget_item(
     budget_id: int,
     item_data: BudgetItemCreate,
@@ -292,10 +292,10 @@ def create_budget_item(
     totals = budget.calculate_totals(db, budget_id)
     budget.update(db, budget_id, totals)
     
-    return new_item
+    return GenericResponse(message="Budget item added successfully", data=new_item)
 
 
-@router.get("/budgets/{budget_id}/items", response_model=List[BudgetItemOut])
+@router.get("/budgets/{budget_id}/items", response_model=GenericResponse[List[BudgetItemOut]])
 def get_budget_items(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -307,10 +307,10 @@ def get_budget_items(
         raise HTTPException(status_code=404, detail="Budget not found")
     
     items = budget_item.get_by_budget(db, budget_id)
-    return items
+    return GenericResponse(data=items)
 
 
-@router.put("/budgets/{budget_id}/items/{item_id}", response_model=BudgetItemOut)
+@router.put("/budgets/{budget_id}/items/{item_id}", response_model=GenericResponse[BudgetItemOut])
 def update_budget_item(
     budget_id: int,
     item_id: int,
@@ -333,10 +333,10 @@ def update_budget_item(
     totals = budget.calculate_totals(db, budget_id)
     budget.update(db, budget_id, totals)
     
-    return updated_item
+    return GenericResponse(message="Budget item updated successfully", data=updated_item)
 
 
-@router.delete("/budgets/{budget_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/budgets/{budget_id}/items/{item_id}", response_model=GenericResponse, status_code=status.HTTP_200_OK)
 def delete_budget_item(
     budget_id: int,
     item_id: int,
@@ -354,7 +354,7 @@ def delete_budget_item(
     totals = budget.calculate_totals(db, budget_id)
     budget.update(db, budget_id, totals)
     
-    return None
+    return GenericResponse(message="Budget item deleted successfully")
 
 
 class DeleteBudgetItemRequest(BaseModel):
@@ -408,7 +408,7 @@ def delete_budget_item_with_password(
     totals = budget.calculate_totals(db, budget_id)
     budget.update(db, budget_id, totals)
     
-    return {"message": "Budget item deleted successfully"}
+    return GenericResponse(message="Budget item deleted successfully")
 
 
 # ============================================================================
