@@ -1,5 +1,5 @@
 # app/api/v1/auth.py
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request # type: ignore[import-untyped]
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer # type: ignore[import-untyped]
@@ -154,8 +154,8 @@ class UserCRUD:
             return None
             
         # Check if account is locked
-        if user.locked_until and user.locked_until > datetime.utcnow():
-            remaining = (user.locked_until - datetime.utcnow()).total_seconds()
+        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
+            remaining = (user.locked_until - datetime.now(timezone.utc)).total_seconds()
             minutes = int(remaining // 60) + 1
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -166,7 +166,7 @@ class UserCRUD:
             # Increment failed attempts
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= 3:
-                user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
                 logger.warning(f"User {user.username} account locked until {user.locked_until}")
             db.commit()
             return None
@@ -358,8 +358,7 @@ def login(
         )
         
         # Update last_login
-        from datetime import datetime
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc)
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
@@ -521,7 +520,7 @@ def login_json(
         )
         
         # Update last_login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc)
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
@@ -833,7 +832,7 @@ def refresh_token(
         )
         
     # 2. Check expiration
-    if db_token.expires_at < datetime.utcnow():
+    if db_token.expires_at < datetime.now(timezone.utc):
         db_token.is_revoked = True
         db.commit()
         raise HTTPException(
@@ -887,9 +886,22 @@ def refresh_token(
 @router.post("/logout")
 def logout(
     request: Request,
+    logout_data: Optional[RefreshTokenRequest] = None,
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
+    """
+    Logout user and optionally revoke the provided refresh token.
+    """
+    if logout_data and logout_data.token:
+        db_token = db.query(RefreshToken).filter(
+            RefreshToken.token == logout_data.token
+        ).first()
+        if db_token:
+            db_token.is_revoked = True
+            db.commit()
+            logger.info(f"Token revoked on logout")
+
     # Log logout only if we have a valid user
     if current_user:
         ip_address, user_agent = get_client_info(request)
@@ -904,3 +916,37 @@ def logout(
             logger.error(f"Failed to log logout audit: {str(e)}")
             
     return GenericResponse(message="Logged out successfully")
+
+
+@router.post("/logout-all")
+def logout_all(
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Revoke ALL active refresh tokens for the current user.
+    """
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == current_user.id,
+        RefreshToken.is_revoked == False
+    ).update({RefreshToken.is_revoked: True})
+    
+    db.commit()
+    
+    ip_address, user_agent = get_client_info(request)
+    try:
+        AuditLogger.log_action(
+            db=db,
+            user_id=current_user.id,
+            action=AuditAction.UPDATE,
+            resource_type="user_sessions",
+            resource_id=current_user.id,
+            new_values={"action": "logout_all_sessions"},
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+    except Exception as e:
+        logger.error(f"Failed to log logout_all audit: {str(e)}")
+        
+    return GenericResponse(message="All sessions revoked successfully")
