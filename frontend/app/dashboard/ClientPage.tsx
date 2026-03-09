@@ -4,9 +4,9 @@ import styled, { useTheme } from 'styled-components';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/rbac/auth-context';
 import {
-  Users, DollarSign, TrendingUp, FileText, Shield,
-  CreditCard, Activity,
-  ClipboardList, BarChart3, Wallet, ArrowRight, AlertCircle,
+ClipboardList, BarChart3, Wallet, ArrowRight, AlertCircle,
+  LineChart, ArrowUpRight, ArrowDownRight, Package, ShoppingCart
+} from 'lucide-react';
 import Layout from '@/components/layout';
 import apiClient from '@/lib/api';
 import useUserStore from '@/store/userStore';
