@@ -12,7 +12,7 @@ class LineItem(BaseModel):
 
 class ReceiptData(BaseModel):
     merchant_name: Optional[str] = None
-    date: Optional[date] = None
+    date: Optional[str] = None
     total_amount: Optional[float] = None
     tax_amount: Optional[float] = None
     currency: str = "USD"
