@@ -143,25 +143,27 @@ def get_dashboard_overview(
                 logger.error(f"Error fetching pending approvals for Finance Admin: {str(e)}")
                 team_pending = []
             
-            return {
-                "period": {
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "days": 30
-                },
-                "financials": {
-                    "total_revenue": total_revenue,
-                    "total_expenses": total_expenses,
-                    "profit": profit,
-                    "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
-                },
-                "revenue_by_category": revenue_summary,
-                "expenses_by_category": expense_summary,
-                "team_stats": {
-                    "team_size": len(subordinate_ids),
-                    "pending_approvals": len(team_pending)
+            return GenericResponse(
+                data={
+                    "period": {
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "days": 30
+                    },
+                    "financials": {
+                        "total_revenue": total_revenue,
+                        "total_expenses": total_expenses,
+                        "profit": profit,
+                        "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
+                    },
+                    "revenue_by_category": revenue_summary,
+                    "expenses_by_category": expense_summary,
+                    "team_stats": {
+                        "team_size": len(subordinate_ids),
+                        "pending_approvals": len(team_pending)
+                    }
                 }
-            }
+            )
     
         elif current_user.role == UserRole.MANAGER:
             # Manager overview - includes their team's data
@@ -269,25 +271,27 @@ def get_dashboard_overview(
                 logger.error(f"Error fetching pending approvals for Accountant: {str(e)}")
                 team_pending = []
             
-            return {
-                "period": {
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "days": 30
-                },
-                "financials": {
-                    "total_revenue": total_revenue,
-                    "total_expenses": total_expenses,
-                    "profit": profit,
-                    "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
-                },
-                "revenue_by_category": revenue_summary,
-                "expenses_by_category": expense_summary,
-                "team_stats": {
-                    "team_size": len(subordinate_ids),
-                    "pending_approvals": len(team_pending)
+            return GenericResponse(
+                data={
+                    "period": {
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "days": 30
+                    },
+                    "financials": {
+                        "total_revenue": total_revenue,
+                        "total_expenses": total_expenses,
+                        "profit": profit,
+                        "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
+                    },
+                    "revenue_by_category": revenue_summary,
+                    "expenses_by_category": expense_summary,
+                    "team_stats": {
+                        "team_size": len(subordinate_ids),
+                        "pending_approvals": len(team_pending)
+                    }
                 }
-            }
+            )
         
         else:
             # Regular user/Employee overview - only their own data
