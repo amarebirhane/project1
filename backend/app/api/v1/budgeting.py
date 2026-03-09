@@ -883,7 +883,7 @@ def train_expenses_arima(
         result = MLForecastingService.train_arima_expenses(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role, order_tuple
         )
-        return result
+        return GenericResponse(message="ARIMA training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"ARIMA training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -913,7 +913,7 @@ def train_expenses_prophet(
         result = MLForecastingService.train_prophet_expenses(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return result
+        return GenericResponse(message="Prophet training completed", data=result)
     except ImportError as e:
         # Prophet dependency/installation errors - return 400 (client error)
         logger.error(f"Prophet training failed (import error): {str(e)}", exc_info=True)
@@ -953,7 +953,7 @@ def train_expenses_linear_regression(
         result = MLForecastingService.train_linear_regression_expenses(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return result
+        return GenericResponse(message="Linear Regression training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"Linear Regression training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -983,7 +983,7 @@ def train_revenue_prophet(
         result = MLForecastingService.train_prophet_revenue(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return result
+        return GenericResponse(message="Prophet revenue training completed", data=result)
     except ImportError as e:
         # Prophet dependency/installation errors - return 400 (client error)
         logger.error(f"Prophet training failed (import error): {str(e)}", exc_info=True)
@@ -1023,7 +1023,7 @@ def train_revenue_xgboost(
         result = MLForecastingService.train_xgboost_revenue(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return result
+        return GenericResponse(message="XGBoost revenue training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"XGBoost revenue training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -1056,7 +1056,7 @@ def train_revenue_lstm(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role,
             epochs=epochs, batch_size=batch_size
         )
-        return result
+        return GenericResponse(message="LSTM revenue training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"LSTM revenue training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -1091,7 +1091,7 @@ def train_inventory_sarima(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role,
             order_tuple, seasonal_order_tuple
         )
-        return result
+        return GenericResponse(message="SARIMA inventory training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"SARIMA training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -1121,7 +1121,7 @@ def train_inventory_xgboost(
         result = MLForecastingService.train_xgboost_inventory(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role
         )
-        return result
+        return GenericResponse(message="XGBoost inventory training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"XGBoost inventory training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -1154,7 +1154,7 @@ def train_inventory_lstm(
             db, start_date_dt, end_date_dt, current_user.id, current_user.role,
             epochs=epochs, batch_size=batch_size
         )
-        return result
+        return GenericResponse(message="LSTM inventory training completed", data=result)
     except (ValueError, ImportError) as e:
         logger.error(f"LSTM inventory training failed: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
@@ -1432,7 +1432,7 @@ def train_from_custom_data(
             batch_size=training_request.batch_size or 32
         )
         
-        return result
+        return GenericResponse(message="Custom training completed", data=result)
         
     except ImportError as e:
         logger.error(f"Custom training failed (import error): {str(e)}", exc_info=True)
