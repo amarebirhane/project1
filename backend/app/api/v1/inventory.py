@@ -6,8 +6,9 @@ Role-based access control:
 - Accountant: Can view items (name, selling_price, stock) and sales
 - Employee: Can view items (name, selling_price, stock) and make sales
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
-from fastapi import Request # type: ignore[import-untyped]
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
+from fastapi.encoders import jsonable_encoder
+from ...schemas.responses import GenericResponse, ErrorResponse
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from typing import List, Optional
 from datetime import datetime
@@ -91,7 +92,7 @@ def _filter_item_by_role(item: dict, user_role: UserRole) -> dict:
         return filtered
 
 
-@router.post("/items", response_model=InventoryItemOut, status_code=status.HTTP_201_CREATED)
+@router.post("/items", response_model=GenericResponse[InventoryItemOut], status_code=status.HTTP_201_CREATED)
 def create_inventory_item(
     item_data: InventoryItemCreate,
     request: Request,
@@ -181,10 +182,10 @@ def create_inventory_item(
     except Exception as audit_err:
         logger.warning(f"Audit logging failed for inventory creation: {str(audit_err)}")
 
-    return _filter_item_by_role(item_dict, current_user.role)
+    return GenericResponse(message="Inventory item created successfully", data=_filter_item_by_role(item_dict, current_user.role))
 
 
-@router.get("/items", response_model=List[InventoryItemOut])
+@router.get("/items", response_model=GenericResponse[List[InventoryItemOut]])
 def get_inventory_items(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -290,10 +291,10 @@ def get_inventory_items(
         filtered_item = _filter_item_by_role(item_dict, current_user.role)
         result.append(filtered_item)
     
-    return result
+    return GenericResponse(data=result)
 
 
-@router.get("/items/{item_id}", response_model=InventoryItemOut)
+@router.get("/items/{item_id}", response_model=GenericResponse[InventoryItemOut])
 def get_inventory_item(
     item_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -322,15 +323,14 @@ def get_inventory_item(
         'last_modified_by_id': item.last_modified_by_id,
     }
     
-    # Add profit fields only for Finance Admin
     if _is_finance_admin(current_user.role):
         item_dict['profit_per_unit'] = item.calculate_profit_per_unit()
         item_dict['profit_margin'] = item.calculate_profit_margin()
     
-    return _filter_item_by_role(item_dict, current_user.role)
+    return GenericResponse(data=_filter_item_by_role(item_dict, current_user.role))
 
 
-@router.put("/items/{item_id}", response_model=InventoryItemOut)
+@router.put("/items/{item_id}", response_model=GenericResponse[InventoryItemOut])
 def update_inventory_item(
     item_id: int,
     item_update: InventoryItemUpdate,
@@ -470,10 +470,10 @@ def update_inventory_item(
     except Exception as audit_err:
         logger.warning(f"Audit logging failed for inventory update: {str(audit_err)}")
 
-    return _filter_item_by_role(item_dict, current_user.role)
+    return GenericResponse(message="Inventory item updated successfully", data=_filter_item_by_role(item_dict, current_user.role))
 
 
-@router.get("/items/{item_id}/audit", response_model=List[InventoryAuditLogOut])
+@router.get("/items/{item_id}/audit", response_model=GenericResponse[List[InventoryAuditLogOut]])
 def get_item_audit_logs(
     item_id: int,
     skip: int = Query(0, ge=0),
@@ -493,10 +493,10 @@ def get_item_audit_logs(
         raise HTTPException(status_code=404, detail="Item not found")
     
     logs = inventory_crud.get_audit_logs(db, item_id, skip=skip, limit=limit)
-    return logs
+    return GenericResponse(data=logs)
 
 
-@router.get("/items/low-stock/list")
+@router.get("/items/low-stock/list", response_model=GenericResponse)
 def get_low_stock_items(
     threshold: int = Query(10, ge=0),
     current_user: User = Depends(get_current_active_user),
@@ -526,7 +526,7 @@ def get_low_stock_items(
     return result
 
 
-@router.get("/summary")
+@router.get("/summary", response_model=GenericResponse)
 def get_inventory_summary(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -554,7 +554,7 @@ def get_inventory_summary(
         
         # Admin and Super Admin see all inventory
         if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
-            return inventory_crud.get_total_value(db)
+            return GenericResponse(data=inventory_crud.get_total_value(db))
         
         # Finance Admin and Manager see only their team's inventory
         # Get all subordinates in the hierarchy
@@ -563,7 +563,7 @@ def get_inventory_summary(
         subordinate_ids.append(current_user.id)  # Include themselves
         
         # Get inventory summary filtered by created_by_id
-        return inventory_crud.get_total_value_by_users(db, subordinate_ids)
+        return GenericResponse(data=inventory_crud.get_total_value_by_users(db, subordinate_ids))
     except HTTPException:
         # Re-raise HTTP exceptions (like 403)
         raise
@@ -586,7 +586,7 @@ class ActivateDeactivateInventoryItemRequest(BaseModel):
     password: str
 
 
-@router.post("/items/{item_id}/activate")
+@router.post("/items/{item_id}/activate", response_model=GenericResponse)
 def activate_inventory_item(
     item_id: int,
     activate_request: ActivateDeactivateInventoryItemRequest,
@@ -636,10 +636,10 @@ def activate_inventory_item(
     # Activate the item
     updated_item = inventory_crud.update(db, item, InventoryItemUpdate(is_active=True), current_user.id)
     
-    return {"message": "Inventory item activated successfully"}
+    return GenericResponse(message="Inventory item activated successfully")
 
 
-@router.post("/items/{item_id}/deactivate")
+@router.post("/items/{item_id}/deactivate", response_model=GenericResponse)
 def deactivate_inventory_item(
     item_id: int,
     deactivate_request: ActivateDeactivateInventoryItemRequest,
@@ -689,10 +689,10 @@ def deactivate_inventory_item(
     # Deactivate the item
     updated_item = inventory_crud.update(db, item, InventoryItemUpdate(is_active=False), current_user.id)
     
-    return {"message": "Inventory item deactivated successfully"}
+    return GenericResponse(message="Inventory item deactivated successfully")
 
 
-@router.post("/items/{item_id}/delete")
+@router.post("/items/{item_id}/delete", response_model=GenericResponse)
 def delete_inventory_item(
     item_id: int,
     delete_request: DeleteInventoryItemRequest,
@@ -766,5 +766,5 @@ def delete_inventory_item(
     except Exception as audit_err:
         logger.warning(f"Audit logging failed for inventory deletion: {str(audit_err)}")
 
-    return {"message": "Inventory item deleted successfully"}
+    return GenericResponse(message="Inventory item deleted successfully")
 
