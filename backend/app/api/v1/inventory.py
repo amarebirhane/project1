@@ -523,7 +523,7 @@ def get_low_stock_items(
         }
         result.append(item_dict)
     
-    return result
+    return GenericResponse(data=result)
 
 
 @router.get("/summary", response_model=GenericResponse)
