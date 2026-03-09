@@ -396,6 +396,24 @@ def login(
 # ------------------------------------------------------------------
 # REGISTER
 # ------------------------------------------------------------------
+@router.post("/register", response_model=GenericResponse[UserOut], status_code=201)
+@limiter.limit("3/minute")
+def register(user_data: UserCreate, request: Request, db: Session = Depends(get_db)):
+    locale = request.state.locale if request else "en"
+    user = user_crud.create(db, user_data, locale=locale)
+    
+    # Log registration
+    ip_address, user_agent = get_client_info(request)
+    AuditLogger.log_create(
+        db=db,
+        user_id=user.id,
+        resource_type="user",
+        resource_id=user.id,
+        new_values={"username": user.username, "email": user.email, "role": user.role.value},
+        ip_address=ip_address,
+        user_agent=user_agent
+    )
+    
     # Send verification email
     try:
         from ...core.email import email_service

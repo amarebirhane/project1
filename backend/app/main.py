@@ -1,8 +1,9 @@
 # main.py
 from fastapi import FastAPI, Request, HTTPException, status  # type: ignore
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore
+from fastapi.middleware.gzip import GZipMiddleware  # type: ignore
 from fastapi.middleware.trustedhost import TrustedHostMiddleware  # type: ignore
-from fastapi.responses import JSONResponse  # type: ignore
+from fastapi.responses import JSONResponse, Response  # type: ignore
 from fastapi.security import HTTPBearer  # type: ignore
 from sqlalchemy import inspect, text # type: ignore
 from fastapi.staticfiles import StaticFiles # type: ignore
@@ -265,6 +266,9 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.DEBUG else None,
     lifespan=lifespan,
 )
+
+# --- Middleware ---
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # --- Rate Limiting ---
 app.state.limiter = limiter
