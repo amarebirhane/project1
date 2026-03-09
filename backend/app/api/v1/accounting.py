@@ -60,7 +60,7 @@ def create_account(
     db.add(db_account)
     db.commit()
     db.refresh(db_account)
-    return db_account
+    return GenericResponse(message="Account created successfully", data=db_account)
 
 @router.put("/accounts/{account_id}", response_model=GenericResponse[account_schema.Account])
 def update_account(
