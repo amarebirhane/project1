@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import logging
 from pydantic import BaseModel  # type: ignore
+from ...schemas.responses import GenericResponse, ErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ router = APIRouter()
 # BUDGET MANAGEMENT
 # ============================================================================
 
-@router.post("/budgets", response_model=BudgetOut, status_code=status.HTTP_201_CREATED)
+@router.post("/budgets", response_model=GenericResponse[BudgetOut], status_code=status.HTTP_201_CREATED)
 def create_budget(
     budget_data: BudgetCreate,
     current_user: User = Depends(get_current_active_user),
@@ -74,7 +75,7 @@ def create_budget(
     return new_budget
 
 
-@router.post("/budgets/from-template", response_model=BudgetOut, status_code=status.HTTP_201_CREATED)
+@router.post("/budgets/from-template", response_model=GenericResponse[BudgetOut], status_code=status.HTTP_201_CREATED)
 def create_budget_from_template(
     template_name: str = Query(..., description="Template name"),
     name: Optional[str] = Query(None),
@@ -104,7 +105,7 @@ def create_budget_from_template(
     return new_budget
 
 
-@router.get("/budgets", response_model=List[BudgetOut])
+@router.get("/budgets", response_model=GenericResponse[List[BudgetOut]])
 def get_budgets(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -117,10 +118,10 @@ def get_budgets(
     budgets = budget.get_all(
         db, skip, limit, current_user.id, current_user.role, status, department
     )
-    return budgets
+    return GenericResponse(data=budgets)
 
 
-@router.get("/budgets/{budget_id}", response_model=BudgetOut)
+@router.get("/budgets/{budget_id}", response_model=GenericResponse[BudgetOut])
 def get_budget(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -136,10 +137,10 @@ def get_budget(
         if budget_obj.created_by_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not enough permissions")
     
-    return budget_obj
+    return GenericResponse(data=budget_obj)
 
 
-@router.put("/budgets/{budget_id}", response_model=BudgetOut)
+@router.put("/budgets/{budget_id}", response_model=GenericResponse[BudgetOut])
 def update_budget(
     budget_id: int,
     budget_update: BudgetUpdate,
@@ -164,10 +165,10 @@ def update_budget(
         totals = budget.calculate_totals(db, budget_id)
         budget.update(db, budget_id, totals)
     
-    return updated_budget
+    return GenericResponse(message="Budget updated successfully", data=updated_budget)
 
 
-@router.delete("/budgets/{budget_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/budgets/{budget_id}", response_model=GenericResponse, status_code=status.HTTP_200_OK)
 def delete_budget(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -184,7 +185,7 @@ def delete_budget(
             raise HTTPException(status_code=403, detail="Not enough permissions")
     
     budget.delete(db, budget_id)
-    return None
+    return GenericResponse(message="Budget deleted successfully")
 
 
 class DeleteBudgetRequest(BaseModel):
@@ -237,10 +238,10 @@ def delete_budget_with_password(
     
     # Delete the budget
     budget.delete(db, budget_id)
-    return {"message": "Budget deleted successfully"}
+    return GenericResponse(message="Budget deleted successfully")
 
 
-@router.post("/budgets/{budget_id}/validate", response_model=BudgetValidationResult)
+@router.post("/budgets/{budget_id}/validate", response_model=GenericResponse[BudgetValidationResult])
 def validate_budget(
     budget_id: int,
     current_user: User = Depends(get_current_active_user),
