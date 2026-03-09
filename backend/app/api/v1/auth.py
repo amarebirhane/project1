@@ -10,8 +10,9 @@ import logging
 
 from ...core.database import get_db
 from ...core.config import settings
-from ...core.security import verify_password, create_access_token, get_password_hash
+from ...core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
 from ...models.user import User, UserRole
+from ...models.refresh_token import RefreshToken
 from ...crud import login_history as login_history_crud
 from ...crud.ip_restriction import ip_restriction as ip_restriction_crud
 from ...utils.user_agent import get_device_info, get_location_from_ip
@@ -59,6 +60,7 @@ class UserLogin(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
     requires_2fa: Optional[bool] = False  # Indicates if 2FA is required
 
@@ -146,8 +148,32 @@ class UserCRUD:
         user = UserCRUD.get_by_username(db, username)
         if not user:
             user = UserCRUD.get_by_email(db, username)
-        if not user or not verify_password(password, user.hashed_password):
+        
+        if not user:
             return None
+            
+        # Check if account is locked
+        if user.locked_until and user.locked_until > datetime.utcnow():
+            remaining = (user.locked_until - datetime.utcnow()).total_seconds()
+            minutes = int(remaining // 60) + 1
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Account is locked. Please try again in {minutes} minutes."
+            )
+            
+        if not verify_password(password, user.hashed_password):
+            # Increment failed attempts
+            user.failed_login_attempts += 1
+            if user.failed_login_attempts >= 3:
+                user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                logger.warning(f"User {user.username} account locked until {user.locked_until}")
+            db.commit()
+            return None
+            
+        # Authentication success - Reset lockout fields
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.commit()
         return user
 
     @staticmethod
