@@ -10,6 +10,7 @@ import logging
 
 from ...core.database import get_db
 from ...core.config import settings
+from ...schemas.responses import GenericResponse, ErrorResponse
 from ...core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
 from ...models.user import User, UserRole
 from ...models.refresh_token import RefreshToken
