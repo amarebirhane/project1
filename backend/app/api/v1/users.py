@@ -530,7 +530,8 @@ def list_users(
     """
     # Admin and Super Admin can see all users
     if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
-        return user_crud.get_multi(db, skip=skip, limit=limit)
+        users = user_crud.get_multi(db, skip=skip, limit=limit)
+        return GenericResponse(data=users)
     
     # Finance Admin and Manager can only see their subordinates (accountants and employees)
     # They CANNOT see other finance admins or managers
@@ -549,7 +550,9 @@ def list_users(
         ]
         
         # Apply pagination
-    return GenericResponse(data=UserOut.from_orm(filtered_users[skip:skip + limit]) if isinstance(filtered_users, list) else filtered_users)
+        return GenericResponse(data=filtered_users[skip:skip + limit])
+    
+    return GenericResponse(data=[])
 
 
 # ------------------------------------------------------------------
