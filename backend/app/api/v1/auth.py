@@ -154,8 +154,8 @@ class UserCRUD:
             return None
             
         # Check if account is locked
-        if user.locked_until and user.locked_until > datetime.now(timezone.utc):
-            remaining = (user.locked_until - datetime.now(timezone.utc)).total_seconds()
+        if user.locked_until and user.locked_until > datetime.utcnow():
+            remaining = (user.locked_until - datetime.utcnow()).total_seconds()
             minutes = int(remaining // 60) + 1
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -166,7 +166,7 @@ class UserCRUD:
             # Increment failed attempts
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= 3:
-                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+                user.locked_until = datetime.utcnow() + timedelta(minutes=15)
                 logger.warning(f"User {user.username} account locked until {user.locked_until}")
             db.commit()
             return None
@@ -358,7 +358,7 @@ def login(
         )
         
         # Update last_login
-        user.last_login = datetime.now(timezone.utc)
+        user.last_login = datetime.utcnow()
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
@@ -832,7 +832,7 @@ def refresh_token(
         )
         
     # 2. Check expiration
-    if db_token.expires_at < datetime.now(timezone.utc):
+    if db_token.expires_at < datetime.utcnow():
         db_token.is_revoked = True
         db.commit()
         raise HTTPException(
