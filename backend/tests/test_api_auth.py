@@ -7,8 +7,9 @@ from sqlalchemy.orm import sessionmaker
 import time
 
 # Setup test database
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_auth.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SQLALCHEMY_DATABASE_URL = "sqlite://"
+engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
+from sqlalchemy.pool import StaticPool # Ensure StaticPool is available or imported correctly
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def override_get_db():
