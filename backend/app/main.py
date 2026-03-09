@@ -30,6 +30,7 @@ from slowapi.errors import RateLimitExceeded
 # --- Critical imports for default admin creation ---
 from .models.user import User, UserRole        # SQLAlchemy model + Enum
 from .schemas.user import UserCreate           # Pydantic schema
+from .schemas.responses import ErrorResponse    # Standardized response
 from .core.security import get_password_hash   # Use core.security (bcrypt directly)
 from .models.currency import Currency          # SQLAlchemy model
 
@@ -513,14 +514,13 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     logger.warning(f"HTTP Exception: {exc.status_code} - {exc.detail}")
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "error": True,
-            "message": exc.detail,
-            "status_code": exc.status_code,
-            "timestamp": datetime.utcnow().isoformat()
-        },
+        content=ErrorResponse(
+            message=str(exc.detail),
+            status_code=exc.status_code
+        ).model_dump(),
         headers=getattr(exc, "headers", None)
     )
+
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
@@ -528,12 +528,10 @@ async def general_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": True,
-            "message": "Internal server error" if not settings.DEBUG else str(exc),
-            "status_code": 500,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        content=ErrorResponse(
+            message="Internal server error" if not settings.DEBUG else str(exc),
+            status_code=500
+        ).model_dump()
     )
 
 # Serve static files (uploads)
