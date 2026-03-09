@@ -793,49 +793,72 @@ def read_users_me(current_user: User = Depends(get_current_active_user)):
 class RefreshTokenRequest(BaseModel):
     token: str
 
-@router.post("/refresh", response_model=dict)
+@router.post("/refresh", response_model=Token)
 def refresh_token(
     request_data: RefreshTokenRequest,
+    request: Request,
     db: Session = Depends(get_db)
 ):
-    """Refresh access token"""
-    try:
-        # Verify the current token
-        payload = jwt.decode(
-            request_data.token,
-            settings.SECRET_KEY,
-            algorithms=[settings.ALGORITHM]
-        )
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
-            )
-        
-        # Get user from database
-        user = db.query(User).filter(User.id == int(user_id)).first()
-        if not user or not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="User not found or inactive"
-            )
-        
-        # Create new access token
-        access_token = create_access_token(
-            data={"sub": str(user.id)},
-            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        )
-        
-        return {
-            "access_token": access_token,
-            "token_type": "bearer"
-        }
-    except JWTError:
+    """
+    Refresh access token using a refresh token.
+    Implements Refresh Token Rotation for better security.
+    """
+    # 1. Look up the refresh token in the database
+    db_token = db.query(RefreshToken).filter(
+        RefreshToken.token == request_data.token,
+        RefreshToken.is_revoked == False
+    ).first()
+    
+    if not db_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail="Invalid or revoked refresh token"
         )
+        
+    # 2. Check expiration
+    if db_token.expires_at < datetime.utcnow():
+        db_token.is_revoked = True
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has expired"
+        )
+        
+    # 3. Get user
+    user = db.query(User).filter(User.id == db_token.user_id).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive"
+        )
+        
+    # 4. REVOKE the old token (Rotation)
+    db_token.is_revoked = True
+    
+    # 5. Issue NEW tokens
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    
+    refresh_token_value, refresh_expires_at = create_refresh_token(data={"sub": str(user.id)})
+    
+    ip_address, _ = get_client_info(request)
+    new_db_refresh_token = RefreshToken(
+        token=refresh_token_value,
+        user_id=user.id,
+        expires_at=refresh_expires_at,
+        created_ip=ip_address
+    )
+    
+    db.add(new_db_refresh_token)
+    db.commit()
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token_value,
+        "token_type": "bearer"
+    }
 
 
 # ------------------------------------------------------------------
