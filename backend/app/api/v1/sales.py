@@ -159,7 +159,7 @@ def create_sale(
         except Exception as audit_err:
             logger.warning(f"Audit logging failed for sale creation: {str(audit_err)}")
 
-        return _format_sale_output(sale, current_user)
+        return GenericResponse(message="Sale created successfully", data=_format_sale_output(sale, current_user))
     except HTTPException:
         raise
     except ValueError as e:
@@ -308,7 +308,7 @@ def get_sale(
                     detail="You can only view sales from Finance Admin, Manager, and Employee"
                 )
         
-        return _format_sale_output(sale, current_user)
+        return GenericResponse(data=_format_sale_output(sale, current_user))
     except HTTPException:
         raise
     except Exception as e:
@@ -319,7 +319,7 @@ def get_sale(
         )
 
 
-@router.post("/{sale_id}/post", response_model=SaleOut)
+@router.post("/{sale_id}/post", response_model=GenericResponse[SaleOut])
 def post_sale(
     sale_id: int,
     post_data: SalePostRequest,
@@ -463,7 +463,7 @@ def post_sale(
         )
 
 
-@router.post("/{sale_id}/cancel", response_model=SaleOut)
+@router.post("/{sale_id}/cancel", response_model=GenericResponse[SaleOut])
 def cancel_sale(
     sale_id: int,
     background_tasks: BackgroundTasks,
@@ -512,7 +512,7 @@ def cancel_sale(
         )
 
 
-@router.get("/summary/overview", response_model=SalesSummaryOut)
+@router.get("/summary/overview", response_model=GenericResponse[SalesSummaryOut])
 def get_sales_summary(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
@@ -579,7 +579,7 @@ def get_sales_summary(
                 user_ids = [current_user.id]
         
         summary = sale_crud.get_sales_summary(db, start_date_dt, end_date_dt, user_ids=user_ids)
-        return summary
+        return GenericResponse(data=summary)
     except HTTPException:
         raise
     except Exception as e:
@@ -590,7 +590,7 @@ def get_sales_summary(
         )
 
 
-@router.get("/receipt/{sale_id}", response_model=ReceiptOut)
+@router.get("/receipt/{sale_id}", response_model=GenericResponse[ReceiptOut])
 def get_receipt(
     sale_id: int,
     current_user: User = Depends(get_current_active_user),
@@ -608,7 +608,7 @@ def get_receipt(
             detail="You can only view receipts for your own sales"
         )
     
-    return {
+    return GenericResponse(data={
         'receipt_number': sale.receipt_number or f"RCP-{sale.id}",
         'sale_id': sale.id,
         'item_name': sale.item.item_name if sale.item else 'Unknown',
@@ -619,10 +619,10 @@ def get_receipt(
         'customer_email': sale.customer_email,
         'sold_by_name': sale.sold_by.full_name if sale.sold_by else None,
         'created_at': sale.created_at,
-    }
+    })
 
 
-@router.get("/journal-entries/list", response_model=List[JournalEntryOut])
+@router.get("/journal-entries/list", response_model=GenericResponse[List[JournalEntryOut]])
 def get_journal_entries(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -672,10 +672,10 @@ def get_journal_entries(
             'posted_at': entry.posted_at,
         })
     
-    return result
+    return GenericResponse(data=result)
 
 
-@router.get("/{sale_id}/einvoice")
+@router.get("/{sale_id}/einvoice", response_model=GenericResponse)
 def get_sale_einvoice(
     sale_id: int,
     format: str = Query("json", enum=["json", "xml"]),
@@ -698,5 +698,5 @@ def get_sale_einvoice(
         xml_content = invoice_service.generate_ubl_xml(sale)
         return Response(content=xml_content, media_type="application/xml")
     else:
-        return invoice_service.generate_json_einvoice(sale)
+        return GenericResponse(data=invoice_service.generate_json_einvoice(sale))
 
