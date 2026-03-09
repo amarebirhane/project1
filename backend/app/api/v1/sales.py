@@ -6,7 +6,9 @@ Role-based access control:
 - Accountant: Can view all sales from Finance Admin and Employee, post journal entries, approve sales for revenue recording
 - Finance Admin: Can view all sales and profit information
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks, Request
+from fastapi.encoders import jsonable_encoder
+from ...schemas.responses import GenericResponse, ErrorResponse
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from typing import List, Optional
 from datetime import datetime
@@ -85,7 +87,7 @@ def _can_create_sale(user_role: UserRole) -> bool:
     return role_str in ['employee', 'accountant', 'finance_manager', 'finance_admin', 'admin', 'super_admin']
 
 
-@router.post("", response_model=SaleOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=GenericResponse[SaleOut], status_code=status.HTTP_201_CREATED)
 def create_sale(
     sale_data: SaleCreate,
     background_tasks: BackgroundTasks,
@@ -170,7 +172,7 @@ def create_sale(
         )
 
 
-@router.get("", response_model=List[SaleOut])
+@router.get("", response_model=GenericResponse[List[SaleOut]])
 def get_sales(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -268,7 +270,7 @@ def get_sales(
                 start_date=start_date_dt, end_date=end_date_dt
             )
         
-        return [_format_sale_output(s, current_user) for s in sales]
+        return GenericResponse(data=[_format_sale_output(s, current_user) for s in sales])
     except HTTPException:
         raise
     except Exception as e:
@@ -279,7 +281,7 @@ def get_sales(
         )
 
 
-@router.get("/{sale_id}", response_model=SaleOut)
+@router.get("/{sale_id}", response_model=GenericResponse[SaleOut])
 def get_sale(
     sale_id: int,
     current_user: User = Depends(get_current_active_user),
