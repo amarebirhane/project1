@@ -138,3 +138,20 @@ def generate_password_reset_token() -> str:
 def generate_api_key() -> str:
     """Generate API key for external integrations."""
     return secrets.token_urlsafe(40)
+
+
+def generate_refresh_token() -> str:
+    """Generate a long-lived refresh token."""
+    return secrets.token_urlsafe(64)
+
+
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> tuple[str, datetime]:
+    """
+    Create a refresh token and return its value and expiration date.
+    We'll return a random string (opaque token) for better security + expiration date.
+    """
+    token = generate_refresh_token()
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    )
+    return token, expire
