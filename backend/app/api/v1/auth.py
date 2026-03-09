@@ -520,7 +520,7 @@ def login_json(
         )
         
         # Update last_login
-        user.last_login = datetime.now(timezone.utc)
+        user.last_login = datetime.utcnow()
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
