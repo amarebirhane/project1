@@ -503,7 +503,7 @@ class ApiClient {
 
   async getUsers(): Promise<ApiResponse<User[]>> {
     try {
-      const response = await this.get<User[]>('/users/');
+      const response = await this.get<User[]>('/users');
       // Ensure we always return an array
       if (Array.isArray(response.data)) {
         return response;

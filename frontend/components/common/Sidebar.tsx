@@ -478,13 +478,7 @@ const Sidebar: React.FC = () => {
                     </NavItem>
                 </ComponentGate>
 
-                {/* Search */}
-                <NavItem href="/search" $active={pathname === '/search'} $collapsed={collapsed}>
-                    <NavIcon $active={pathname === '/search'} $collapsed={collapsed} $iconType="search">
-                        <Search />
-                    </NavIcon>
-                    {!collapsed && 'Search'}
-                </NavItem>
+
 
                 {/* Revenue - Hidden for employees */}
                 {!isEmployee && (
