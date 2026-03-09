@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { Button } from '@/components/ui/button';
+import ExportButton from '@/components/common/ExportButton';
 import Link from 'next/link';
 import {
   AlertCircle, ArrowUpRight, ArrowDownRight,
@@ -986,72 +987,7 @@ export default function TransactionListPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleExport = () => {
-    try {
-      if (filteredTransactions.length === 0) {
-        toast.error('No transactions to export');
-        return;
-      }
 
-      // Define columns to export
-      const headers = [
-        'Type',
-        'Title',
-        'Category',
-        'Amount',
-        'Date',
-        'Status',
-        'Description'
-      ];
-
-      // Format data as CSV
-      const csvRows = filteredTransactions.map(transaction => {
-        const isExpense = transaction.transaction_type === 'expense' || transaction.transaction_type === 'inventory';
-        const typeLabel = transaction.transaction_type.charAt(0).toUpperCase() + transaction.transaction_type.slice(1);
-        const statusLabel = transaction.status === 'posted'
-          ? 'Posted'
-          : transaction.status === 'cancelled'
-            ? 'Cancelled'
-            : transaction.status === 'active'
-              ? 'Active'
-              : transaction.status === 'inactive'
-                ? 'Inactive'
-                : transaction.is_approved
-                  ? 'Approved'
-                  : 'Pending';
-
-        return [
-          typeLabel,
-          `"${(transaction.title || '').replace(/"/g, '""')}"`,
-          `"${(transaction.category || 'N/A').replace(/"/g, '""')}"`,
-          `${isExpense ? '-' : '+'}${transaction.amount.toFixed(2)}`,
-          formatDate(transaction.date || transaction.created_at || ''),
-          statusLabel,
-          `"${(transaction.description || '').replace(/"/g, '""')}"`
-        ].join(',');
-      });
-
-      const csvContent = [headers.join(','), ...csvRows].join('\n');
-
-      // Create blob and download
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const date = new Date().toISOString().split('T')[0];
-
-      link.setAttribute('href', url);
-      link.setAttribute('download', `transactions_export_${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success('Transactions exported successfully');
-    } catch (err) {
-      console.error('Export failed:', err);
-      toast.error('Failed to export transactions');
-    }
-  };
 
   // Use backend summary if available, otherwise fallback to local calculations
   const localTotalRevenue = filteredTransactions
@@ -1184,15 +1120,11 @@ export default function TransactionListPage() {
                 <option value="cancelled">Cancelled</option>
               </Select>
 
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                disabled={filteredTransactions.length === 0}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '38px' }}
-              >
-                <Download size={16} />
-                Export
-              </Button>
+              <ExportButton
+                data={filteredTransactions}
+                fileName="transactions_report"
+                title="Transactions Report"
+              />
             </FiltersGrid>
           </FiltersContainer>
 
