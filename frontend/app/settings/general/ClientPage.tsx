@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { theme, darkTheme, lightTheme } from '@/components/common/theme';
 import { toast } from 'sonner';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useRouter } from 'next/navigation';
 
 const PRIMARY_COLOR = (props: any) => props.theme.colors.primary;
 const TEXT_COLOR = (props: any) => props.theme.colors.text;
@@ -352,6 +353,7 @@ export default function GeneralSettingsPage() {
   const { hasUserType } = useAuthorization();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const router = useRouter();
 
   const themePreference = useThemeStore(state => state.themePreference);
   const setThemePreference = useThemeStore(state => state.setThemePreference);
@@ -423,11 +425,17 @@ export default function GeneralSettingsPage() {
       // Save to localStorage
       saveSettings(settings, user?.id);
 
+      // Save language to cookie for next-intl
+      document.cookie = `NEXT_LOCALE=${settings.language}; path=/; max-age=31536000`;
+
       // Apply compact view immediately
       applyCompactView(settings.compactView);
 
       setSuccess('Settings saved successfully!');
       toast.success('Settings saved successfully!');
+
+      // Refresh router so server components pick up the new language
+      router.refresh();
       setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
       console.error('Failed to save settings:', error);
