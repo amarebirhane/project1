@@ -12,6 +12,7 @@ from ...core.database import get_db
 from ...api.deps import get_current_active_user
 from ...models.user import User, UserRole
 from ...services.analytics import analytics
+from ...schemas.responses import GenericResponse, ErrorResponse
 from ...crud.inventory import inventory as inventory_crud
 from ...crud.sale import sale as sale_crud
 from ...crud.user import user as user_crud
@@ -67,7 +68,7 @@ def get_advanced_kpis(
         category=category
     )
 
-    return kpis
+    return GenericResponse(data=kpis)
 
 
 @router.get("/trends")
@@ -117,7 +118,7 @@ def get_trend_analysis(
         category=category
     )
 
-    return trend_data
+    return GenericResponse(data=trend_data)
 
 
 @router.get("/time-series")
@@ -167,7 +168,7 @@ def get_time_series_data(
         category=category
     )
 
-    return time_series
+    return GenericResponse(data=time_series)
 
 
 @router.get("/category-breakdown")
@@ -213,7 +214,7 @@ def get_category_breakdown(
         user_role=current_user.role
     )
 
-    return breakdown
+    return GenericResponse(data=breakdown)
 
 
 @router.get("/overview")
@@ -340,21 +341,23 @@ def get_analytics_overview(
             logger.warning(f"Error fetching sales summary: {str(e)}")
             sales_summary = None
 
-        return {
-            "period": {
-                "start_date": start_date_dt.isoformat(),
-                "end_date": end_date_dt.isoformat(),
-                "period_type": period
-            },
-            "kpis": kpis,
-            "time_series": time_series,
-            "category_breakdown": category_breakdown,
-            "trends": {
-                "profit": profit_trend
-            },
-            "inventory": inventory_summary,
-            "sales": sales_summary
-        }
+        return GenericResponse(
+            data={
+                "period": {
+                    "start_date": start_date_dt.isoformat(),
+                    "end_date": end_date_dt.isoformat(),
+                    "period_type": period
+                },
+                "kpis": kpis,
+                "time_series": time_series,
+                "category_breakdown": category_breakdown,
+                "trends": {
+                    "profit": profit_trend
+                },
+                "inventory": inventory_summary,
+                "sales": sales_summary
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:
