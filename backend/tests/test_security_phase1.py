@@ -52,25 +52,26 @@ def setup_db():
 
 def test_account_lockout():
     # 1. First 2 failed attempts
-    for _ in range(2):
+    for i in range(2):
         response = client.post(
             "/api/v1/auth/login",
             data={"username": "testuser", "password": "wrongpassword"}
         )
-        assert response.status_code == 401
+        assert response.status_code == 401, f"Failed at attempt {i+1}: {response.text}"
         
     # 2. Third failed attempt should trigger lockout
     response = client.post(
         "/api/v1/auth/login",
         data={"username": "testuser", "password": "wrongpassword"}
     )
-    assert response.status_code == 401
+    assert response.status_code == 401, f"Failed at 3rd attempt: {response.text}"
     
     # 4. Fourth attempt (even with right password) should be locked
     response = client.post(
         "/api/v1/auth/login",
         data={"username": "testuser", "password": "testpass123"}
     )
+    print(f"DEBUG lockout response: {response.status_code} - {response.text}")
     assert response.status_code == 403
     assert "locked" in response.json()["detail"].lower()
 
@@ -80,6 +81,7 @@ def test_refresh_token_issuance_and_rotation():
         "/api/v1/auth/login",
         data={"username": "testuser", "password": "testpass123"}
     )
+    print(f"DEBUG login response: {response.status_code} - {response.text}")
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
@@ -92,6 +94,7 @@ def test_refresh_token_issuance_and_rotation():
         "/api/v1/auth/refresh",
         json={"token": old_refresh_token}
     )
+    print(f"DEBUG refresh response: {response.status_code} - {response.text}")
     assert response.status_code == 200
     new_data = response.json()
     assert "access_token" in new_data
@@ -103,5 +106,7 @@ def test_refresh_token_issuance_and_rotation():
         "/api/v1/auth/refresh",
         json={"token": old_refresh_token}
     )
+    print(f"DEBUG revoked refresh response: {response.status_code} - {response.text}")
     assert response.status_code == 401
     assert "revoked" in response.json()["detail"].lower()
+
