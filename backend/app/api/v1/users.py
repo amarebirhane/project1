@@ -12,6 +12,8 @@ from ...schemas.user import UserCreate, UserOut, UserUpdate, UserChangePassword,
 from ...models.user import User, UserRole
 from ...api.deps import get_current_active_user, require_min_role
 from ...core.security import verify_password
+from ...schemas.responses import GenericResponse, ErrorResponse
+from fastapi.encoders import jsonable_encoder
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,7 @@ def get_2fa_status(
     db: Session = Depends(get_db)
 ):
     """Get current 2FA status"""
-    return {"enabled": current_user.is_2fa_enabled or False}
+    return GenericResponse(data={"enabled": current_user.is_2fa_enabled or False})
 
 @router.post("/me/2fa/setup", response_model=TwoFactorSetupResponse)
 def setup_2fa(
@@ -76,11 +78,14 @@ def setup_2fa(
     db.commit()
     db.refresh(current_user)
     
-    return {
-        "secret": secret,
-        "qr_code_url": qr_code_url,
-        "manual_entry_key": secret
-    }
+    return GenericResponse(
+        message="2FA setup initiated",
+        data={
+            "secret": secret,
+            "qr_code_url": qr_code_url,
+            "manual_entry_key": secret
+        }
+    )
 
 @router.post("/me/2fa/verify", response_model=dict)
 def verify_2fa(
@@ -104,7 +109,7 @@ def verify_2fa(
     db.commit()
     db.refresh(current_user)
     
-    return {"message": "2FA enabled successfully", "enabled": True}
+    return GenericResponse(message="2FA enabled successfully", data={"enabled": True})
 
 class TwoFactorDisableRequest(BaseModel):
     current_password: str
@@ -128,7 +133,7 @@ def disable_2fa(
     db.commit()
     db.refresh(current_user)
     
-    return {"message": "2FA disabled successfully", "enabled": False}
+    return GenericResponse(message="2FA disabled successfully", data={"enabled": False})
 
 
 # ------------------------------------------------------------------
@@ -161,12 +166,13 @@ def get_ip_restriction_status(
             # Fallback to comma-separated string
             allowed_ips = [ip.strip() for ip in current_user.allowed_ips.split(',') if ip.strip()]
     
-    return {
-        "enabled": current_user.ip_restriction_enabled or False,
-        "allowed_ips": allowed_ips
-    }
-
-@router.put("/me/ip-restriction", response_model=IPRestrictionStatusResponse)
+    return GenericResponse(
+        data={
+            "enabled": current_user.ip_restriction_enabled or False,
+            "allowed_ips": allowed_ips
+        }
+    )
+@router.put("/me/ip-restriction", response_model=GenericResponse[IPRestrictionStatusResponse])
 def update_ip_restriction(
     ip_data: IPRestrictionUpdateRequest,
     current_user: User = Depends(get_current_active_user),
@@ -187,10 +193,13 @@ def update_ip_restriction(
         except (json.JSONDecodeError, ValueError):
             allowed_ips = [ip.strip() for ip in current_user.allowed_ips.split(',') if ip.strip()]
     
-    return {
-        "enabled": current_user.ip_restriction_enabled,
-        "allowed_ips": allowed_ips
-    }
+    return GenericResponse(
+        message="IP restriction updated",
+        data={
+            "enabled": current_user.ip_restriction_enabled,
+            "allowed_ips": allowed_ips
+        }
+    )
 
 @router.post("/me/ip-restriction/allowed-ips", response_model=IPRestrictionStatusResponse)
 def add_allowed_ip(
@@ -226,12 +235,14 @@ def add_allowed_ip(
     else:
         raise HTTPException(status_code=400, detail="IP address already in allowed list")
     
-    return {
-        "enabled": current_user.ip_restriction_enabled or False,
-        "allowed_ips": allowed_ips
-    }
-
-@router.delete("/me/ip-restriction/allowed-ips/{ip_address:path}", response_model=IPRestrictionStatusResponse)
+    return GenericResponse(
+        message="IP address added successfully",
+        data={
+            "enabled": current_user.ip_restriction_enabled or False,
+            "allowed_ips": allowed_ips
+        }
+    )
+@router.delete("/me/ip-restriction/allowed-ips/{ip_address:path}", response_model=GenericResponse[IPRestrictionStatusResponse])
 def remove_allowed_ip(
     ip_address: str,
     current_user: User = Depends(get_current_active_user),
@@ -293,7 +304,10 @@ def get_verification_history(
                 "success": entry.success
             })
         
-        return history
+        return GenericResponse(
+            message="Verification history retrieved",
+            data=history
+        )
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
@@ -304,12 +318,13 @@ def get_verification_history(
         )
 
 # GET /me
-@router.get("/me", response_model=UserOut)
+@router.get("/me", response_model=GenericResponse[UserOut])
 def read_users_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
+    return GenericResponse(data=UserOut.from_orm(current_user))
 
 # PUT /me
-@router.put("/me", response_model=UserOut)
+@router.get("/me", response_model=GenericResponse[UserOut])
+@router.put("/me", response_model=GenericResponse[UserOut])
 def update_user_me(
     user_update: UserUpdate,
     db: Session = Depends(get_db),
@@ -320,7 +335,8 @@ def update_user_me(
     if user_update.is_active is not None:
         raise HTTPException(status_code=403, detail="Cannot change your own active status")
 
-    return user_crud.update(db, db_obj=current_user, obj_in=user_update)
+    updated_user = user_crud.update(db, db_obj=current_user, obj_in=user_update)
+    return GenericResponse(message="Profile updated successfully", data=UserOut.from_orm(updated_user))
 
 
 @router.post("/me/profile-image", response_model=UserOut)
@@ -441,7 +457,7 @@ def change_password(
     db.commit()
     db.refresh(current_user)
     
-    return {"message": "Password changed successfully"}
+    return GenericResponse(message="Password changed successfully")
 
 
 @router.post("/admin-reset-password", response_model=dict)
@@ -490,7 +506,7 @@ def admin_reset_password(
     db.commit()
     
     # 4. Success message
-    return {"message": f"Password for {target_user.username} has been reset successfully"}
+    return GenericResponse(message=f"Password for {target_user.username} has been reset successfully")
 
 
 # ------------------------------------------------------------------
@@ -498,7 +514,7 @@ def admin_reset_password(
 # ------------------------------------------------------------------
 # GET / (List users - manager and above)
 # ------------------------------------------------------------------
-@router.get("", response_model=List[UserOut])
+@router.get("", response_model=GenericResponse[List[UserOut]])
 def list_users(
     skip: int = 0,
     limit: int = 100,
@@ -530,16 +546,13 @@ def list_users(
         ]
         
         # Apply pagination
-        return filtered_users[skip:skip + limit]
-    
-    # Fallback (should not reach here due to require_min_role)
-    return user_crud.get_multi(db, skip=skip, limit=limit)
+    return GenericResponse(data=UserOut.from_orm(filtered_users[skip:skip + limit]) if isinstance(filtered_users, list) else filtered_users)
 
 
 # ------------------------------------------------------------------
 # GET /{user_id}
 # ------------------------------------------------------------------
-@router.get("/{user_id}/subordinates", response_model=List[UserOut])
+@router.get("/{user_id}/subordinates", response_model=GenericResponse[List[UserOut]])
 def read_user_subordinates(
     user_id: int,
     db: Session = Depends(get_db),
@@ -561,10 +574,10 @@ def read_user_subordinates(
     if not (is_self or is_admin or is_subordinate_viewing_manager):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 
-    return user_crud.get_subordinates(db, user_id)
+    return GenericResponse(data=user_crud.get_subordinates(db, user_id))
 
 
-@router.get("/{user_id}", response_model=UserOut)
+@router.get("/{user_id}", response_model=GenericResponse[UserOut])
 def read_user(
     user_id: int,
     db: Session = Depends(get_db),
@@ -594,7 +607,7 @@ def read_user(
 # ------------------------------------------------------------------
 # POST / (Admin creates any user)
 # ------------------------------------------------------------------
-@router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=GenericResponse[UserOut], status_code=status.HTTP_201_CREATED)
 def create_user(
     user_in: UserCreate,
     background_tasks: BackgroundTasks,
@@ -651,7 +664,7 @@ def create_user(
 # ------------------------------------------------------------------
 # POST /subordinates (Manager creates accountant/employee)
 # ------------------------------------------------------------------
-@router.post("/subordinates", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/subordinates", response_model=GenericResponse[UserOut], status_code=status.HTTP_201_CREATED)
 def create_subordinate(
     user_in: UserCreate,
     background_tasks: BackgroundTasks,
@@ -697,7 +710,7 @@ def create_subordinate(
 # ------------------------------------------------------------------
 # PUT /{user_id}
 # ------------------------------------------------------------------
-@router.put("/{user_id}", response_model=UserOut)
+@router.put("/{user_id}", response_model=GenericResponse[UserOut])
 def update_user(
     user_id: int,
     user_update: UserUpdate,
@@ -755,12 +768,8 @@ def update_user(
                 raise HTTPException(status_code=403, detail="Cannot change user role")
             if user_update.manager_id is not None and user_update.manager_id != current_user.id:
                 raise HTTPException(status_code=403, detail="Cannot change manager assignment")
-            return user_crud.update(db, db_obj=db_user, obj_in=user_update)
-        else:
-            raise HTTPException(status_code=403, detail="You can only update your subordinates (accountants and employees)")
-    
-    # Other roles cannot update users
-    raise HTTPException(status_code=403, detail="Insufficient permissions")
+    updated_user = user_crud.update(db, db_obj=db_user, obj_in=user_update)
+    return GenericResponse(message="User updated successfully", data=UserOut.from_orm(updated_user))
 
 
 # ------------------------------------------------------------------
