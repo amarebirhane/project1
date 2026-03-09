@@ -162,5 +162,34 @@ View and manage this feedback in the admin panel:
         )
 
 
+    def send_verification_email(self, email: str, token: str) -> bool:
+        """Send email verification link to new user"""
+        verification_link = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')}/verify-email?token={token}"
+        subject = "Verify Your Email - Finance System"
+        
+        body = f"Please verify your email by clicking the link: {verification_link}"
+        
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+                <h2 style="color: #2563eb; margin-bottom: 20px;">Welcome to Finance Management System!</h2>
+                <p>Thank you for registering. Please click the button below to verify your email address and activate your account.</p>
+                <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
+                    <a href="{verification_link}" 
+                       style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                        Verify Email Address
+                    </a>
+                </div>
+                <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                <p>{verification_link}</p>
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 20px 0;">
+                <p style="font-size: 0.8em; color: #666;">This link will expire in {getattr(settings, 'EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS', 24)} hours.</p>
+            </div>
+        </body>
+        </html>
+        """
+        return self.send_email([email], subject, body, html_body)
+
 # Create singleton instance
 email_service = EmailService()
