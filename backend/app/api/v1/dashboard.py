@@ -11,6 +11,7 @@ from ...crud.user import user as user_crud
 from ...crud.approval import approval as approval_crud
 from ...models.user import User, UserRole
 from ...api.deps import get_current_active_user
+from ...schemas.responses import GenericResponse, ErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -67,22 +68,24 @@ def get_dashboard_overview(
                 logger.error(f"Error fetching pending approvals: {str(e)}")
                 pending_approvals = 0
             
-            return {
-                "period": {
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "days": 30
-                },
-                "financials": {
-                    "total_revenue": total_revenue,
-                    "total_expenses": total_expenses,
-                    "profit": profit,
-                    "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
-                },
-                "revenue_by_category": revenue_summary,
-                "expenses_by_category": expense_summary,
-                "pending_approvals": pending_approvals
-            }
+            return GenericResponse(
+                data={
+                    "period": {
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "days": 30
+                    },
+                    "financials": {
+                        "total_revenue": total_revenue,
+                        "total_expenses": total_expenses,
+                        "profit": profit,
+                        "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
+                    },
+                    "revenue_by_category": revenue_summary,
+                    "expenses_by_category": expense_summary,
+                    "pending_approvals": pending_approvals
+                }
+            )
     
         elif current_user.role == UserRole.FINANCE_ADMIN:
             # Finance Admin overview - includes ONLY their own data AND their subordinates' data (accountants and employees)
@@ -198,23 +201,25 @@ def get_dashboard_overview(
                 logger.error(f"Error fetching pending approvals for Manager: {str(e)}")
                 team_pending = []
             
-            return {
-                "period": {
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "days": 30
-                },
-                "financials": {
-                    "total_revenue": total_revenue,
-                    "total_expenses": total_expenses,
-                    "profit": profit,
-                    "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
-                },
-                "team_stats": {
-                    "team_size": len(subordinate_ids),
-                    "pending_approvals": len(team_pending)
+            return GenericResponse(
+                data={
+                    "period": {
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "days": 30
+                    },
+                    "financials": {
+                        "total_revenue": total_revenue,
+                        "total_expenses": total_expenses,
+                        "profit": profit,
+                        "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
+                    },
+                    "team_stats": {
+                        "team_size": len(subordinate_ids),
+                        "pending_approvals": len(team_pending)
+                    }
                 }
-            }
+            )
     
         elif current_user.role == UserRole.ACCOUNTANT:
             # Accountant overview - includes ONLY their own data
@@ -331,24 +336,26 @@ def get_dashboard_overview(
                 logger.error(f"Error fetching user pending approvals: {str(e)}")
                 pending_count = 0
             
-            return {
-                "period": {
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "days": 30
-                },
-                "financials": {
-                    "total_revenue": total_revenue,
-                    "total_expenses": total_expenses,
-                    "profit": profit,
-                    "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
-                },
-                "personal_stats": {
-                    "revenue_entries": len(user_revenue_period),
-                    "expense_entries": len(user_expenses_period),
-                    "pending_approvals": pending_count
+            return GenericResponse(
+                data={
+                    "period": {
+                        "start_date": start_date,
+                        "end_date": end_date,
+                        "days": 30
+                    },
+                    "financials": {
+                        "total_revenue": total_revenue,
+                        "total_expenses": total_expenses,
+                        "profit": profit,
+                        "profit_margin": (profit / total_revenue * 100) if total_revenue > 0 else 0
+                    },
+                    "personal_stats": {
+                        "revenue_entries": len(user_revenue_period),
+                        "expense_entries": len(user_expenses_period),
+                        "pending_approvals": pending_count
+                    }
                 }
-            }
+            )
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
@@ -419,28 +426,30 @@ def get_kpi_metrics(
         expense_growth = ((current_expenses - prev_expenses) / prev_expenses * 100) if prev_expenses > 0 else 0
         profit_growth = ((current_profit - prev_profit) / prev_profit * 100) if prev_profit != 0 else 0
         
-        return {
-            "period": period,
-            "current_period": {
-                "start_date": start_date,
-                "end_date": end_date,
-                "revenue": current_revenue,
-                "expenses": current_expenses,
-                "profit": current_profit
-            },
-            "previous_period": {
-                "start_date": prev_start,
-                "end_date": prev_end,
-                "revenue": prev_revenue,
-                "expenses": prev_expenses,
-                "profit": prev_profit
-            },
-            "growth": {
-                "revenue_growth_percent": revenue_growth,
-                "expense_growth_percent": expense_growth,
-                "profit_growth_percent": profit_growth
+        return GenericResponse(
+            data={
+                "period": period,
+                "current_period": {
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "revenue": current_revenue,
+                    "expenses": current_expenses,
+                    "profit": current_profit
+                },
+                "previous_period": {
+                    "start_date": prev_start,
+                    "end_date": prev_end,
+                    "revenue": prev_revenue,
+                    "expenses": prev_expenses,
+                    "profit": prev_profit
+                },
+                "growth": {
+                    "revenue_growth_percent": revenue_growth,
+                    "expense_growth_percent": expense_growth,
+                    "profit_growth_percent": profit_growth
+                }
             }
-        }
+        )
     except HTTPException:
         raise
     except Exception as e:
