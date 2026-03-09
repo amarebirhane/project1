@@ -12,6 +12,7 @@ import FeedbackWidget from '@/components/common/FeedbackWidget';
 import AIChatWidget from '@/components/common/AIChatWidget';
 import WebSocketInitializer from '@/components/common/WebSocketInitializer';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
+import CommandPalette from '@/components/common/CommandPalette';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -85,6 +86,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
                         <Toaster position="top-right" />
                         <WidgetWrapper />
                         <WebSocketInitializer />
+                        <CommandPalette />
                     </AuthProvider>
                 </ThemeProvider>
             </StyledComponentsRegistry>
