@@ -15,6 +15,9 @@ import { ComponentGate, ComponentId } from '@/lib/rbac';
 import { useAuthorization } from '@/lib/rbac/use-authorization';
 import { useAuth } from '@/lib/rbac/auth-context';
 import { UserType } from '@/lib/rbac/models';
+import { useTranslations } from 'next-intl';
+import { theme } from './theme';
+import { UserType } from '@/lib/rbac/models';
 import { theme } from './theme';
 
 interface SidebarContainerProps {
@@ -421,6 +424,7 @@ const Sidebar: React.FC = () => {
     const pathname = usePathname();
     const { hasUserType } = useAuthorization();
     const { user } = useAuth();
+    const t = useTranslations('Common');
 
     const [collapsed, setCollapsed] = useState(false);
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
@@ -470,7 +474,7 @@ const Sidebar: React.FC = () => {
                         <NavIcon $active={pathname === '/dashboard'} $collapsed={collapsed} $iconType="home">
                             <Home />
                         </NavIcon>
-                        {!collapsed && 'Dashboard'}
+                        {!collapsed && t('dashboard')}
                     </NavItem>
                 </ComponentGate>
 
@@ -488,7 +492,7 @@ const Sidebar: React.FC = () => {
                                     <DropdownIcon $active={pathname.includes('/revenue')} $collapsed={collapsed} $iconType="arrow-down-circle">
                                         <ArrowDownCircle />
                                     </DropdownIcon>
-                                    {!collapsed && <span style={{ marginLeft: '12px' }}>Revenue</span>}
+                                    {!collapsed && <span style={{ marginLeft: '12px' }}>{t('revenue')}</span>}
                                 </div>
                                 <ChevronIcon $open={isOpen('revenue')}>
                                     <ChevronDown />
