@@ -20,5 +20,14 @@
         "english": "English",
         "spanish": "Spanish",
         "tigrinya": "Tigrinya"
+    },
+    "Header": {
+        "titleFull": "Financial Management System",
+        "titleShort": "FMS",
+        "features": "Features",
+        "pricing": "Pricing",
+        "docs": "Docs",
+        "contact": "Contact",
+        "login": "Login"
     }
 }
