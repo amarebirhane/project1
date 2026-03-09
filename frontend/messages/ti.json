@@ -18,7 +18,16 @@
         "language": "ቋንቋ",
         "selectLanguage": "ቋንቋ ምረጽ",
         "english": "English",
-        "spanish": "Spanish",
+        "spanish": "Español",
         "tigrinya": "ትግርኛ"
+    },
+    "Header": {
+        "titleFull": "ናይ ፋይናንስ ምሕደራ ስርዓት",
+        "titleShort": "ፋ.ም.ስ.",
+        "features": "ባህርያት",
+        "pricing": "ዋጋታት",
+        "docs": "ሰነዳት",
+        "contact": "ርክብ",
+        "login": "እቶ"
     }
 }

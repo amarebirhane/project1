@@ -1,7 +1,7 @@
-// components/common/Header.tsx
-"use client";
 import Link from "next/link";
 import Image from "next/image";
+import styled from "styled-components";
+import { useTranslations } from 'next-intl';
 import styled from "styled-components";
 
 const HeaderWrapper = styled.header`
@@ -124,6 +124,8 @@ const LoginButton = styled(Link)`
 `;
 
 export default function Header() {
+  const t = useTranslations('Header');
+
   return (
     <HeaderWrapper>
       <Container>
@@ -131,24 +133,24 @@ export default function Header() {
           <div>
             <Image
               src="/log.png"
-              alt="Financial Management System"
+              alt={t('titleFull')}
               width={40}
               height={40}
             />
           </div>
 
-          <TitleFull>Financial Management System</TitleFull>
-          <TitleShort>FMS</TitleShort>
+          <TitleFull>{t('titleFull')}</TitleFull>
+          <TitleShort>{t('titleShort')}</TitleShort>
         </BrandLink>
 
         <Actions>
           <MobileNav>
-            <MobileNavLink href="/service/feature">Features</MobileNavLink>
-            <MobileNavLink href="/service/price">Pricing</MobileNavLink>
-            <MobileNavLink href="/service/docs">Docs</MobileNavLink>
-            <MobileNavLink href="/service/contact">Contact</MobileNavLink>
+            <MobileNavLink href="/service/feature">{t('features')}</MobileNavLink>
+            <MobileNavLink href="/service/price">{t('pricing')}</MobileNavLink>
+            <MobileNavLink href="/service/docs">{t('docs')}</MobileNavLink>
+            <MobileNavLink href="/service/contact">{t('contact')}</MobileNavLink>
           </MobileNav>
-          <LoginButton href="/auth/login">Login</LoginButton>
+          <LoginButton href="/auth/login">{t('login')}</LoginButton>
         </Actions>
       </Container>
     </HeaderWrapper>

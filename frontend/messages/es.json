@@ -20,5 +20,14 @@
         "english": "Inglés",
         "spanish": "Español",
         "tigrinya": "Tigrinya"
+    },
+    "Header": {
+        "titleFull": "Sistema de Gestión Financiera",
+        "titleShort": "SGF",
+        "features": "Características",
+        "pricing": "Precios",
+        "docs": "Documentos",
+        "contact": "Contacto",
+        "login": "Acceder"
     }
 }
