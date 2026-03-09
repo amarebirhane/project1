@@ -73,8 +73,8 @@ def test_account_lockout():
     )
     print(f"DEBUG lockout response: {response.status_code} - {response.text}")
     assert response.status_code == 403
-    error_msg = response.json().get("detail", response.json().get("message", ""))
-    assert "locked" in error_msg.lower()
+    error_data = response.json()
+    assert "locked" in error_data["message"].lower()
 
 def test_refresh_token_issuance_and_rotation():
     # 1. Login to get tokens
@@ -84,7 +84,9 @@ def test_refresh_token_issuance_and_rotation():
     )
     print(f"DEBUG login response: {response.status_code} - {response.text}")
     assert response.status_code == 200
-    data = response.json()
+    res_json = response.json()
+    assert res_json["success"] is True
+    data = res_json["data"]
     assert "access_token" in data
     assert "refresh_token" in data
     
@@ -97,7 +99,7 @@ def test_refresh_token_issuance_and_rotation():
     )
     print(f"DEBUG refresh response: {response.status_code} - {response.text}")
     assert response.status_code == 200
-    new_data = response.json()
+    new_data = response.json()["data"]
     assert "access_token" in new_data
     assert "refresh_token" in new_data
     assert new_data["refresh_token"] != old_refresh_token
@@ -109,7 +111,7 @@ def test_refresh_token_issuance_and_rotation():
     )
     print(f"DEBUG revoked refresh response: {response.status_code} - {response.text}")
     assert response.status_code == 401
-    error_msg = response.json().get("detail", response.json().get("message", ""))
-    assert "revoked" in error_msg.lower()
+    assert "revoked" in response.json()["message"].lower()
+
 
 
