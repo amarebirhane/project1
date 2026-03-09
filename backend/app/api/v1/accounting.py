@@ -15,6 +15,7 @@ from ...schemas import account as account_schema
 from ...schemas import journal_entry as journal_entry_schema
 from ...schemas import currency as currency_schema
 from ...schemas import tax as tax_schema
+from ...schemas.responses import GenericResponse, ErrorResponse
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ router = APIRouter()
 # Accounts
 # ------------------------------------------------------------------
 
-@router.get("/accounts", response_model=List[account_schema.Account])
+@router.get("/accounts", response_model=GenericResponse[List[account_schema.Account]])
 def get_accounts(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -33,9 +34,9 @@ def get_accounts(
     Retrieve all accounts.
     """
     accounts = db.query(Account).offset(skip).limit(limit).all()
-    return accounts
+    return GenericResponse(data=accounts)
 
-@router.post("/accounts", response_model=account_schema.Account)
+@router.post("/accounts", response_model=GenericResponse[account_schema.Account])
 def create_account(
     account_in: account_schema.AccountCreate,
     db: Session = Depends(get_db),
@@ -61,7 +62,7 @@ def create_account(
     db.refresh(db_account)
     return db_account
 
-@router.put("/accounts/{account_id}", response_model=account_schema.Account)
+@router.put("/accounts/{account_id}", response_model=GenericResponse[account_schema.Account])
 def update_account(
     account_id: int,
     account_in: account_schema.AccountUpdate,
@@ -112,13 +113,13 @@ def delete_account(
         
     db.delete(db_account)
     db.commit()
-    return {"message": "Account deleted successfully"}
+    return GenericResponse(message="Account deleted successfully")
 
 # ------------------------------------------------------------------
 # Journal Entries
 # ------------------------------------------------------------------
 
-@router.get("/journal-entries", response_model=List[journal_entry_schema.JournalEntry])
+@router.get("/journal-entries", response_model=GenericResponse[List[journal_entry_schema.JournalEntry]])
 def get_journal_entries(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -138,9 +139,9 @@ def get_journal_entries(
     # Populate nested Account objects for lines
     # (FastAPI/Pydantic validation config 'from_attributes=True' handles this if relationships are set up,
     # but for flat display we might want to ensure lines load)
-    return entries
+    return GenericResponse(data=entries)
 
-@router.post("/journal-entries", response_model=journal_entry_schema.JournalEntry)
+@router.post("/journal-entries", response_model=GenericResponse[journal_entry_schema.JournalEntry])
 def create_journal_entry(
     entry_in: journal_entry_schema.JournalEntryCreate,
     db: Session = Depends(get_db),
@@ -182,7 +183,7 @@ def create_journal_entry(
     db.refresh(db_entry)
     return db_entry
 
-@router.post("/journal-entries/{entry_id}/post", response_model=journal_entry_schema.JournalEntry)
+@router.post("/journal-entries/{entry_id}/post", response_model=GenericResponse[journal_entry_schema.JournalEntry])
 def post_journal_entry(
     entry_id: int,
     db: Session = Depends(get_db),
@@ -204,9 +205,9 @@ def post_journal_entry(
     
     db.commit()
     db.refresh(entry)
-    return entry
+    return GenericResponse(message="Journal entry posted successfully", data=entry)
 
-@router.put("/journal-entries/{entry_id}", response_model=journal_entry_schema.JournalEntry)
+@router.put("/journal-entries/{entry_id}", response_model=GenericResponse[journal_entry_schema.JournalEntry])
 def update_journal_entry(
     entry_id: int,
     entry_in: journal_entry_schema.JournalEntryCreate, # Using Create schema because we want full lines list
@@ -263,9 +264,9 @@ def delete_journal_entry(
     db.query(JournalEntryLine).filter(JournalEntryLine.journal_entry_id == entry_id).delete()
     db.delete(db_entry)
     db.commit()
-    return {"message": "Journal entry deleted"}
+    return GenericResponse(message="Journal entry deleted successfully")
 
-@router.post("/journal-entries/{entry_id}/reverse", response_model=journal_entry_schema.JournalEntry)
+@router.post("/journal-entries/{entry_id}/reverse", response_model=GenericResponse[journal_entry_schema.JournalEntry])
 def reverse_journal_entry(
     entry_id: int,
     db: Session = Depends(get_db),
@@ -318,13 +319,13 @@ def reverse_journal_entry(
 
     db.commit()
     db.refresh(reversal_entry)
-    return reversal_entry
+    return GenericResponse(message="Journal entry reversed successfully", data=reversal_entry)
 
 # ------------------------------------------------------------------
 # Currencies
 # ------------------------------------------------------------------
 
-@router.get("/currencies", response_model=List[currency_schema.Currency])
+@router.get("/currencies", response_model=GenericResponse[List[currency_schema.Currency]])
 def get_currencies(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -340,7 +341,7 @@ def get_currencies(
         query = query.filter(Currency.is_active == True)
     return query.offset(skip).limit(limit).all()
 
-@router.post("/currencies", response_model=currency_schema.Currency)
+@router.post("/currencies", response_model=GenericResponse[currency_schema.Currency])
 def create_currency(
     currency_in: currency_schema.CurrencyCreate,
     db: Session = Depends(get_db),
@@ -363,7 +364,7 @@ def create_currency(
     db.refresh(db_currency)
     return db_currency
 
-@router.put("/currencies/{currency_id}", response_model=currency_schema.Currency)
+@router.put("/currencies/{currency_id}", response_model=GenericResponse[currency_schema.Currency])
 def update_currency(
     currency_id: int,
     currency_in: currency_schema.CurrencyUpdate,
@@ -408,13 +409,13 @@ def delete_currency(
         
     db.delete(db_currency)
     db.commit()
-    return {"message": "Currency deleted"}
+    return GenericResponse(message="Currency deleted successfully")
 
 # ------------------------------------------------------------------
 # Exchange Rates
 # ------------------------------------------------------------------
 
-@router.get("/exchange-rates", response_model=List[currency_schema.ExchangeRate])
+@router.get("/exchange-rates", response_model=GenericResponse[List[currency_schema.ExchangeRate]])
 def get_exchange_rates(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -433,9 +434,9 @@ def get_exchange_rates(
     if to_currency:
         query = query.join(Currency, ExchangeRate.to_currency_id == Currency.id).filter(Currency.code == to_currency)
         
-    return query.order_by(ExchangeRate.effective_date.desc()).offset(skip).limit(limit).all()
+    return GenericResponse(data=query.order_by(ExchangeRate.effective_date.desc()).offset(skip).limit(limit).all())
 
-@router.post("/exchange-rates", response_model=currency_schema.ExchangeRate)
+@router.post("/exchange-rates", response_model=GenericResponse[currency_schema.ExchangeRate])
 def create_exchange_rate(
     rate_in: currency_schema.ExchangeRateCreate,
     db: Session = Depends(get_db),
@@ -451,7 +452,7 @@ def create_exchange_rate(
     db.add(db_rate)
     db.commit()
     db.refresh(db_rate)
-    return db_rate
+    return GenericResponse(message="Exchange rate created successfully", data=db_rate)
 
 @router.delete("/exchange-rates/{rate_id}")
 def delete_exchange_rate(
@@ -468,13 +469,13 @@ def delete_exchange_rate(
         
     db.delete(db_rate)
     db.commit()
-    return {"message": "Exchange rate deleted"}
+    return GenericResponse(message="Exchange rate deleted successfully")
 
 # ------------------------------------------------------------------
 # Tax Types
 # ------------------------------------------------------------------
 
-@router.get("/taxes/types", response_model=List[tax_schema.TaxType])
+@router.get("/taxes/types", response_model=GenericResponse[List[tax_schema.TaxType]])
 def get_tax_types(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -490,7 +491,7 @@ def get_tax_types(
         query = query.filter(TaxType.is_active == True)
     return query.offset(skip).limit(limit).all()
 
-@router.post("/taxes/types", response_model=tax_schema.TaxType)
+@router.post("/taxes/types", response_model=GenericResponse[tax_schema.TaxType])
 def create_tax_type(
     tax_type_in: tax_schema.TaxTypeCreate,
     db: Session = Depends(get_db),
@@ -513,7 +514,7 @@ def create_tax_type(
     db.refresh(db_tax_type)
     return db_tax_type
 
-@router.put("/taxes/types/{tax_type_id}", response_model=tax_schema.TaxType)
+@router.put("/taxes/types/{tax_type_id}", response_model=GenericResponse[tax_schema.TaxType])
 def update_tax_type(
     tax_type_id: int,
     tax_type_in: tax_schema.TaxTypeUpdate,
@@ -567,13 +568,13 @@ def delete_tax_type(
     
     db.delete(db_tax_type)
     db.commit()
-    return {"message": "Tax type deleted successfully"}
+    return GenericResponse(message="Tax type deleted successfully")
 
 # ------------------------------------------------------------------
 # Tax Rates
 # ------------------------------------------------------------------
 
-@router.get("/taxes/rates", response_model=List[tax_schema.TaxRate])
+@router.get("/taxes/rates", response_model=GenericResponse[List[tax_schema.TaxRate]])
 def get_tax_rates(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -591,9 +592,9 @@ def get_tax_rates(
     if active_only:
         query = query.filter(TaxRate.is_active == True)
     
-    return query.order_by(TaxRate.effective_from.desc()).offset(skip).limit(limit).all()
+    return GenericResponse(data=query.order_by(TaxRate.effective_from.desc()).offset(skip).limit(limit).all())
 
-@router.post("/taxes/rates", response_model=tax_schema.TaxRate)
+@router.post("/taxes/rates", response_model=GenericResponse[tax_schema.TaxRate])
 def create_tax_rate(
     tax_rate_in: tax_schema.TaxRateCreate,
     db: Session = Depends(get_db),
@@ -623,7 +624,7 @@ def create_tax_rate(
     db.refresh(db_tax_rate)
     return db_tax_rate
 
-@router.put("/taxes/rates/{tax_rate_id}", response_model=tax_schema.TaxRate)
+@router.put("/taxes/rates/{tax_rate_id}", response_model=GenericResponse[tax_schema.TaxRate])
 def update_tax_rate(
     tax_rate_id: int,
     tax_rate_in: tax_schema.TaxRateUpdate,
@@ -676,4 +677,4 @@ def delete_tax_rate(
     
     db.delete(db_tax_rate)
     db.commit()
-    return {"message": "Tax rate deleted successfully"}
+    return GenericResponse(message="Tax rate deleted successfully")
