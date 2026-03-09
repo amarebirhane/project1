@@ -27,7 +27,7 @@ async def test_ocr_analyze_image_success(mock_genai):
     
     result = await service.analyze_image(file)
     
-    assert result.document_type == "receipt"
+    assert result.document_type == "receipt", f"Expected receipt, got {result.document_type}. Error/Raw Text: {result.raw_text}"
     assert result.extracted_data.merchant_name == "Test Store"
     assert result.extracted_data.total_amount == 10.5
 
