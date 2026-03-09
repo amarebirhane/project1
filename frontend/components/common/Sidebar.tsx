@@ -9,7 +9,7 @@ import {
     UserCog, Settings, ChevronDown, Wallet, Shield, UserPlus, List, Calculator,
     DollarSign, Plus, FileText, TrendingUp, GitCompare, BarChart3, Package, ShoppingCart, BookOpen,
     Key, ChevronLeft, ChevronRight, Brain, Activity, Bell, Database, History, LockKeyhole, Network, Landmark, MessageSquare,
-    Coins, BookText, Banknote, CirclePercent
+    Coins, BookText, Banknote, CirclePercent, Search
 } from 'lucide-react';
 import { ComponentGate, ComponentId } from '@/lib/rbac';
 import { useAuthorization } from '@/lib/rbac/use-authorization';
@@ -167,6 +167,7 @@ const getIconColor = (iconType: string, active: boolean): string => {
         // Active state colors (brighter)
         const activeColors: Record<string, string> = {
             'home': '#3b82f6',           // Blue
+            'search': '#8b5cf6',         // Purple
             'arrow-down-circle': '#10b981', // Green
             'arrow-up-circle': '#ef4444',   // Red
             'receipt': '#8b5cf6',         // Purple
@@ -206,6 +207,7 @@ const getIconColor = (iconType: string, active: boolean): string => {
         // Inactive state colors (muted)
         const inactiveColors: Record<string, string> = {
             'home': '#60a5fa',            // Light Blue
+            'search': '#a78bfa',          // Light Purple
             'arrow-down-circle': '#34d399', // Light Green
             'arrow-up-circle': '#f87171',  // Light Red
             'receipt': '#a78bfa',         // Light Purple
@@ -475,6 +477,14 @@ const Sidebar: React.FC = () => {
                         {!collapsed && t('dashboard')}
                     </NavItem>
                 </ComponentGate>
+
+                {/* Search */}
+                <NavItem href="/search" $active={pathname === '/search'} $collapsed={collapsed}>
+                    <NavIcon $active={pathname === '/search'} $collapsed={collapsed} $iconType="search">
+                        <Search />
+                    </NavIcon>
+                    {!collapsed && 'Search'}
+                </NavItem>
 
                 {/* Revenue - Hidden for employees */}
                 {!isEmployee && (
