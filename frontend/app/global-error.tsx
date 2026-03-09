@@ -26,7 +26,7 @@ const IconWrapper = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: ${theme.typography.fontSizes.xl};
+  font-size: ${theme.typography.fontSizes.md};
   font-weight: ${theme.typography.fontWeights.bold};
   color: ${theme.colors.textDark};
   margin-bottom: ${theme.spacing.md};
