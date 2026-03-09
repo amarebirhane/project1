@@ -13,6 +13,7 @@ from ...models.user import User, UserRole
 from ...api.deps import get_current_active_user, require_min_role
 from ...core.security import verify_password
 from ...schemas.responses import GenericResponse, ErrorResponse
+from ...core.i18n import _
 from fastapi.encoders import jsonable_encoder
 
 logger = logging.getLogger(__name__)
@@ -457,7 +458,8 @@ def change_password(
     db.commit()
     db.refresh(current_user)
     
-    return GenericResponse(message="Password changed successfully")
+    locale = getattr(request.state, "locale", "en")
+    return GenericResponse(message=_("PASSWORD_CHANGED_SUCCESS", locale))
 
 
 @router.post("/admin-reset-password", response_model=dict)
@@ -506,7 +508,8 @@ def admin_reset_password(
     db.commit()
     
     # 4. Success message
-    return GenericResponse(message=f"Password for {target_user.username} has been reset successfully")
+    locale = getattr(request.state, "locale", "en")
+    return GenericResponse(message=_("ADMIN_PASSWORD_RESET_SUCCESS", locale, username=target_user.username))
 
 
 # ------------------------------------------------------------------
