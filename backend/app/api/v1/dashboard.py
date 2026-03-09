@@ -866,7 +866,7 @@ def get_recent_activity(
             logger.error(f"Error sorting activities: {str(e)}")
             # If sorting fails, just return activities as-is
         
-        return activities[:limit]
+        return GenericResponse(data=activities[:limit])
     
     except Exception as e:
         logger.error(f"Unexpected error in get_recent_activity: {str(e)}", exc_info=True)
