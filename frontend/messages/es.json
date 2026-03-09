@@ -1,0 +1,24 @@
+{
+    "Common": {
+        "dashboard": "Panel de Control",
+        "revenue": "Ingresos",
+        "expenses": "Gastos",
+        "sales": "Ventas",
+        "inventory": "Inventario",
+        "reports": "Informes",
+        "settings": "Configuraciones",
+        "logout": "Cerrar sesión",
+        "profile": "Perfil"
+    },
+    "Dashboard": {
+        "greeting": "Bienvenido de nuevo",
+        "financialSummary": "Resumen Financiero"
+    },
+    "Settings": {
+        "language": "Idioma",
+        "selectLanguage": "Seleccionar idioma",
+        "english": "Inglés",
+        "spanish": "Español",
+        "tigrinya": "Tigrinya"
+    }
+}

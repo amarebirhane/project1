@@ -1,0 +1,24 @@
+{
+    "Common": {
+        "dashboard": "Dashboard",
+        "revenue": "Revenue",
+        "expenses": "Expenses",
+        "sales": "Sales",
+        "inventory": "Inventory",
+        "reports": "Reports",
+        "settings": "Settings",
+        "logout": "Logout",
+        "profile": "Profile"
+    },
+    "Dashboard": {
+        "greeting": "Welcome back",
+        "financialSummary": "Financial Summary"
+    },
+    "Settings": {
+        "language": "Language",
+        "selectLanguage": "Select Language",
+        "english": "English",
+        "spanish": "Spanish",
+        "tigrinya": "Tigrinya"
+    }
+}

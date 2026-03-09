@@ -1,0 +1,24 @@
+{
+    "Common": {
+        "dashboard": "ዳሽቦርድ",
+        "revenue": "እቶት",
+        "expenses": "ወፃኢ",
+        "sales": "ሸቐጥ",
+        "inventory": "ንብረት",
+        "reports": "ፀብፃባት",
+        "settings": "ቅንብራት",
+        "logout": "ውፃእ",
+        "profile": "ፕሮፋይል"
+    },
+    "Dashboard": {
+        "greeting": "እንቋዕ ብደሓን መጻእኩም",
+        "financialSummary": "ናይ ፋይናንስ ፀብፃብ"
+    },
+    "Settings": {
+        "language": "ቋንቋ",
+        "selectLanguage": "ቋንቋ ምረጽ",
+        "english": "English",
+        "spanish": "Spanish",
+        "tigrinya": "ትግርኛ"
+    }
+}
