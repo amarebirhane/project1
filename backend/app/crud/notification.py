@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import and_, or_, desc  # type: ignore[import-untyped]
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models.notification import Notification, NotificationType, NotificationPriority
 from ..schemas.notification import NotificationCreate, NotificationUpdate
 
@@ -88,7 +88,7 @@ class CRUDNotification:
     def mark_as_read(self, db: Session, id: int) -> Notification:
         obj = db.query(Notification).get(id)
         obj.is_read = True
-        obj.read_at = datetime.utcnow()
+        obj.read_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(obj)
         return obj
@@ -102,7 +102,7 @@ class CRUDNotification:
         count = len(unread_notifications)
         for notification in unread_notifications:
             notification.is_read = True
-            notification.read_at = datetime.utcnow()
+            notification.read_at = datetime.now(timezone.utc)
         
         db.commit()
         return count
@@ -116,7 +116,7 @@ class CRUDNotification:
     def cleanup_expired(self, db: Session) -> int:
         """Delete expired notifications and return count of deleted records"""
         expired_notifications = db.query(Notification).filter(
-            and_(Notification.expires_at < datetime.utcnow(), Notification.expires_at.isnot(None))
+            and_(Notification.expires_at < datetime.now(timezone.utc), Notification.expires_at.isnot(None))
         ).all()
         
         count = len(expired_notifications)

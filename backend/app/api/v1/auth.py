@@ -155,8 +155,8 @@ class UserCRUD:
             return None
             
         # Check if account is locked
-        if user.locked_until and user.locked_until > datetime.utcnow():
-            remaining = (user.locked_until - datetime.utcnow()).total_seconds()
+        if user.locked_until and user.locked_until.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
+            remaining = (user.locked_until.replace(tzinfo=timezone.utc) - datetime.now(timezone.utc)).total_seconds()
             minutes = int(remaining // 60) + 1
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -167,7 +167,7 @@ class UserCRUD:
             # Increment failed attempts
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= 3:
-                user.locked_until = datetime.utcnow() + timedelta(minutes=15)
+                user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
                 logger.warning(f"User {user.username} account locked until {user.locked_until}")
             db.commit()
             return None
@@ -360,7 +360,7 @@ def login(
         )
         
         # Update last_login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc)
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
@@ -563,7 +563,7 @@ def login_json(
         )
         
         # Update last_login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc)
         db.commit()
     except Exception as e:
         logger.error(f"Failed to log audit/history: {str(e)}")
@@ -618,7 +618,7 @@ password_reset_otps = {}  # email -> {otp: str, expires_at: datetime}
 def cleanup_expired_otps():
     """Remove expired OTPs from cache"""
     from datetime import datetime
-    current_time = datetime.utcnow()
+    current_time = datetime.now(timezone.utc)
     expired_emails = [
         email for email, data in password_reset_otps.items()
         if data['expires_at'] < current_time
@@ -705,7 +705,7 @@ def request_password_reset_otp(
     otp_code = ''.join(random.choices(string.digits, k=6))
     
     # Store OTP with expiration (5 minutes)
-    expires_at = datetime.utcnow() + timedelta(minutes=5)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
     password_reset_otps[email] = {
         'otp': otp_code,
         'expires_at': expires_at,
@@ -780,7 +780,7 @@ def reset_password(
     otp_data = password_reset_otps[email]
     
     # Check expiration
-    if datetime.utcnow() > otp_data['expires_at']:
+    if datetime.now(timezone.utc) > otp_data['expires_at']:
         del password_reset_otps[email]
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -875,7 +875,7 @@ def refresh_token(
         )
         
     # 2. Check expiration
-    if db_token.expires_at < datetime.utcnow():
+    if db_token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
         db_token.is_revoked = True
         db.commit()
         raise HTTPException(

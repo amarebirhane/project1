@@ -1,13 +1,13 @@
 # app/schemas/responses.py
 from typing import Generic, TypeVar, Optional, Any
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 
 T = TypeVar("T")
 
 class BaseResponse(BaseModel):
     success: bool = True
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status_code: int = 200
 
 class GenericResponse(BaseResponse, Generic[T]):

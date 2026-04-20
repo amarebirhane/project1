@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import platform
 import boto3 # type: ignore[import-untyped]
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 import logging
 from sqlalchemy import create_engine, text # type: ignore[import-untyped]
@@ -78,7 +78,7 @@ class BackupService:
             # Create backup metadata
             metadata = {
                 "backup_name": backup_name,
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
                 "include_files": include_files,
                 "database_backup": db_backup_file,
                 "version": settings.VERSION

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query # type: ignore[import-untyped]
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from ...core.database import get_db
@@ -26,7 +26,7 @@ def get_dashboard_overview(
     """Get dashboard overview with key metrics"""
     try:
         # Default to last 30 days
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=30)
         
         if current_user.role in [UserRole.ADMIN, UserRole.SUPER_ADMIN]:
@@ -381,7 +381,7 @@ def get_kpi_metrics(
     """Get KPI metrics for different time periods"""
     try:
         # Calculate date range based on period
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         
         if period == "week":
             start_date = end_date - timedelta(days=7)

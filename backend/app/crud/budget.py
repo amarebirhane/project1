@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import and_, or_, func # type: ignore[import-untyped]
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..models.budget import Budget, BudgetItem, BudgetScenario, Forecast, BudgetVariance
 from ..models.user import UserRole
@@ -67,7 +67,7 @@ class BudgetCRUD:
         for key, value in update_data.items():
             setattr(budget, key, value)
         
-        budget.updated_at = datetime.utcnow()
+        budget.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(budget)
         return budget
@@ -131,7 +131,7 @@ class BudgetItemCRUD:
         for key, value in update_data.items():
             setattr(item, key, value)
         
-        item.updated_at = datetime.utcnow()
+        item.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(item)
         return item
@@ -180,7 +180,7 @@ class BudgetScenarioCRUD:
         for key, value in update_data.items():
             setattr(scenario, key, value)
         
-        scenario.updated_at = datetime.utcnow()
+        scenario.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(scenario)
         return scenario
@@ -241,7 +241,7 @@ class ForecastCRUD:
         for key, value in update_data.items():
             setattr(forecast, key, value)
         
-        forecast.updated_at = datetime.utcnow()
+        forecast.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(forecast)
         return forecast

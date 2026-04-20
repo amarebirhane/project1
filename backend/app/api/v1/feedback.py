@@ -4,7 +4,7 @@ Feedback API Endpoints
 Allows users to submit feedback and admins to manage it
 """
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
@@ -139,7 +139,7 @@ def get_feedback_stats(
         status_breakdown[status_val.value] = count
     
     # Recent feedback (last 7 days)
-    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
     recent_count = db.query(func.count(Feedback.id)).filter(
         Feedback.created_at >= seven_days_ago
     ).scalar() or 0
@@ -190,7 +190,7 @@ def update_feedback(
     # Track when feedback was reviewed
     if "status" in update_data and update_data["status"] != FeedbackStatus.NEW:
         if db_feedback.status == FeedbackStatus.NEW:
-            db_feedback.reviewed_at = datetime.utcnow()
+            db_feedback.reviewed_at = datetime.now(timezone.utc)
             db_feedback.reviewed_by_id = current_user.id
     
     # Apply updates

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import text, and_, desc # type: ignore[import-untyped]
 from sqlalchemy.exc import IntegrityError # type: ignore[import-untyped]
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 from ...core.database import get_db
@@ -329,7 +329,7 @@ def get_system_stats(
             logger.error(f"Error fetching role distribution: {str(e)}")
 
         # Financial snapshot (last 30 days)
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=30)
         try:
             total_revenue = revenue_crud.get_total_by_period(db, start_date, end_date) or 0
@@ -426,7 +426,7 @@ def get_system_stats(
                 "recent_audits": len(recent_audits),
                 "recent_reports": len(recent_reports)
             },
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         }
     except Exception as e:
         logger.error(f"Unexpected error in get_system_stats: {str(e)}", exc_info=True)
@@ -705,7 +705,7 @@ def system_health_check(
     """Check system health"""
     health_status = {
         "database": "unknown",
-        "timestamp": datetime.utcnow(),
+        "timestamp": datetime.now(timezone.utc),
         "services": {}
     }
     

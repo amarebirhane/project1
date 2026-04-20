@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 
 from ..crud.approval import approval as approval_crud
@@ -187,7 +187,7 @@ class ApprovalService:
     @staticmethod
     def get_approval_statistics(db: Session, days: int = 30) -> Dict[str, Any]:
         """Get approval statistics for the specified period"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         # Get all approvals in the period
         all_approvals = approval_crud.get_multi(db, skip=0, limit=10000)
@@ -274,7 +274,7 @@ class ApprovalService:
     @staticmethod
     def get_approval_workload(db: Session, approver_id: int, days: int = 30) -> Dict[str, Any]:
         """Get workload statistics for an approver"""
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = datetime.now(timezone.utc) - timedelta(days=days)
         
         # Get approvals assigned to this user
         user_approvals = approval_crud.get_by_approver(db, approver_id, 0, 10000)

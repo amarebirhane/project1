@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import and_, or_, func # type: ignore[import-untyped]
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models.revenue import RevenueEntry, RevenueCategory
 from ..schemas.revenue import RevenueCreate, RevenueUpdate
 from ..utils.permissions import check_permission
@@ -97,7 +97,7 @@ class CRUDRevenue:
             
         obj.is_approved = True
         obj.approved_by_id = approved_by_id
-        obj.approved_at = datetime.utcnow()
+        obj.approved_at = datetime.now(timezone.utc)
         
         # --- Cohesive Accounting Integration ---
         from ..services.accounting_service import accounting_service

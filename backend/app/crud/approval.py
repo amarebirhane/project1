@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import and_, or_ # type: ignore[import-untyped]
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models.approval import ApprovalWorkflow, ApprovalComment, ApprovalStatus, ApprovalType
 from ..schemas.approval import ApprovalCreate, ApprovalUpdate, ApprovalCommentCreate
 
@@ -67,7 +67,7 @@ class CRUDApproval:
         obj = db.query(ApprovalWorkflow).get(id)
         obj.status = ApprovalStatus.APPROVED
         obj.approver_id = approver_id
-        obj.approved_at = datetime.utcnow()
+        obj.approved_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(obj)
         return obj

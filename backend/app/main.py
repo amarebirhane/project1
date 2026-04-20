@@ -840,13 +840,13 @@ if celery_app:
         """Cleanup expired notifications task"""
         logger.info("Cleaning expired notifications")
         try:
-            from datetime import datetime, timedelta
+            from datetime import datetime, timedelta, timezone
             from .models.notification import Notification
             
             db = SessionLocal()
             try:
                 # Delete notifications older than 90 days
-                cutoff_date = datetime.utcnow() - timedelta(days=90)
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=90)
                 deleted_count = db.query(Notification).filter(
                     Notification.created_at < cutoff_date
                 ).delete()

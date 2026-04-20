@@ -2,7 +2,7 @@
 Comprehensive notification service for pushing notifications for any event
 """
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 import logging
 
@@ -98,7 +98,7 @@ class NotificationService:
             # 1. Duplicate Prevention Check (In-App)
             # Don't create identical notifications for the same user/url within 5 minutes
             from ..models.notification import Notification
-            five_minutes_ago = datetime.utcnow() - timedelta(minutes=5)
+            five_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
             
             existing = db.query(Notification).filter(
                 Notification.user_id == user_id,
@@ -153,7 +153,7 @@ class NotificationService:
                     "type": db_notification.type.value if hasattr(db_notification.type, 'value') else db_notification.type,
                     "priority": db_notification.priority.value if hasattr(db_notification.priority, 'value') else db_notification.priority,
                     "action_url": db_notification.action_url,
-                    "created_at": db_notification.created_at.isoformat() if db_notification.created_at else datetime.utcnow().isoformat(),
+                    "created_at": db_notification.created_at.isoformat() if db_notification.created_at else datetime.now(timezone.utc).isoformat(),
                     "is_read": False
                 }
                 
@@ -806,7 +806,7 @@ class NotificationService:
             if existing:
                 if existing.message != message:
                     existing.message = message
-                    existing.created_at = datetime.utcnow()
+                    existing.created_at = datetime.now(timezone.utc)
                     db.add(existing)
                     db.commit()
             else:

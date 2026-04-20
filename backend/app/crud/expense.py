@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import and_, or_, func # type: ignore[import-untyped]
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from ..models.expense import ExpenseEntry, ExpenseCategory
 from ..schemas.expense import ExpenseCreate, ExpenseUpdate
 
@@ -114,7 +114,7 @@ class CRUDExpense:
             
         obj.is_approved = True
         obj.approved_by_id = approved_by_id
-        obj.approved_at = datetime.utcnow()
+        obj.approved_at = datetime.now(timezone.utc)
         
         # --- Cohesive Accounting Integration ---
         from ..services.accounting_service import accounting_service

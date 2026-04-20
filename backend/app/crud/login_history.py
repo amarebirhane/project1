@@ -2,7 +2,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from sqlalchemy import desc # type: ignore[import-untyped]
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..models.login_history import LoginHistory
 
@@ -57,7 +57,7 @@ def get_recent_failed_attempts(
 ) -> List[LoginHistory]:
     """Get recent failed login attempts for a user"""
     from datetime import timedelta
-    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     
     return (
         db.query(LoginHistory)

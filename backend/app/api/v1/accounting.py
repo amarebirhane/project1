@@ -1,5 +1,5 @@
 from typing import List, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -200,7 +200,7 @@ def post_journal_entry(
         raise HTTPException(status_code=400, detail=f"Cannot post entry with status {entry.status}")
         
     entry.status = JournalEntryStatus.POSTED
-    entry.posted_at = datetime.utcnow()
+    entry.posted_at = datetime.now(timezone.utc)
     entry.posted_by_id = current_user.id
     
     db.commit()
@@ -288,13 +288,13 @@ def reverse_journal_entry(
 
     reversal_entry = AccountingJournalEntry(
         entry_number=reversal_number,
-        entry_date=datetime.utcnow(),
+        entry_date=datetime.now(timezone.utc),
         description=f"Reversal of {original.entry_number}",
         reference_type="REVERSAL",
         reference_id=original.id,
         status=JournalEntryStatus.POSTED,
         created_by_id=current_user.id,
-        posted_at=datetime.utcnow(),
+        posted_at=datetime.now(timezone.utc),
         posted_by_id=current_user.id
     )
     db.add(reversal_entry)
@@ -313,7 +313,7 @@ def reverse_journal_entry(
 
     # Mark original as REVERSED
     original.status = JournalEntryStatus.REVERSED
-    original.reversed_at = datetime.utcnow()
+    original.reversed_at = datetime.now(timezone.utc)
     original.reversed_by_id = current_user.id
     original.reversal_entry_id = reversal_entry.id
 

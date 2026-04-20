@@ -201,7 +201,7 @@ def update_notification_preferences(
                 "startTime": "22:00",
                 "endTime": "08:00"
             }),
-            "lastUpdated": datetime.utcnow().isoformat()
+            "lastUpdated": datetime.now(timezone.utc).isoformat()
         }
         
         # Update user's notification preferences

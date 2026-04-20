@@ -59,7 +59,7 @@ class CRUDReport:
         obj.status = ReportStatus.COMPLETED
         obj.file_url = file_url
         obj.file_size = file_size
-        obj.generated_at = datetime.utcnow()
+        obj.generated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(obj)
         return obj
@@ -87,7 +87,7 @@ class CRUDReport:
     def cleanup_expired(self, db: Session) -> int:
         """Delete expired reports and return count of deleted records"""
         expired_reports = db.query(Report).filter(
-            and_(Report.expires_at < datetime.utcnow(), Report.expires_at.isnot(None))
+            and_(Report.expires_at < datetime.now(timezone.utc), Report.expires_at.isnot(None))
         ).all()
         
         count = len(expired_reports)
