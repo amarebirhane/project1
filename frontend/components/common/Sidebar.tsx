@@ -798,8 +798,8 @@ const Sidebar: React.FC = () => {
                     </NavItem>
                 </ComponentGate> */}
 
-                {/* Forecasts - Only for Admin, Finance Admin, and Manager (hidden from Accountant and Employee) */}
-                {!isAccountant && !isEmployee && (
+                {/* Forecasts - Only for Admin, and Manager (hidden from Finance Admin, Accountant and Employee) */}
+                {!isAccountant && !isEmployee && !isFinanceAdmin && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_FORECAST}>
                         <>
                             <DropdownHeader
@@ -959,8 +959,8 @@ const Sidebar: React.FC = () => {
                     </ComponentGate>
                 )}
 
-                {/* Budgets - Only for Admin and Finance Admin */}
-                {(isAdmin || isFinanceAdmin) && (
+                {/* Budgets - Only for Admin */}
+                {isAdmin && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_BUDGETS}>
                         <>
                             <DropdownHeader
@@ -1182,24 +1182,28 @@ const Sidebar: React.FC = () => {
                         </ComponentGate>
 
                         {/* Projects */}
-                        <ComponentGate componentId={ComponentId.SIDEBAR_PROJECT}>
-                            <NavItem href="/project/list" $active={pathname.includes('/project')} $collapsed={collapsed}>
-                                <NavIcon $active={pathname.includes('/project')} $collapsed={collapsed} $iconType="briefcase">
-                                    <Briefcase />
-                                </NavIcon>
-                                {!collapsed && 'Projects'}
-                            </NavItem>
-                        </ComponentGate>
+                        {!isFinanceAdmin && (
+                            <ComponentGate componentId={ComponentId.SIDEBAR_PROJECT}>
+                                <NavItem href="/project/list" $active={pathname.includes('/project')} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname.includes('/project')} $collapsed={collapsed} $iconType="briefcase">
+                                        <Briefcase />
+                                    </NavIcon>
+                                    {!collapsed && 'Projects'}
+                                </NavItem>
+                            </ComponentGate>
+                        )}
 
                         {/* Permissions */}
-                        <ComponentGate componentId={ComponentId.SIDEBAR_PERMISSIONS}>
-                            <NavItem href="/permissions" $active={pathname.includes('/permissions')} $collapsed={collapsed}>
-                                <NavIcon $active={pathname.includes('/permissions')} $collapsed={collapsed} $iconType="shield">
-                                    <Key />
-                                </NavIcon>
-                                {!collapsed && 'Permissions'}
-                            </NavItem>
-                        </ComponentGate>
+                        {!isFinanceAdmin && (
+                            <ComponentGate componentId={ComponentId.SIDEBAR_PERMISSIONS}>
+                                <NavItem href="/permissions" $active={pathname.includes('/permissions')} $collapsed={collapsed}>
+                                    <NavIcon $active={pathname.includes('/permissions')} $collapsed={collapsed} $iconType="shield">
+                                        <Key />
+                                    </NavIcon>
+                                    {!collapsed && 'Permissions'}
+                                </NavItem>
+                            </ComponentGate>
+                        )}
                         {/* Audit Logs */}
                         {isAdmin && (
                             <ComponentGate componentId={ComponentId.SIDEBAR_AUDIT_LOGS}>
