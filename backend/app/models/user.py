@@ -113,7 +113,7 @@ class User(Base):
     # -----------------------------------------------------------------
     # Audit / Notification
     # -----------------------------------------------------------------
-    audit_logs = relationship("AuditLog", back_populates="user")
+    audit_logs = relationship("AuditLog", back_populates="user", passive_deletes=True)
     notifications = relationship("Notification", back_populates="user")
     login_history = relationship("LoginHistory", back_populates="user", cascade="all, delete-orphan")
     account_mappings = relationship("AccountMapping", back_populates="created_by")
