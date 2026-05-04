@@ -54,7 +54,7 @@ class ExpenseEntry(Base):
 
     # Foreign Keys
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     # -----------------------------------------------------------------
     # RELATIONSHIPS – EXPLICIT foreign_keys + back_populates

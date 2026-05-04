@@ -25,7 +25,7 @@ class User(Base):
     role = Column(SAEnum(UserRole), default=UserRole.EMPLOYEE)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
-    manager_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    manager_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     department = Column(String)
     address = Column(String, nullable=True)
     bio = Column(String, nullable=True)
@@ -51,7 +51,7 @@ class User(Base):
     # Hierarchy
     # -----------------------------------------------------------------
     manager = relationship("User", remote_side=[id], back_populates="subordinates")
-    subordinates = relationship("User", back_populates="manager")
+    subordinates = relationship("User", back_populates="manager", passive_deletes=True)
 
     # -----------------------------------------------------------------
     # Reports
@@ -75,7 +75,8 @@ class User(Base):
     approved_revenue_entries = relationship(
         "RevenueEntry",
         foreign_keys="RevenueEntry.approved_by_id",
-        back_populates="approved_by"
+        back_populates="approved_by",
+        passive_deletes=True
     )
 
     created_expense_entries = relationship(
@@ -87,7 +88,8 @@ class User(Base):
     approved_expense_entries = relationship(
         "ExpenseEntry",
         foreign_keys="ExpenseEntry.approved_by_id",
-        back_populates="approved_by"
+        back_populates="approved_by",
+        passive_deletes=True
     )
 
     # -----------------------------------------------------------------
@@ -102,7 +104,8 @@ class User(Base):
     assigned_workflows = relationship(
         "ApprovalWorkflow",
         foreign_keys="ApprovalWorkflow.approver_id",
-        back_populates="approver"
+        back_populates="approver",
+        passive_deletes=True
     )
     approval_comments = relationship(
         "ApprovalComment",
@@ -114,7 +117,7 @@ class User(Base):
     # Audit / Notification
     # -----------------------------------------------------------------
     audit_logs = relationship("AuditLog", back_populates="user", passive_deletes=True)
-    notifications = relationship("Notification", back_populates="user")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
     login_history = relationship("LoginHistory", back_populates="user", cascade="all, delete-orphan")
     account_mappings = relationship("AccountMapping", back_populates="created_by")
 
