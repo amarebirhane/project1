@@ -457,11 +457,11 @@ export default function Home() {
 
             <div style={{ zIndex: 10 }}>
               <Title>
-                Enterprise Financial Management Platform
+                Web-Based Financial and Inventory Management System for Supermarkets and Mini-Markets
               </Title>
               <Subtitle>
-                Transform your financial operations with intelligent automation, real-time analytics, and enterprise-grade security.
-                Manage revenue, control expenses, optimize budgets, and ensure compliance—all in one powerful platform designed for modern finance teams.
+                Streamline your retail operations with a comprehensive solution designed for modern grocery stores.
+                Real-time stock tracking, automated accounting, and performance analytics to help you grow your business.
               </Subtitle>
               <div>
                 <Link href="/auth/login">
@@ -508,10 +508,10 @@ export default function Home() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
               }}>
-                Powerful Features for Modern Finance Teams
+                Powerful Features for Supermarket Operations
               </h2>
               <p style={{ fontSize: '1.1rem', color: '#9ca3af', maxWidth: '700px', margin: '0 auto' }}>
-                Everything you need to manage finances, control costs, and drive business growth
+                Everything you need to manage stock, sales, and retail finances in one place
               </p>
             </div>
 
@@ -561,7 +561,7 @@ export default function Home() {
                 backgroundClip: 'text'
               }}
             >
-              Trusted by Finance Professionals Worldwide
+              Trusted by Retailers and Shop Owners
             </h2>
             <p
               style={{
@@ -572,7 +572,7 @@ export default function Home() {
                 margin: '0 auto 2rem auto'
               }}
             >
-              Built by a global team of finance experts, accountants, and software engineers dedicated to transforming how businesses manage their finances.
+              Built to transform how supermarkets and mini-markets manage their day-to-day operations.
             </p>
             <TeamImage
               src="/images/team1.png"
@@ -590,7 +590,7 @@ export default function Home() {
                 lineHeight: '1.6'
               }}
             >
-              Our platform powers financial operations for businesses of all sizes—from startups to Fortune 500 companies.
+              Our platform powers retail operations for shops of all sizes—from local mini-markets to large supermarket chains.
               We combine deep financial expertise with cutting-edge technology to deliver solutions that drive real business value.
             </p>
           </TeamSection>
