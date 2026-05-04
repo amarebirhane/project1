@@ -40,7 +40,7 @@ class ApprovalWorkflow(Base):
     
     # Foreign Keys
     requester_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    approver_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approver_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     revenue_entry_id = Column(Integer, ForeignKey("revenue_entries.id"), nullable=True)
     expense_entry_id = Column(Integer, ForeignKey("expense_entries.id"), nullable=True)
     
