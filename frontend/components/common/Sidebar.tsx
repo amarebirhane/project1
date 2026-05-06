@@ -676,8 +676,8 @@ const Sidebar: React.FC = () => {
                     </NavItem>
                 </ComponentGate>
 
-                {/* AI Dropdown - New Section */}
-                {(!isAdmin) && (
+                {/* AI Dropdown - New Section (Hidden from Finance Admin, Accountant and Employee) */}
+                {(isAdmin || isManager) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('ai-tools')}
@@ -726,8 +726,8 @@ const Sidebar: React.FC = () => {
                     </>
                 )}
 
-                {/* Collections Dropdown */}
-                {(!isAdmin) && (
+                {/* Collections Dropdown (Hidden from Finance Admin, Accountant and Employee) */}
+                {(isAdmin || isManager) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('collections')}
@@ -777,12 +777,12 @@ const Sidebar: React.FC = () => {
                                     </NavIcon>
                                     {!collapsed && 'Taxes'}
                                 </NavItem>
-                                <NavItem href="/admin/feedback" $active={pathname === '/admin/feedback'} $collapsed={collapsed}>
+                                {/* <NavItem href="/admin/feedback" $active={pathname === '/admin/feedback'} $collapsed={collapsed}>
                                     <NavIcon $active={pathname === '/admin/feedback'} $collapsed={collapsed} $size={16} $iconType="message-square">
                                         <MessageSquare />
                                     </NavIcon>
                                     {!collapsed && 'Feedback'}
-                                </NavItem>
+                                </NavItem> */}
                             </SubMenu>
                         )}
                     </>
@@ -821,7 +821,7 @@ const Sidebar: React.FC = () => {
                             {isOpen('forecast') && (
                                 <SubMenu $collapsed={collapsed}>
                                     {/* Create - Only for Admin */}
-                                    {!isAdmin && (
+                                    {isAdmin && (
                                         <ComponentGate componentId={ComponentId.FORECAST_CREATE}>
                                             <NavItem href="/forecast/create" $active={pathname === '/forecast/create'} $collapsed={collapsed}>
                                                 <NavIcon $active={pathname === '/forecast/create'} $collapsed={collapsed} $size={16} $iconType="plus">
@@ -840,8 +840,8 @@ const Sidebar: React.FC = () => {
                                             {!collapsed && 'forecasts'}
                                         </NavItem>
                                     </ComponentGate>
-                                    {/* ML Training - Only for Admin and Finance Admin */}
-                                    {(!isAdmin || user?.role === 'finance_admin') && (
+                                    {/* ML Training - Only for Admin and Manager */}
+                                    {(isAdmin || isManager) && (
                                         <NavItem href="/ml-training" $active={pathname === '/ml-training'} $collapsed={collapsed}>
                                             <NavIcon $active={pathname === '/ml-training'} $collapsed={collapsed} $size={16} $iconType="brain">
                                                 <Brain />
@@ -855,8 +855,8 @@ const Sidebar: React.FC = () => {
                     </ComponentGate>
                 )}
 
-                {/* Scenarios - Only for Admin */}
-                {!isAdmin && (
+                {/* Scenarios - Only for Admin and Manager */}
+                {(isAdmin || isManager) && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_SCENARIO}>
                         <>
                             <DropdownHeader
@@ -907,8 +907,8 @@ const Sidebar: React.FC = () => {
                     </ComponentGate>
                 )}
 
-                {/* Variance - Only for Admin */}
-                {!isAdmin && (
+                {/* Variance - Only for Admin and Manager */}
+                {(isAdmin || isManager) && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_VARIANCE}>
                         <>
                             <DropdownHeader
@@ -959,8 +959,8 @@ const Sidebar: React.FC = () => {
                     </ComponentGate>
                 )}
 
-                {/* Budgets - Only for Admin */}
-                {!isAdmin && (
+                {/* Budgets - Only for Admin and Manager */}
+                {(isAdmin || isManager) && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_BUDGETS}>
                         <>
                             <DropdownHeader

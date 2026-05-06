@@ -42,12 +42,12 @@ const ContentWrapper = styled.div`
 `;
 
 const WidgetWrapper = () => {
-    const { isAuthenticated } = useAuth();
-    if (!isAuthenticated) return null;
+    // const { isAuthenticated } = useAuth();
+    // if (!isAuthenticated) return null;
     return (
         <>
-            <FeedbackWidget />
-            <AIChatWidget />
+            {/* <FeedbackWidget /> */}
+            {/* <AIChatWidget /> */}
         </>
     );
 };
