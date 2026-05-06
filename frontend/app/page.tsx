@@ -457,7 +457,7 @@ export default function Home() {
 
             <div style={{ zIndex: 10 }}>
               <Title>
-                Web-Based Financial and Inventory Management System for Supermarkets and Mini-Markets
+                web based financial management system for supermarkets
               </Title>
               <Subtitle>
                 Streamline your retail operations with a comprehensive solution designed for modern grocery stores.

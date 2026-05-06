@@ -1,6 +1,6 @@
 # app/api/v1/users.py
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, BackgroundTasks, Request
 from sqlalchemy.orm import Session # type: ignore[import-untyped]
 from pydantic import BaseModel # type: ignore[import-untyped]
 import logging
@@ -88,7 +88,7 @@ def setup_2fa(
         }
     )
 
-@router.post("/me/2fa/verify", response_model=dict)
+@router.post("/me/2fa/verify", response_model=GenericResponse)
 def verify_2fa(
     verify_data: TwoFactorVerifyRequest,
     current_user: User = Depends(get_current_active_user),
@@ -115,7 +115,7 @@ def verify_2fa(
 class TwoFactorDisableRequest(BaseModel):
     current_password: str
 
-@router.post("/me/2fa/disable", response_model=dict)
+@router.post("/me/2fa/disable", response_model=GenericResponse)
 def disable_2fa(
     password_data: TwoFactorDisableRequest,
     current_user: User = Depends(get_current_active_user),
@@ -435,9 +435,10 @@ class PasswordChangeRequest(BaseModel):
     current_password: str
     new_password: str
 
-@router.post("/me/change-password", response_model=dict)
+@router.post("/me/change-password", response_model=GenericResponse)
 def change_password(
     password_data: PasswordChangeRequest,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -462,9 +463,10 @@ def change_password(
     return GenericResponse(message=_("PASSWORD_CHANGED_SUCCESS", locale))
 
 
-@router.post("/admin-reset-password", response_model=dict)
+@router.post("/admin-reset-password", response_model=GenericResponse)
 def admin_reset_password(
     reset_data: AdminResetPasswordRequest,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):

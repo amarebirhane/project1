@@ -677,7 +677,7 @@ const Sidebar: React.FC = () => {
                 </ComponentGate>
 
                 {/* AI Dropdown - New Section */}
-                {(isAdmin) && (
+                {(!isAdmin) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('ai-tools')}
@@ -727,7 +727,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Collections Dropdown */}
-                {(isAdmin) && (
+                {(!isAdmin) && (
                     <>
                         <DropdownHeader
                             onClick={() => toggleSection('collections')}
@@ -821,7 +821,7 @@ const Sidebar: React.FC = () => {
                             {isOpen('forecast') && (
                                 <SubMenu $collapsed={collapsed}>
                                     {/* Create - Only for Admin */}
-                                    {isAdmin && (
+                                    {!isAdmin && (
                                         <ComponentGate componentId={ComponentId.FORECAST_CREATE}>
                                             <NavItem href="/forecast/create" $active={pathname === '/forecast/create'} $collapsed={collapsed}>
                                                 <NavIcon $active={pathname === '/forecast/create'} $collapsed={collapsed} $size={16} $iconType="plus">
@@ -841,7 +841,7 @@ const Sidebar: React.FC = () => {
                                         </NavItem>
                                     </ComponentGate>
                                     {/* ML Training - Only for Admin and Finance Admin */}
-                                    {(isAdmin || user?.role === 'finance_admin') && (
+                                    {(!isAdmin || user?.role === 'finance_admin') && (
                                         <NavItem href="/ml-training" $active={pathname === '/ml-training'} $collapsed={collapsed}>
                                             <NavIcon $active={pathname === '/ml-training'} $collapsed={collapsed} $size={16} $iconType="brain">
                                                 <Brain />
@@ -856,7 +856,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Scenarios - Only for Admin */}
-                {isAdmin && (
+                {!isAdmin && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_SCENARIO}>
                         <>
                             <DropdownHeader
@@ -908,7 +908,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Variance - Only for Admin */}
-                {isAdmin && (
+                {!isAdmin && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_VARIANCE}>
                         <>
                             <DropdownHeader
@@ -960,7 +960,7 @@ const Sidebar: React.FC = () => {
                 )}
 
                 {/* Budgets - Only for Admin */}
-                {isAdmin && (
+                {!isAdmin && (
                     <ComponentGate componentId={ComponentId.SIDEBAR_BUDGETS}>
                         <>
                             <DropdownHeader
