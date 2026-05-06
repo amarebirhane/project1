@@ -32,8 +32,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Download
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   Dialog,
   DialogContent,
@@ -1622,6 +1626,296 @@ export default function ReportPage() {
     }
   };
 
+  /**
+   * Helper function to export data to Excel/CSV
+   */
+  const handleExport = (data: any[], fileName: string, sheetName: string = 'Report') => {
+    try {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      XLSX.writeFile(wb, `${fileName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success(`${fileName} exported successfully`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export data');
+    }
+  };
+
+  const exportFinancialSummary = () => {
+    if (!financialSummary) return;
+    const data = [
+      { Metric: 'Total Revenue', Value: financialSummary.financials?.total_revenue },
+      { Metric: 'Total Sales', Value: financialSummary.financials?.total_sales },
+      { Metric: 'Total Expenses', Value: financialSummary.financials?.total_expenses },
+      { Metric: 'Net Profit', Value: financialSummary.financials?.profit },
+      { Metric: 'Profit Margin (%)', Value: financialSummary.financials?.profit_margin },
+      { Metric: 'Revenue Transactions', Value: financialSummary.transaction_counts?.revenue },
+      { Metric: 'Sales Transactions', Value: financialSummary.transaction_counts?.sales },
+      { Metric: 'Expense Transactions', Value: financialSummary.transaction_counts?.expenses },
+      { Metric: 'Total Transactions', Value: financialSummary.transaction_counts?.total },
+    ];
+    handleExport(data, 'Financial_Summary', 'Summary');
+  };
+
+  const exportIncomeStatement = () => {
+    if (!incomeStatement) return;
+    const data: any[] = [];
+    
+    data.push({ Section: 'REVENUE', Category: 'Total', Amount: incomeStatement.revenue?.total });
+    if (incomeStatement.revenue?.by_category) {
+      Object.entries(incomeStatement.revenue.by_category).forEach(([cat, amt]) => {
+        data.push({ Section: 'REVENUE', Category: capitalize(cat), Amount: amt });
+      });
+    }
+
+    data.push({ Section: 'SALES', Category: 'Total', Amount: incomeStatement.sales?.total });
+    if (incomeStatement.sales?.by_category) {
+      Object.entries(incomeStatement.sales.by_category).forEach(([cat, amt]) => {
+        data.push({ Section: 'SALES', Category: capitalize(cat), Amount: amt });
+      });
+    }
+
+    data.push({ Section: 'EXPENSES', Category: 'Total', Amount: incomeStatement.expenses?.total });
+    if (incomeStatement.expenses?.by_category) {
+      Object.entries(incomeStatement.expenses.by_category).forEach(([cat, amt]) => {
+        data.push({ Section: 'EXPENSES', Category: capitalize(cat), Amount: amt });
+      });
+    }
+
+    data.push({ Section: 'SUMMARY', Category: 'Net Profit', Amount: incomeStatement.profit });
+    data.push({ Section: 'SUMMARY', Category: 'Profit Margin (%)', Amount: incomeStatement.profit_margin });
+
+    handleExport(data, 'Income_Statement', 'P&L');
+  };
+
+  const exportCashFlow = () => {
+    if (!cashFlow || !cashFlow.daily_cash_flow) return;
+    const data = Object.entries(cashFlow.daily_cash_flow)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([date, flow]) => ({
+        Date: date,
+        Inflow: flow.inflow,
+        Outflow: flow.outflow,
+        Net: flow.net
+      }));
+    handleExport(data, 'Cash_Flow_Daily', 'Cash Flow');
+  };
+
+  const exportInventorySummary = () => {
+    if (!inventorySummary) return;
+    const data = [
+      { Metric: 'Total Items', Value: inventorySummary.total_items },
+      { Metric: 'Total Stock Quantity', Value: inventorySummary.total_quantity_in_stock },
+      { Metric: 'Total Cost Value', Value: inventorySummary.total_cost_value },
+      { Metric: 'Total Selling Value', Value: inventorySummary.total_selling_value },
+      { Metric: 'Potential Profit', Value: inventorySummary.potential_profit },
+    ];
+    handleExport(data, 'Inventory_Summary', 'Inventory');
+  };
+
+  const exportSalesSummary = () => {
+    if (!salesSummary) return;
+    const data = [
+      { Metric: 'Total Sales Count', Value: salesSummary.total_sales },
+      { Metric: 'Total Revenue', Value: salesSummary.total_revenue },
+      { Metric: 'Posted Sales', Value: salesSummary.posted_sales },
+      { Metric: 'Pending Sales', Value: salesSummary.pending_sales },
+    ];
+    handleExport(data, 'Sales_Summary', 'Sales');
+  };
+
+  const exportForecasts = () => {
+    if (!forecasts || forecasts.length === 0) return;
+    const data = forecasts.map(f => ({
+      Name: f.name,
+      Type: capitalize(f.forecast_type),
+      Method: capitalize(f.method),
+      'Start Date': f.start_date,
+      'End Date': f.end_date,
+      'Created At': formatDate(f.created_at)
+    }));
+    handleExport(data, 'Forecasts_List', 'Forecasts');
+  };
+
+  /**
+   * PDF Export Handlers
+   */
+  const exportFinancialSummaryPDF = () => {
+    if (!financialSummary) return;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Financial Summary Report', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${formatDate(startDate)} - ${formatDate(endDate)}`, 14, 30);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 36);
+
+    const data = [
+      ['Metric', 'Value'],
+      ['Total Revenue', formatCurrency(financialSummary.financials?.total_revenue)],
+      ['Total Sales', formatCurrency(financialSummary.financials?.total_sales)],
+      ['Total Expenses', formatCurrency(financialSummary.financials?.total_expenses)],
+      ['Net Profit', formatCurrency(financialSummary.financials?.profit)],
+      ['Profit Margin', `${safeNumber(financialSummary.financials?.profit_margin).toFixed(2)}%`],
+      ['Total Transactions', financialSummary.transaction_counts?.total || 0],
+    ];
+
+    autoTable(doc, {
+      startY: 45,
+      head: [data[0]],
+      body: data.slice(1),
+      theme: 'striped',
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Financial_Summary_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Financial Summary PDF exported');
+  };
+
+  const exportIncomeStatementPDF = () => {
+    if (!incomeStatement) return;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Income Statement (Profit & Loss)', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${formatDate(startDate)} - ${formatDate(endDate)}`, 14, 30);
+
+    const body: any[] = [];
+    body.push([{ content: 'REVENUE', colSpan: 2, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }]);
+    if (incomeStatement.revenue?.by_category) {
+      Object.entries(incomeStatement.revenue.by_category).forEach(([cat, amt]) => {
+        body.push([capitalize(cat), formatCurrency(amt as number)]);
+      });
+    }
+    body.push([{ content: `Total Revenue: ${formatCurrency(incomeStatement.revenue?.total)}`, colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }]);
+
+    body.push([{ content: 'EXPENSES', colSpan: 2, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }]);
+    if (incomeStatement.expenses?.by_category) {
+      Object.entries(incomeStatement.expenses.by_category).forEach(([cat, amt]) => {
+        body.push([capitalize(cat), formatCurrency(amt as number)]);
+      });
+    }
+    body.push([{ content: `Total Expenses: ${formatCurrency(incomeStatement.expenses?.total)}`, colSpan: 2, styles: { fontStyle: 'bold', halign: 'right' } }]);
+
+    body.push([{ content: 'SUMMARY', colSpan: 2, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } }]);
+    body.push(['Net Profit', formatCurrency(incomeStatement.profit)]);
+    body.push(['Profit Margin', `${(incomeStatement.profit_margin || 0).toFixed(2)}%`]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['Category', 'Amount']],
+      body: body,
+      theme: 'grid',
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Income_Statement_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Income Statement PDF exported');
+  };
+
+  const exportCashFlowPDF = () => {
+    if (!cashFlow || !cashFlow.daily_cash_flow) return;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Cash Flow Statement', 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${formatDate(startDate)} - ${formatDate(endDate)}`, 14, 30);
+
+    const head = [['Date', 'Inflow', 'Outflow', 'Net']];
+    const body = Object.entries(cashFlow.daily_cash_flow)
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([date, flow]) => [
+        formatDate(date),
+        formatCurrency(flow.inflow),
+        formatCurrency(flow.outflow),
+        formatCurrency(flow.net)
+      ]);
+
+    autoTable(doc, {
+      startY: 40,
+      head: head,
+      body: body,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Cash_Flow_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Cash Flow PDF exported');
+  };
+
+  const exportInventoryPDF = () => {
+    if (!inventorySummary) return;
+    const doc = new jsPDF();
+    doc.text('Inventory Summary', 14, 22);
+    
+    const data = [
+      ['Metric', 'Value'],
+      ['Total Items', inventorySummary.total_items],
+      ['Total Stock', inventorySummary.total_quantity_in_stock || 0],
+      ['Cost Value', formatCurrency(inventorySummary.total_cost_value)],
+      ['Selling Value', formatCurrency(inventorySummary.total_selling_value)],
+      ['Potential Profit', formatCurrency(inventorySummary.potential_profit)],
+    ];
+
+    autoTable(doc, {
+      startY: 30,
+      head: [data[0]],
+      body: data.slice(1),
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Inventory_Summary_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const exportSalesPDF = () => {
+    if (!salesSummary) return;
+    const doc = new jsPDF();
+    doc.text('Sales Summary', 14, 22);
+    
+    const data = [
+      ['Metric', 'Value'],
+      ['Total Sales', salesSummary.total_sales],
+      ['Total Revenue', formatCurrency(salesSummary.total_revenue)],
+      ['Posted Sales', salesSummary.posted_sales],
+      ['Pending Sales', salesSummary.pending_sales],
+    ];
+
+    autoTable(doc, {
+      startY: 30,
+      head: [data[0]],
+      body: data.slice(1),
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Sales_Summary_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const exportForecastsPDF = () => {
+    if (!forecasts || forecasts.length === 0) return;
+    const doc = new jsPDF();
+    doc.text('Forecasts Report', 14, 22);
+
+    const body = forecasts.map(f => [
+      f.name,
+      capitalize(f.forecast_type),
+      capitalize(f.method),
+      f.start_date,
+      f.end_date
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [['Name', 'Type', 'Method', 'Start', 'End']],
+      body: body,
+      headStyles: { fillColor: [0, 170, 0] }
+    });
+
+    doc.save(`Forecasts_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
 
   // Load ML insights for all metrics
   const loadMLInsights = async () => {
@@ -1786,6 +2080,26 @@ export default function ReportPage() {
                         <> • Generated: {formatDate(financialSummary.generated_at)}</>
                       )}
                     </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportFinancialSummary}
+                      disabled={!financialSummary}
+                    >
+                      <Download size={14} className="mr-2" />
+                      Excel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportFinancialSummaryPDF}
+                      disabled={!financialSummary}
+                    >
+                      <FileText size={14} className="mr-2" />
+                      PDF
+                    </Button>
                   </div>
                 </ReportHeader>
 
@@ -1968,6 +2282,26 @@ export default function ReportPage() {
                       Period: {formatDate(startDate)} - {formatDate(endDate)}
                     </p>
                   </div>
+                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportIncomeStatement}
+                      disabled={!incomeStatement}
+                    >
+                      <Download size={14} className="mr-2" />
+                      Excel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportIncomeStatementPDF}
+                      disabled={!incomeStatement}
+                    >
+                      <FileText size={14} className="mr-2" />
+                      PDF
+                    </Button>
+                  </div>
                 </ReportHeader>
 
                 {incomeStatement ? (
@@ -2121,6 +2455,26 @@ export default function ReportPage() {
                     <p>
                       Period: {formatDate(startDate)} - {formatDate(endDate)}
                     </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportCashFlow}
+                      disabled={!cashFlow}
+                    >
+                      <Download size={14} className="mr-2" />
+                      Excel
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportCashFlowPDF}
+                      disabled={!cashFlow}
+                    >
+                      <FileText size={14} className="mr-2" />
+                      PDF
+                    </Button>
                   </div>
                 </ReportHeader>
 
@@ -2317,6 +2671,26 @@ export default function ReportPage() {
                         )}
                       </p>
                     </div>
+                    <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportSalesSummary}
+                        disabled={!salesSummary}
+                      >
+                        <Download size={14} className="mr-2" />
+                        Excel
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportSalesPDF}
+                        disabled={!salesSummary}
+                      >
+                        <FileText size={14} className="mr-2" />
+                        PDF
+                      </Button>
+                    </div>
                   </ReportHeader>
 
                   {salesSummary ? (
@@ -2432,6 +2806,26 @@ export default function ReportPage() {
                         Inventory Summary
                       </h2>
                       <p>Current inventory valuation and stock levels</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: theme.spacing.xs }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportInventorySummary}
+                        disabled={!inventorySummary}
+                      >
+                        <Download size={14} className="mr-2" />
+                        Excel
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportInventoryPDF}
+                        disabled={!inventorySummary}
+                      >
+                        <FileText size={14} className="mr-2" />
+                        PDF
+                      </Button>
                     </div>
                   </ReportHeader>
 
@@ -2853,9 +3247,29 @@ export default function ReportPage() {
                         View and analyze all financial forecasts
                       </p>
                     </div>
-                    <Button onClick={() => setShowCreateForecast(!showCreateForecast)}>
-                      {showCreateForecast ? 'Cancel' : 'Create Manual Forecast'}
-                    </Button>
+                    <div style={{ display: 'flex', gap: theme.spacing.sm }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportForecasts}
+                        disabled={!forecasts || forecasts.length === 0}
+                      >
+                        <Download size={14} className="mr-2" />
+                        Excel
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={exportForecastsPDF}
+                        disabled={!forecasts || forecasts.length === 0}
+                      >
+                        <FileText size={14} className="mr-2" />
+                        PDF
+                      </Button>
+                      <Button onClick={() => setShowCreateForecast(!showCreateForecast)}>
+                        {showCreateForecast ? 'Cancel' : 'Create Manual Forecast'}
+                      </Button>
+                    </div>
                   </ReportHeader>
 
                   {showCreateForecast && (
